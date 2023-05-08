@@ -10,11 +10,14 @@ import muon.app.ui.components.session.SessionInfo;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.direct.DirectConnection;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
 import net.schmizz.sshj.connection.channel.direct.Session;
+import net.schmizz.sshj.connection.channel.forwarded.ConnectListener;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder;
+import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
@@ -25,9 +28,7 @@ import javax.swing.*;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ServerSocket;
+import java.net.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -176,6 +177,8 @@ public class SshClient2 implements Closeable {
                 defaultConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
             }
             sshj = new SSHClient(defaultConfig);
+
+            sshj.registerX11Forwarder(new SocketForwardingConnectListener(new InetSocketAddress("localhost", 6000)));
 
             sshj.setConnectTimeout(CONNECTION_TIMEOUT);
             sshj.setTimeout(CONNECTION_TIMEOUT);
