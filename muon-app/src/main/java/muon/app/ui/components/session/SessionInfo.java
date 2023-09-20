@@ -10,13 +10,18 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class SessionInfo extends NamedItem implements Serializable {
-    private String host, user, localFolder, remoteFolder;
+    private String host;
+    private String user;
+    private String localFolder;
+    private String remoteFolder;
     private int port = 22;
     private List<String> favouriteRemoteFolders = new ArrayList<>();
     private List<String> favouriteLocalFolders = new ArrayList<>();
     private String privateKeyFile;
     private int proxyPort = 8080;
-    private String proxyHost, proxyUser, proxyPassword;
+    private String proxyHost;
+    private String proxyUser;
+    private String proxyPassword;
     private int proxyType = 0;
     private boolean useJumpHosts = false;
     private JumpType jumpType = JumpType.TcpForwarding;

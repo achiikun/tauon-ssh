@@ -121,7 +121,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
     public void render(String path, boolean useCache) {
         System.out.println("Rendering: " + path + " caching: " + useCache);
         this.path = path;
-        fileBrowser.getHolder().EXECUTOR.submit(() -> {
+        fileBrowser.getHolder().executor.submit(() -> {
             this.fileBrowser.disableUi();
             try {
                 while (!fileBrowser.isCloseRequested()) {

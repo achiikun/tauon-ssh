@@ -51,7 +51,7 @@ public class ExternalEditorHandler extends JDialog {
         // TODO i18n
         progressLabel = new JLabel("Transferring...");
         progressLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
-        progressLabel.setFont(App.SKIN.getDefaultFont().deriveFont(18.0f));
+        progressLabel.setFont(App.skin.getDefaultFont().deriveFont(18.0f));
         btnCanel = new JButton(bundle.getString("cancel"));
         Box bottomBox = Box.createHorizontalBox();
         bottomBox.add(Box.createHorizontalGlue());

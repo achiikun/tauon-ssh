@@ -41,7 +41,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author subhro
- *
  */
 public class SshClient2 implements Closeable {
     private static final int CONNECTION_TIMEOUT = App.getGlobalSettings().getConnectionTimeout() * 1000;
@@ -166,7 +165,7 @@ public class SshClient2 implements Closeable {
     }
 
     public void connect() throws IOException, OperationCancelledException {
-        Deque<HopEntry> hopStack = new ArrayDeque<HopEntry>();
+        Deque<HopEntry> hopStack = new ArrayDeque<>();
         for (HopEntry e : this.info.getJumpHosts()) {
             hopStack.add(e);
         }
@@ -174,7 +173,6 @@ public class SshClient2 implements Closeable {
     }
 
     private void connect(Deque<HopEntry> hopStack) throws IOException, OperationCancelledException {
-        
         if (closed.get()) {
             disconnect();
             throw new OperationCancelledException();
@@ -371,8 +369,6 @@ public class SshClient2 implements Closeable {
                 lock.unlock();
             }
         }
-        
-        
         
     }
 

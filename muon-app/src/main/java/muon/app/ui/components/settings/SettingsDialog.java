@@ -4,6 +4,7 @@
 package muon.app.ui.components.settings;
 
 import com.jediterm.terminal.emulator.ColorPalette;
+import com.jediterm.terminal.emulator.ColorPaletteImpl;
 import muon.app.App;
 import muon.app.PasswordStore;
 import muon.app.Settings;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import com.jediterm.core.Color;
 
 /**
  * @author subhro
@@ -48,7 +50,7 @@ public class SettingsDialog extends JDialog {
             defaultFoundBg;
     private JCheckBox chkConfirmBeforeDelete, chkConfirmBeforeMoveOrCopy, chkShowHiddenFilesByDefault, chkFirstFileBrowserView,
             chkUseSudo, chkPromptForSudo, chkTransferTemporaryDirectory,
-            chkDirectoryCache, chkShowPathBar, chkConfirmBeforeTerminalClosing, chkShowMessagePrompt, chkStartMaximized,
+            chkDirectoryCache, chkShowPathBar, chkConfirmBeforeTerminalClosing, chkShowMessagePrompt, chkStartMaximized, chkShowActualDateOnlyHour,
             chkUseGlobalDarkTheme, spConnectionKeepAlive;
     private KeyShortcutComponent[] kcc;
     private JCheckBox chkLogWrap;
@@ -56,13 +58,37 @@ public class SettingsDialog extends JDialog {
     private JSpinner spSysLoadInterval;
     private JComboBox<Constants.TransferMode> cmbTransferMode;
     private JComboBox<Constants.ConflictAction> cmbConflictAction;
-    private Color defaultForegroundColor = Color.gray;
+    private Color defaultForegroundColor = new Color(211,211,211);
     private JTable editorTable;
     private JCheckBox chkUseManualScaling;
     private JSpinner spScaleValue;
 
     private JCheckBox chkUseMasterPassword;
     private JButton btnChangeMasterPassword;
+
+    public Color[] getIndexColors() {
+          return new Color[]{
+              new Color(0x000000), //Black
+              new Color(0xcd0000), //Red 
+              new Color(0x00cd00), //Green
+              new Color(0xcdcd00), //Yellow
+              new Color(0x1e90ff), //Blue 
+              new Color(0xcd00cd), //Magenta
+              new Color(0x00cdcd), //Cyan
+              new Color(0xe5e5e5), //White
+              //Bright versions of the ISO colors
+              new Color(0x4c4c4c), //Black 
+              new Color(0xff0000), //Red
+              new Color(0x00ff00), //Green
+              new Color(0xffff00), //Yellow
+              new Color(0x4682b4), //Blue
+              new Color(0xff00ff), //Magenta
+              new Color(0x00ffff), //Cyan
+              new Color(0xffffff), //White
+          };
+         
+      };
+
 
     /**
      *
@@ -106,23 +132,19 @@ public class SettingsDialog extends JDialog {
 
         JScrollPane scrollPane = new SkinnedScrollPane(navList);
         scrollPane.setPreferredSize(new Dimension(150, 200));
-        scrollPane.setBorder(new MatteBorder(0, 0, 0, 1, App.SKIN.getDefaultBorderColor()));
+        scrollPane.setBorder(new MatteBorder(0, 0, 0, 1, App.skin.getDefaultBorderColor()));
 
         Box bottomBox = Box.createHorizontalBox();
-        bottomBox.setBorder(new CompoundBorder(new MatteBorder(1, 0, 0, 0, App.SKIN.getDefaultBorderColor()),
+        bottomBox.setBorder(new CompoundBorder(new MatteBorder(1, 0, 0, 0, App.skin.getDefaultBorderColor()),
                 new EmptyBorder(10, 10, 10, 10)));
 
         btnCancel = new JButton(App.bundle.getString("cancel"));
         btnSave = new JButton(App.bundle.getString("save"));
         btnReset = new JButton(App.bundle.getString("reset"));
 
-        btnSave.addActionListener(e -> {
-            applySettings();
-        });
+        btnSave.addActionListener(e -> applySettings());
 
-        btnCancel.addActionListener(e -> {
-            super.setVisible(false);
-        });
+        btnCancel.addActionListener(e -> super.setVisible(false));
 
         btnReset.addActionListener(e -> {
             loadSettings(new Settings());
@@ -165,7 +187,7 @@ public class SettingsDialog extends JDialog {
 
     private JLabel createTitleLabel(String text) {
         JLabel lblText = new JLabel(text);
-        lblText.setFont(App.SKIN.getDefaultFont().deriveFont(14.0f));
+        lblText.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
         lblText.setAlignmentX(Box.LEFT_ALIGNMENT);
         return lblText;
     }
@@ -249,15 +271,22 @@ public class SettingsDialog extends JDialog {
 
         cmbTermTheme.addActionListener(e -> {
             int index = cmbTermTheme.getSelectedIndex();
+
             TerminalTheme theme = cmbTermTheme.getItemAt(index);
-            defaultColorFg.setColor(theme.getDefaultStyle().getForeground().toAwtColor());
-            defaultColorBg.setColor(theme.getDefaultStyle().getBackground().toAwtColor());
+            
+            defaultColorFg
+            .setColor(theme
+                .getDefaultStyle()
+                .getForeground()
+                .toColor()
+            );
+            defaultColorBg.setColor(theme.getDefaultStyle().getBackground().toColor());
 
-            defaultSelectionFg.setColor(theme.getSelectionColor().getForeground().toAwtColor());
-            defaultSelectionBg.setColor(theme.getSelectionColor().getBackground().toAwtColor());
+            defaultSelectionFg.setColor(theme.getSelectionColor().getForeground().toColor());
+            defaultSelectionBg.setColor(theme.getSelectionColor().getBackground().toColor());
 
-            defaultFoundFg.setColor(theme.getFoundPatternColor().getForeground().toAwtColor());
-            defaultFoundBg.setColor(theme.getFoundPatternColor().getBackground().toAwtColor());
+            defaultFoundFg.setColor(theme.getFoundPatternColor().getForeground().toColor());
+            defaultFoundBg.setColor(theme.getFoundPatternColor().getBackground().toColor());
         });
 
         paletteButtons = new ColorSelectorButton[16];
@@ -276,8 +305,9 @@ public class SettingsDialog extends JDialog {
             int index = cmbTermPalette.getSelectedIndex();
             if (index == 2)
                 return;
-            ColorPalette palette = index == 0 ? ColorPalette.XTERM_PALETTE : ColorPalette.WINDOWS_PALETTE;
-            Color[] colors = palette.getIndexColors();
+            // ColorPalette palette = index == 0 ? this.XTERM_PALETTE : this.WINDOWS_PALETTE;
+             //Color[] colors = palette.getIndexColors();
+             Color[] colors = this.getIndexColors();
             for (int i = 0; i < paletteButtons.length; i++) {
                 paletteButtons[i].setColor(colors[i]);
             }
@@ -385,14 +415,14 @@ public class SettingsDialog extends JDialog {
 
         return new SkinnedScrollPane(panelBuffered);
     }
-
+    
     public SkinnedScrollPane createGeneralPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
         chkConfirmBeforeDelete = new JCheckBox(App.bundle.getString("confirm_delete_files"));
         chkConfirmBeforeMoveOrCopy = new JCheckBox(App.bundle.getString("confirm_move_files"));
         chkShowHiddenFilesByDefault = new JCheckBox(App.bundle.getString("show_hidden_files"));
-        chkFirstFileBrowserView = new JCheckBox(App.bundle.getString("show_filebrowser_first")); //todo devlinx9
+        chkFirstFileBrowserView = new JCheckBox(App.bundle.getString("show_filebrowser_first"));
         chkPromptForSudo = new JCheckBox(App.bundle.getString("prompt_for_sudo"));
         chkUseSudo = new JCheckBox(App.bundle.getString("use_sudo_if_fails"));
         chkTransferTemporaryDirectory = new JCheckBox(App.bundle.getString("transfer_temporary_directory"));
@@ -401,6 +431,7 @@ public class SettingsDialog extends JDialog {
         chkShowMessagePrompt = new JCheckBox(App.bundle.getString("show_banner"));
 
         chkStartMaximized = new JCheckBox(App.bundle.getString("start_maximized"));
+        chkShowActualDateOnlyHour = new JCheckBox("show actual date in hours"); //TODO devlinx9
 
         chkLogWrap = new JCheckBox(App.bundle.getString("word_wrap"));
         spLogLinesPerPage = new JSpinner(new SpinnerNumberModel(50, 10, 500, 1));
@@ -444,6 +475,7 @@ public class SettingsDialog extends JDialog {
         chkShowMessagePrompt.setAlignmentX(Box.LEFT_ALIGNMENT);
 
         chkStartMaximized.setAlignmentX(Box.LEFT_ALIGNMENT);
+        chkShowActualDateOnlyHour.setAlignmentX(Box.LEFT_ALIGNMENT);
 
         chkLogWrap.setAlignmentX(Box.LEFT_ALIGNMENT);
         spLogLinesPerPage.setAlignmentX(Box.LEFT_ALIGNMENT);
@@ -474,9 +506,13 @@ public class SettingsDialog extends JDialog {
         vbox.add(Box.createRigidArea(new Dimension(10, 20)));
         vbox.add(chkStartMaximized);
         vbox.add(Box.createRigidArea(new Dimension(10, 20)));
+        vbox.add(chkShowActualDateOnlyHour);
+        vbox.add(Box.createRigidArea(new Dimension(10, 20)));
 
-        JLabel lbl0 = new JLabel(App.bundle.getString("log_viewer_lines")), lbl1 = new JLabel(App.bundle.getString("connection_timeout")), lbl2 = new JLabel(App.bundle.getString("log_viewer_font_size")),
-                lbl3 = new JLabel(App.bundle.getString("system_refresh_interval"));
+        JLabel lbl0 = new JLabel(App.bundle.getString("log_viewer_lines"));
+        JLabel lbl1 = new JLabel(App.bundle.getString("connection_timeout"));
+        JLabel lbl2 = new JLabel(App.bundle.getString("log_viewer_font_size"));
+        JLabel lbl3 = new JLabel(App.bundle.getString("system_refresh_interval"));
 
         LayoutUtilities.equalizeSize(spLogLinesPerPage, spConnectionTimeout, spLogFontSize, spSysLoadInterval);
 
@@ -560,6 +596,7 @@ public class SettingsDialog extends JDialog {
         settings.setUseGlobalDarkTheme(chkUseGlobalDarkTheme.isSelected());
 
         settings.setStartMaximized(chkStartMaximized.isSelected());
+        settings.setShowActualDateOnlyHour(chkShowActualDateOnlyHour.isSelected());
 
         settings.setConnectionTimeout((Integer) spConnectionTimeout.getValue());
         settings.setConnectionKeepAlive(spConnectionKeepAlive.isSelected());
@@ -602,7 +639,11 @@ public class SettingsDialog extends JDialog {
     }
 
     private void loadSettings(Settings settings) {
-        defaultForegroundColor = this.cmbTermTheme.getForeground();
+
+        java.awt.Color awtColor = this.cmbTermTheme.getForeground();
+        Color jediColor = new com.jediterm.core.Color(awtColor.getRGB());
+       
+        defaultForegroundColor = jediColor ;
         this.chkAudibleBell.setSelected(settings.isTerminalBell());
         this.chkPuttyLikeCopyPaste.setSelected(settings.isPuttyLikeCopyPaste());
 
@@ -634,15 +675,13 @@ public class SettingsDialog extends JDialog {
         chkFirstFileBrowserView.setSelected(settings.isFirstFileBrowserView());
         chkTransferTemporaryDirectory.setSelected(settings.isTransferTemporaryDirectory());
         chkUseSudo.setSelected(settings.isUseSudo());
-        chkUseSudo.addActionListener(e -> {
-            setStatusCheckBox(chkPromptForSudo, chkUseSudo.isSelected());
-        });
+        chkUseSudo.addActionListener(e -> setStatusCheckBox(chkPromptForSudo, chkUseSudo.isSelected()));
         if (settings.isUseSudo()) {
             chkPromptForSudo.setSelected(settings.isPromptForSudo());
         } else {
             chkPromptForSudo.setSelected(false);
             chkPromptForSudo.setEnabled(false);
-            chkPromptForSudo.setForeground(Color.gray);
+            chkPromptForSudo.setForeground(java.awt.Color.gray);
         }
         chkDirectoryCache.setSelected(settings.isDirectoryCache());
         chkShowPathBar.setSelected(settings.isShowPathBar());
@@ -650,6 +689,7 @@ public class SettingsDialog extends JDialog {
         chkUseGlobalDarkTheme.setSelected(settings.isUseGlobalDarkTheme());
 
         chkStartMaximized.setSelected(settings.isStartMaximized());
+        chkShowActualDateOnlyHour.setSelected(settings.isShowActualDateOnlyHour());
 
         spConnectionTimeout.setValue(settings.getConnectionTimeout());
         spConnectionKeepAlive.setSelected(settings.isConnectionKeepAlive());
@@ -844,12 +884,17 @@ public class SettingsDialog extends JDialog {
     private void setStatusCheckBox(JCheckBox jCheckBox, boolean status) {
         if (status) {
             jCheckBox.setEnabled(true);
-            jCheckBox.setForeground(defaultForegroundColor);
+
+            java.awt.Color awtColor = new java.awt.Color(defaultForegroundColor.getRed(), defaultForegroundColor.getGreen(), defaultForegroundColor.getBlue(), defaultForegroundColor.getAlpha());
+
+
+
+            jCheckBox.setForeground(awtColor);
 
         } else {
             jCheckBox.setSelected(false);
             jCheckBox.setEnabled(false);
-            jCheckBox.setForeground(Color.gray);
+            jCheckBox.setForeground(java.awt.Color.gray);
         }
     }
 
@@ -860,7 +905,7 @@ public class SettingsDialog extends JDialog {
          */
         public CellRenderer() {
             setBorder(new EmptyBorder(15, 15, 15, 15));
-            setFont(App.SKIN.getDefaultFont().deriveFont(14.0f));
+            setFont(App.skin.getDefaultFont().deriveFont(14.0f));
             setOpaque(true);
         }
 
@@ -869,11 +914,11 @@ public class SettingsDialog extends JDialog {
                                                       boolean isSelected, boolean cellHasFocus) {
             setText(value);
             if (isSelected) {
-                setBackground(App.SKIN.getDefaultSelectionBackground());
-                setForeground(App.SKIN.getDefaultSelectionForeground());
+                setBackground(App.skin.getDefaultSelectionBackground());
+                setForeground(App.skin.getDefaultSelectionForeground());
             } else {
-                setBackground(App.SKIN.getDefaultBackground());
-                setForeground(App.SKIN.getDefaultForeground());
+                setBackground(App.skin.getDefaultBackground());
+                setForeground(App.skin.getDefaultForeground());
             }
             return this;
         }
