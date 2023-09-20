@@ -57,7 +57,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
             this.channel.allocatePTY(App.getGlobalSettings().getTerminalType(), App.getGlobalSettings().getTermWidth(),
                     App.getGlobalSettings().getTermHeight(), 0, 0, Collections.emptyMap());
             
-            this.channel.reqX11Forwarding("MIT-MAGIC-COOKIE-1", "b0956167c9ad8f34c8a2788878307dc9", 0);
+//            this.channel.reqX11Forwarding("MIT-MAGIC-COOKIE-1", "b0956167c9ad8f34c8a2788878307dc9", 0);
 
             try{
                 this.channel.setEnvVar("LANG", "en_US.UTF-8");

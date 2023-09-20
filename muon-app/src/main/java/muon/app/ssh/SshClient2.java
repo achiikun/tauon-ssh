@@ -7,10 +7,13 @@ import muon.app.App;
 import muon.app.ui.components.SkinnedTextField;
 import muon.app.ui.components.session.HopEntry;
 import muon.app.ui.components.session.SessionInfo;
+import net.schmizz.concurrent.Event;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.channel.Channel;
+import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
 import net.schmizz.sshj.connection.channel.direct.DirectConnection;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
@@ -23,6 +26,8 @@ import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.AuthNone;
+import org.newsclub.net.unix.AFSocketAddress;
+import org.newsclub.net.unix.AFUNIXSocketAddress;
 import util.ExceptionUtils;
 
 import javax.swing.*;
@@ -30,10 +35,8 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
@@ -54,32 +57,32 @@ public class SshClient2 implements Closeable {
     private DefaultConfig defaultConfig;
     private SshClient2 previousHop;
     private ServerSocket ss;
-
+    
     public SshClient2(SessionInfo info, InputBlocker inputBlocker, CachedCredentialProvider cachedCredentialProvider) {
         this.info = info;
         this.inputBlocker = inputBlocker;
         this.cachedCredentialProvider = cachedCredentialProvider;
         passwordFinder = new PasswordFinderDialog(cachedCredentialProvider);
     }
-
+    
     private void setupProxyAndSocketFactory() {
         String proxyHost = info.getProxyHost();
         int proxyType = info.getProxyType();
         String proxyUser = info.getProxyUser();
         String proxyPass = info.getProxyPassword();
         int proxyPort = info.getProxyPort();
-
+        
         Proxy.Type proxyType1 = Proxy.Type.DIRECT;
-
+        
         if (proxyType == 1) {
             proxyType1 = Proxy.Type.HTTP;
         } else if (proxyType > 1) {
             proxyType1 = Proxy.Type.SOCKS;
         }
-
+        
         sshj.setSocketFactory(new CustomSocketFactory(proxyHost, proxyPort, proxyUser, proxyPass, proxyType1));
     }
-
+    
     private void getAuthMethods(AtomicBoolean authenticated, List<String> allowedMethods)
             throws OperationCancelledException {
         System.out.println("Trying to get allowed authentication methods...");
@@ -99,7 +102,7 @@ public class SshClient2 implements Closeable {
             System.out.println("List of allowed authentications: " + allowedMethods);
         }
     }
-
+    
     private void authPublicKey() throws Exception {
         KeyProvider provider = null;
         if (info.getPrivateKeyFile() != null && info.getPrivateKeyFile().length() > 0) {
@@ -110,19 +113,19 @@ public class SshClient2 implements Closeable {
                 System.out.println("Key type: " + provider.getType());
             }
         }
-
+        
         if (closed.get()) {
             disconnect();
             throw new OperationCancelledException();
         }
-
+        
         if (provider == null) {
             throw new Exception("No suitable key providers");
         }
-
+        
         sshj.authPublickey(promptUser(), provider);
     }
-
+    
     private void authPassoword() throws Exception {
         String user = getUser();
         char[] password = getPassword();
@@ -164,7 +167,7 @@ public class SshClient2 implements Closeable {
             }
         }
     }
-
+    
     public void connect() throws IOException, OperationCancelledException {
         Deque<HopEntry> hopStack = new ArrayDeque<>();
         for (HopEntry e : this.info.getJumpHosts()) {
@@ -172,7 +175,61 @@ public class SshClient2 implements Closeable {
         }
         this.connect(hopStack);
     }
-
+    
+    public static class MySocketForwardingConnectListener implements ConnectListener {
+        protected final SocketAddress addr;
+        
+        public MySocketForwardingConnectListener(SocketAddress addr) {
+            this.addr = addr;
+        }
+        
+        public void gotConnect(Channel.Forwarded chan) throws IOException {
+            chan.getLoggerFactory().getLogger(this.getClass()).debug("New connection from {}:{}", chan.getOriginatorIP(), chan.getOriginatorPort());
+            
+            Socket sock;
+            if (addr instanceof AFSocketAddress) {
+                sock = ((AFSocketAddress) addr).getAddressFamily().newSocket();
+            } else {
+                sock = new Socket();
+            }
+            
+            sock.setSendBufferSize(chan.getLocalMaxPacketSize());
+            sock.setReceiveBufferSize(chan.getRemoteMaxPacketSize());
+            sock.connect(this.addr);
+            chan.confirm();
+            
+            Event<IOException> soc2chan = (new StreamCopier(sock.getInputStream(), chan.getOutputStream(), chan.getLoggerFactory())).bufSize(chan.getRemoteMaxPacketSize()).spawnDaemon("soc2chan");
+            Event<IOException> chan2soc = (new StreamCopier(chan.getInputStream(), sock.getOutputStream(), chan.getLoggerFactory())).bufSize(chan.getLocalMaxPacketSize()).spawnDaemon("chan2soc");
+            SocketStreamCopyMonitor.monitor(5, TimeUnit.SECONDS, chan2soc, soc2chan, chan, sock);
+        }
+    }
+    
+    public static SocketAddress socketAddress(String socketName) throws IOException {
+        if (socketName.startsWith("file:")) {
+            // demo only: assume file: URLs are always handled by AFUNIXSocketAddress
+            return AFUNIXSocketAddress.of(URI.create(socketName));
+        } else if (socketName.contains(":/")) {
+            // assume URI, e.g., unix:// or tipc://
+            return AFSocketAddress.of(URI.create(socketName));
+        }
+        
+        int colon = socketName.lastIndexOf(':');
+        int slashOrBackslash = Math.max(socketName.lastIndexOf('/'), socketName.lastIndexOf('\\'));
+        
+        if (socketName.startsWith("@")) {
+            // abstract namespace (Linux only!)
+            return AFUNIXSocketAddress.inAbstractNamespace(socketName.substring(1));
+        } else if (colon > 0 && slashOrBackslash < colon && !socketName.startsWith("/")) {
+            // assume TCP socket
+            String hostname = socketName.substring(0, colon);
+            int port = Integer.parseInt(socketName.substring(colon + 1));
+            return new InetSocketAddress(hostname, port);
+        } else {
+            // assume unix socket file name
+            return AFUNIXSocketAddress.of(new File(socketName));
+        }
+    }
+    
     private void connect(Deque<HopEntry> hopStack) throws IOException, OperationCancelledException {
         if (closed.get()) {
             disconnect();
@@ -192,7 +249,7 @@ public class SshClient2 implements Closeable {
                 userCancelled.set(true);
                 closed.set(true);
                 condition.signalAll();
-            }finally {
+            } finally {
                 lock.unlock();
             }
         });
@@ -206,7 +263,23 @@ public class SshClient2 implements Closeable {
                     defaultConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
                 }
                 this.sshj = new SSHClient(defaultConfig);
-                sshj.registerX11Forwarder(new SocketForwardingConnectListener(new InetSocketAddress("localhost", 6000)));
+                
+                if(info.isXForwardingEnabled()){
+                    
+                    if (App.IS_LINUX) {
+                        sshj.registerX11Forwarder(new MySocketForwardingConnectListener(
+                                socketAddress("/tmp/.X11-unix/X0")
+                        ));
+                    } else {
+                        
+                        sshj.registerX11Forwarder(new SocketForwardingConnectListener(
+//                        UnixDomainSocketAddress.of("/tmp/.X11-unix/X0")
+                                new InetSocketAddress("localhost", 6000)
+                        ));
+                        
+                    }
+                    
+                }
                 
                 this.sshj.setConnectTimeout(CONNECTION_TIMEOUT);
                 this.sshj.setTimeout(CONNECTION_TIMEOUT);
@@ -322,12 +395,12 @@ public class SshClient2 implements Closeable {
                     }
                 }
                 throw ExceptionUtils.sneakyThrow(e);
-            }finally {
+            } finally {
                 lock.lock();
-                try{
+                try {
                     isFinished.set(true);
                     condition.signalAll();
-                }finally {
+                } finally {
                     lock.unlock();
                 }
             }
@@ -338,10 +411,10 @@ public class SshClient2 implements Closeable {
         
         thread.setUncaughtExceptionHandler((thread1, throwable) -> {
             lock.lock();
-            try{
+            try {
                 exception.set(throwable);
                 condition.signalAll();
-            }finally {
+            } finally {
                 lock.unlock();
             }
         });
@@ -349,17 +422,17 @@ public class SshClient2 implements Closeable {
         thread.start();
         
         lock.lock();
-        try{
+        try {
             
-            while (!isFinished.get() && thread.isAlive() && !userCancelled.get()){
+            while (!isFinished.get() && thread.isAlive() && !userCancelled.get()) {
                 condition.await();
             }
             
             Throwable throwable = exception.get();
-            if(throwable != null)
+            if (throwable != null)
                 throw ExceptionUtils.sneakyThrow(throwable);
             
-            if(userCancelled.get())
+            if (userCancelled.get())
                 throw new OperationCancelledException();
             
         } catch (InterruptedException e) {
@@ -367,17 +440,17 @@ public class SshClient2 implements Closeable {
         } finally {
             try {
                 this.inputBlocker.unblockInput();
-            }finally {
+            } finally {
                 lock.unlock();
             }
         }
         
     }
-
+    
     private boolean isPasswordSet() {
         return info.getPassword() != null && info.getPassword().length() > 0;
     }
-
+    
     private String getUser() {
         String user = cachedCredentialProvider.getCachedUser();
         if (user == null || user.length() < 1) {
@@ -385,7 +458,7 @@ public class SshClient2 implements Closeable {
         }
         return user;
     }
-
+    
     private char[] getPassword() {
         char[] password = cachedCredentialProvider.getCachedPassword();
         if (password == null && (this.info.getPassword() != null && this.info.getPassword().length() > 0)) {
@@ -393,7 +466,7 @@ public class SshClient2 implements Closeable {
         }
         return password;
     }
-
+    
     private String promptUser() {
         String user = getUser();
         if (user == null || user.isEmpty()) {
@@ -411,24 +484,39 @@ public class SshClient2 implements Closeable {
         }
         return user;
     }
-
+    
     public Session openSession() throws Exception {
         if (closed.get()) {
             disconnect();
             throw new IOException("Closed by user");
         }
         Session session = sshj.startSession();
+        
+        Random r = new Random();
+        StringBuilder faker = new StringBuilder();
+        for (int i = 0; i < 32; i++) {
+            int n = r.nextInt(16);
+            if(n < 10)
+                faker.append(n);
+            else
+                faker.append((char)('a' + (char)(n-10)));
+        }
+        
+        if(info.isXForwardingEnabled()) {
+            session.reqX11Forwarding("MIT-MAGIC-COOKIE-1", faker.toString(), 0);
+        }
+        
         if (closed.get()) {
             disconnect();
             throw new IOException("Closed by user");
         }
         return session;
     }
-
+    
     public boolean isConnected() {
         return sshj != null && sshj.isConnected();
     }
-
+    
     @Override
     public void close() throws IOException {
         try {
@@ -438,7 +526,7 @@ public class SshClient2 implements Closeable {
             e.printStackTrace();
         }
     }
-
+    
     public void disconnect() {
         // If closed by the user, this method is not executed because this bool is already true
 //        if (closed.get()) {
@@ -466,31 +554,31 @@ public class SshClient2 implements Closeable {
             e.printStackTrace();
         }
     }
-
+    
     @Override
     public String toString() {
         return info.getName();
     }
-
+    
     public SessionInfo getSource() {
         return info;
     }
-
+    
     public SSHClient getSession() {
         return sshj;
     }
-
+    
     public SFTPClient createSftpClient() throws IOException {
         return sshj.newSFTPClient();
     }
-
+    
     /**
      * @return the info
      */
     public SessionInfo getInfo() {
         return info;
     }
-
+    
     // recursively
     private void tunnelThrough(Deque<HopEntry> hopStack) throws Exception {
         HopEntry ent = hopStack.poll();
@@ -503,16 +591,16 @@ public class SshClient2 implements Closeable {
         previousHop = new SshClient2(hopInfo, inputBlocker, cachedCredentialProvider);
         previousHop.connect(hopStack);
     }
-
+    
     private DirectConnection newDirectConnection(String host, int port) throws Exception {
         return sshj.newDirectConnection(host, port);
     }
-
+    
     private void connectViaTcpForwarding() throws Exception {
         this.sshj.connectVia(this.previousHop.newDirectConnection(info.getHost(), info.getPort()), info.getHost(),
                 info.getPort());
     }
-
+    
     private void connectViaPortForwarding() throws Exception {
         ss = new ServerSocket();
         ss.setReuseAddress(true);
@@ -536,17 +624,17 @@ public class SshClient2 implements Closeable {
         }
         this.sshj.connect("127.0.0.1", port);
     }
-
+    
     public LocalPortForwarder newLocalPortForwarder(Parameters parameters, ServerSocket serverSocket) {
         return this.sshj.newLocalPortForwarder(parameters, serverSocket);
     }
-
+    
     @SuppressWarnings("deprecation")
     public RemotePortForwarder getRemotePortForwarder() {
 //        this.sshj.getTransport().setHeartbeatInterval(30);
         return this.sshj.getRemotePortForwarder();
     }
-
+    
     public Transport getTransport() {
         return this.sshj.getTransport();
     }

@@ -1,5 +1,6 @@
 package muon.app.ui.components.session;
 
+import com.intellij.ui.components.JBCheckBox;
 import muon.app.ui.components.SkinnedTextArea;
 import muon.app.ui.components.SkinnedTextField;
 import muon.app.ui.components.TabbedPanel;
@@ -34,7 +35,7 @@ public class SessionInfoPanel extends JPanel {
     private JButton inpKeyBrowse;
     private JButton inpKeyShowPass;
     private JLabel lblHost, lblPort, lblUser, lblPass, lblLocalFolder, lblRemoteFolder, lblKeyFile, lblProxyType,
-            lblProxyHost, lblProxyPort, lblProxyUser, lblProxyPass;
+            lblProxyHost, lblProxyPort, lblProxyUser, lblProxyPass, lblXForwarding;
     private SpinnerNumberModel portModel, proxyPortModel;
     private JComboBox<String> cmbProxy;
     private JTextField inpProxyHostName;
@@ -43,6 +44,7 @@ public class SessionInfoPanel extends JPanel {
     private JPasswordField inpProxyPassword;
     private JCheckBox chkUseJumpHosts;
     private JRadioButton radMultiHopTunnel, radMultiHopPortForwarding;
+    private JCheckBox chkXForwarding;
     private JumpHostPanel panJumpHost;
     private PortForwardingPanel panPF;
     private TabbedPanel tabs;
@@ -85,6 +87,8 @@ public class SessionInfoPanel extends JPanel {
         setUser(info.getUser());
         setPassword(info.getPassword() == null ? new char[0] : info.getPassword().toCharArray());
         setKeyFile(info.getPrivateKeyFile());
+        setXForwardingEnabled(info.isXForwardingEnabled());
+        
         setProxyType(info.getProxyType());
         setProxyHost(info.getProxyHost());
         setProxyPort(info.getProxyPort());
@@ -143,7 +147,11 @@ public class SessionInfoPanel extends JPanel {
     private void setKeyFile(String keyFile) {
         inpKeyFile.setText(keyFile);
     }
-
+    
+    public void setXForwardingEnabled(boolean xForwardingEnabled) {
+        chkXForwarding.setSelected(xForwardingEnabled);
+    }
+    
     private void showError(String msg) {
         JOptionPane.showMessageDialog(this, msg, bundle.getString("error"), JOptionPane.ERROR_MESSAGE);
     }
@@ -579,6 +587,7 @@ public class SessionInfoPanel extends JPanel {
         lblLocalFolder = new JLabel(bundle.getString("local_folder"));
         lblRemoteFolder = new JLabel(bundle.getString("remote_folder"));
         lblKeyFile = new JLabel(bundle.getString("private_key_file"));
+        lblXForwarding = new JLabel(bundle.getString("enable_x11_forwarding"));
 
         inpHostName = new SkinnedTextField(10);
         inpHostName.getDocument().addDocumentListener(new DocumentListener() {
@@ -699,6 +708,9 @@ public class SessionInfoPanel extends JPanel {
                 inpKeyFile.setText(jfc.getSelectedFile().getAbsolutePath());
             }
         });
+        
+        chkXForwarding = new JCheckBox("X11 Forwarding");
+        chkXForwarding.addActionListener(e -> info.setXForwardingEnabled(chkXForwarding.isSelected()));
 
         inpKeyShowPass = new JButton(bundle.getString("show"));
         inpKeyShowPass.addActionListener(e -> {
@@ -793,7 +805,16 @@ public class SessionInfoPanel extends JPanel {
         c.fill = GridBagConstraints.NONE;
         c.insets = new Insets(5, 0, 0, 10);
         panel.add(inpKeyBrowse, c);
-
+        
+        
+        c.gridx = 0;
+        c.gridy = 11;
+        c.ipady = 0;
+        c.gridwidth = 2;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = noInset;
+        panel.add(chkXForwarding, c);
+        
         JPanel panel2 = new JPanel(new BorderLayout());
         c.gridx = 0;
         c.gridy = 11;

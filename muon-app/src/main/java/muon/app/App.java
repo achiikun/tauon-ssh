@@ -48,6 +48,8 @@ public class App {
             .startsWith("mac");
     public static final boolean IS_WINDOWS = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
             .contains("windows");
+    public static final boolean IS_LINUX = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
+            .contains("linux");
     public static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
     public static GraphicalHostKeyVerifier hostKeyVerifier;
     public static ResourceBundle bundle;

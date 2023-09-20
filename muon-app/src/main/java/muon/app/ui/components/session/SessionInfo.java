@@ -23,13 +23,14 @@ public class SessionInfo extends NamedItem implements Serializable {
     private String proxyUser;
     private String proxyPassword;
     private int proxyType = 0;
+    private boolean XForwardingEnabled = false;
     private boolean useJumpHosts = false;
     private JumpType jumpType = JumpType.TcpForwarding;
     private List<HopEntry> jumpHosts = new ArrayList<>();
     private List<PortForwardingRule> portForwardingRules = new ArrayList<>();
 
     private String password;
-
+    
     @Override
     public String toString() {
         return name;
@@ -308,7 +309,15 @@ public class SessionInfo extends NamedItem implements Serializable {
     public void setPortForwardingRules(List<PortForwardingRule> portForwardingRules) {
         this.portForwardingRules = portForwardingRules;
     }
-
+    
+    public boolean isXForwardingEnabled() {
+        return XForwardingEnabled;
+    }
+    
+    public void setXForwardingEnabled(boolean xForwardingEnabled) {
+        this.XForwardingEnabled = xForwardingEnabled;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -319,7 +328,7 @@ public class SessionInfo extends NamedItem implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(host, user, localFolder, remoteFolder, port, favouriteRemoteFolders, favouriteLocalFolders, privateKeyFile, proxyPort, proxyHost, proxyUser, proxyPassword, proxyType, useJumpHosts, jumpType, jumpHosts, portForwardingRules, password);
+        return Objects.hash(host, user, localFolder, remoteFolder, port, favouriteRemoteFolders, favouriteLocalFolders, privateKeyFile, proxyPort, proxyHost, proxyUser, proxyPassword, proxyType, XForwardingEnabled, useJumpHosts, jumpType, jumpHosts, portForwardingRules, password);
     }
     
     public String getSudoPassword() {
