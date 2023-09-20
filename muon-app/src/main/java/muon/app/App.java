@@ -202,6 +202,7 @@ public class App {
             try {
                 settings = objectMapper.readValue(file, new TypeReference<>() {
                 });
+                settings.fillUncompletedMaps();
                 return;
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
@@ -218,6 +219,7 @@ public class App {
             try {
                 settings = objectMapper.readValue(file, new TypeReference<>() {
                 });
+                settings.fillUncompletedMaps();
                 return settings;
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);

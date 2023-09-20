@@ -1661,6 +1661,10 @@ public class TerminalPanel extends JComponent implements TerminalDisplay, Termin
               clearBuffer();
               return true;
             }).withMnemonicKey(KeyEvent.VK_K).withEnabledSupplier(() -> !myTerminalTextBuffer.isUsingAlternateBuffer()).separatorBefore(true),
+            new TerminalAction(mySettingsProvider.getTypeSudoPasswordKeyActionPresentation(), input -> {
+              myTerminalStarter.sendString(mySettingsProvider.getSudoPassword(), true);
+              return true;
+            }).withMnemonicKey(KeyEvent.VK_P).withEnabledSupplier(() -> getClipboardString() != null),
             new TerminalAction(mySettingsProvider.getPageUpActionPresentation(), input -> {
               pageUp();
               return true;

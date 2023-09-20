@@ -27,27 +27,19 @@ public class DefaultSettingsProvider implements SettingsProvider {
 
   @Override
   public @NotNull TerminalActionPresentation getCopyActionPresentation() {
-    KeyStroke keyStroke = UIUtil.isMac
-      ? KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.META_DOWN_MASK)
-      // CTRL + C is used for signal; use CTRL + SHIFT + C instead
-      : KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
+    KeyStroke[] keyStroke = getCopyKeyStrokes();
     return new TerminalActionPresentation("Copy", keyStroke);
   }
 
   @Override
   public @NotNull TerminalActionPresentation getPasteActionPresentation() {
-    KeyStroke keyStroke = UIUtil.isMac
-      ? KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.META_DOWN_MASK)
-      // CTRL + V is used for signal; use CTRL + SHIFT + V instead
-      : KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
+    KeyStroke[] keyStroke = getPasteKeyStrokes();
     return new TerminalActionPresentation("Paste", keyStroke);
   }
 
   @Override
   public @NotNull TerminalActionPresentation getClearBufferActionPresentation() {
-    return new TerminalActionPresentation("Clear Buffer", UIUtil.isMac
-      ? KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.META_DOWN_MASK)
-      : KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK));
+    return new TerminalActionPresentation("Clear Buffer", getClearBufferKeyStrokes());
   }
 
   @Override
@@ -63,11 +55,8 @@ public class DefaultSettingsProvider implements SettingsProvider {
   }
   
   @Override
-  public KeyStroke[] getTypeSudoPasswordKeyStrokes() {
-    return new KeyStroke[]{UIUtil.isMac
-            ? KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.META_DOWN_MASK)
-            // use CTRL + SHIFT + SPACE
-            : KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)};
+  public @NotNull TerminalActionPresentation getTypeSudoPasswordKeyActionPresentation() {
+    return new TerminalActionPresentation("Type SUDO Password", getTypeSudoPasswordKeyStrokes());
   }
   
   @Override
@@ -86,14 +75,52 @@ public class DefaultSettingsProvider implements SettingsProvider {
 
   @Override
   public @NotNull TerminalActionPresentation getFindActionPresentation() {
-    return new TerminalActionPresentation("Find", UIUtil.isMac
-      ? KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.META_DOWN_MASK)
-      : KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+    return new TerminalActionPresentation("Find", getFindKeyStrokes());
   }
 
   @Override
   public @NotNull TerminalActionPresentation getSelectAllActionPresentation() {
     return new TerminalActionPresentation("Select All", Collections.emptyList());
+  }
+  
+  public KeyStroke[] getCopyKeyStrokes() {
+    return new KeyStroke[]{
+            UIUtil.isMac
+                    ? KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.META_DOWN_MASK)
+                    // CTRL + C is used for signal; use CTRL + SHIFT + C instead
+                    : KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)
+    };
+  }
+  
+  
+  public KeyStroke[] getPasteKeyStrokes() {
+    return new KeyStroke[]{UIUtil.isMac
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.META_DOWN_MASK)
+            // CTRL + V is used for signal; use CTRL + SHIFT + V instead
+            : KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)
+    };
+  }
+  
+  
+  public KeyStroke[] getClearBufferKeyStrokes() {
+    return new KeyStroke[]{UIUtil.isMac
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.META_DOWN_MASK)
+            : KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK)};
+  }
+  
+  
+  public KeyStroke[] getFindKeyStrokes() {
+    return new KeyStroke[]{UIUtil.isMac
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.META_DOWN_MASK)
+            : KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK)
+    };
+  }
+  
+  public KeyStroke[] getTypeSudoPasswordKeyStrokes() {
+    return new KeyStroke[]{UIUtil.isMac
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.META_DOWN_MASK)
+            // use CTRL + SHIFT + SPACE
+            : KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)};
   }
   
   @Override

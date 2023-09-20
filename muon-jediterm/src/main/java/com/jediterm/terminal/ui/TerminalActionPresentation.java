@@ -3,6 +3,7 @@ package com.jediterm.terminal.ui;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,6 +13,10 @@ public class TerminalActionPresentation {
 
   public TerminalActionPresentation(@NotNull String name, @NotNull KeyStroke keyStroke) {
     this(name, Collections.singletonList(keyStroke));
+  }
+  
+  public TerminalActionPresentation(@NotNull String name, @NotNull KeyStroke[] keyStroke) {
+    this(name, Arrays.asList(keyStroke));
   }
 
   public TerminalActionPresentation(@NotNull String name, @NotNull List<KeyStroke> keyStrokes) {

@@ -676,6 +676,8 @@ public class Settings {
     public void setFirstFileBrowserView(boolean firstFileBrowserView) {
         this.firstFileBrowserView = firstFileBrowserView;
     }
+    
+    
 
     @JsonSetter("fileTransferMode")
     public void setOldFileTransferMode(String s) {
@@ -713,5 +715,12 @@ public class Settings {
 
     public void setConnectionTimeout(int connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+    
+    public void fillUncompletedMaps() {
+        Settings defaultSettings = new Settings();
+        
+        defaultSettings.keyCodeMap.forEach((k, v) -> keyCodeMap.putIfAbsent(k, v));
+        defaultSettings.keyModifierMap.forEach((k, v) -> keyModifierMap.putIfAbsent(k, v));
     }
 }

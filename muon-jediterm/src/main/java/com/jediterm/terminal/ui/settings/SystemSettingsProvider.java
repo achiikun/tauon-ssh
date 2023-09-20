@@ -23,10 +23,8 @@ public interface SystemSettingsProvider {
   @NotNull TerminalActionPresentation getFindActionPresentation();
 
   @NotNull TerminalActionPresentation getSelectAllActionPresentation();
-
-  KeyStroke[] getLineDownKeyStrokes();
   
-  KeyStroke[] getTypeSudoPasswordKeyStrokes();
+  @NotNull TerminalActionPresentation getTypeSudoPasswordKeyActionPresentation();
   
   String getSudoPassword();
   

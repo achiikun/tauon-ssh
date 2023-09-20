@@ -7,6 +7,7 @@ import com.jediterm.terminal.TerminalColor;
 import com.jediterm.terminal.TextStyle;
 import com.jediterm.terminal.emulator.ColorPalette;
 import com.jediterm.terminal.emulator.ColorPaletteImpl;
+import com.jediterm.terminal.ui.TerminalActionPresentation;
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider;
 import muon.app.App;
 import muon.app.Settings;
@@ -165,8 +166,7 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
         return new KeyStroke[]{getKeyStroke(Settings.FIND_KEY)};
     }
     
-    @Override
-    public KeyStroke[] getTypeSudoPasswordKeyStrokes() {
+    public KeyStroke[] getTypeSudoPasswordKeyKeyStrokes() {
         return new KeyStroke[]{getKeyStroke(Settings.TYPE_SUDO_PASSWORD)};
     }
     
