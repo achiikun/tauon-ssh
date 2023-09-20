@@ -3,6 +3,7 @@
  */
 package muon.app.ssh;
 
+import muon.app.App;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
 
@@ -32,7 +33,7 @@ public class PasswordFinderDialog implements PasswordFinder {
         }
         firstAttempt.set(false);
         JPasswordField txtPass = new JPasswordField();
-        JCheckBox chkUseCache = new JCheckBox("Remember for this session");
+        JCheckBox chkUseCache = new JCheckBox(App.bundle.getString("remember_session"));
 
         int ret = JOptionPane.showOptionDialog(null,
                 new Object[]{resource!=null?resource.toString(): "Private key passphrase:", txtPass, chkUseCache},

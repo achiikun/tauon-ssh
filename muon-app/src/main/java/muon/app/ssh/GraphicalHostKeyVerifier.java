@@ -17,10 +17,7 @@ import java.security.PublicKey;
  *
  */
 public class GraphicalHostKeyVerifier extends OpenSSHKnownHosts {
-    /**
-     * @throws IOException
-     *
-     */
+
     public GraphicalHostKeyVerifier(File knownHostFile) throws IOException {
         super(knownHostFile);
     }
@@ -31,8 +28,8 @@ public class GraphicalHostKeyVerifier extends OpenSSHKnownHosts {
 
         int resp = JOptionPane.showConfirmDialog(null,
                 String.format(
-                        "The authenticity of host '%s' can't be established.\n"
-                                + "%s key fingerprint is %s.\nAre you sure you want to continue connecting (yes/no)?",
+                        "The authenticity of host '%s' can't be established.%n"
+                                + "%s key fingerprint is %s.%nAre you sure you want to continue connecting (yes/no)?",
                         hostname, type, SecurityUtils.getFingerprint(key)));
 
         if (resp == JOptionPane.YES_OPTION) {
@@ -51,15 +48,14 @@ public class GraphicalHostKeyVerifier extends OpenSSHKnownHosts {
     protected boolean hostKeyChangedAction(String hostname, PublicKey key) {
         final KeyType type = KeyType.fromKey(key);
         final String fp = SecurityUtils.getFingerprint(key);
-        final String path = getFile().getAbsolutePath();
-        String msg = String.format("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"
-                + "@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @\n"
-                + "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"
-                + "IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!\n"
-                + "Someone could be eavesdropping on you right now (man-in-the-middle attack)!\n"
-                + "It is also possible that the host key has just been changed.\n"
-                + "The fingerprint for the %s key sent by the remote host is\n" + "%s.\n"
-                + "Do you still want to connect to this server?", type, fp, path);
+        String msg = String.format("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%n"
+                + "@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @%n"
+                + "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%n"
+                + "IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!%n"
+                + "Someone could be eavesdropping on you right now (man-in-the-middle attack)!%n"
+                + "It is also possible that the host key has just been changed.%n"
+                + "The fingerprint for the %s key sent by the remote host is%n" + "%s . %n"
+                + "Do you still want to connect to this server?", type, fp);
         return JOptionPane.showConfirmDialog(null, msg) == JOptionPane.YES_OPTION;
     }
 

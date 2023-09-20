@@ -1,6 +1,7 @@
 package util;
 
 public class PathUtils {
+    private PathUtils(){}
     public static String combineUnix(String path1, String path2) {
         return combine(path1, path2, "/");
     }

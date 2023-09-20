@@ -49,6 +49,9 @@ public class JediTermWidget extends JPanel
 	private final TextProcessing myTextProcessing;
 	private final List<TerminalWidgetListener> myListeners = new CopyOnWriteArrayList<>();
 
+	public static Dimension actualDimension = new Dimension(80,24);
+
+
 	public JediTermWidget(SettingsProvider settingsProvider) {
 		this(80, 24, settingsProvider);
 	}

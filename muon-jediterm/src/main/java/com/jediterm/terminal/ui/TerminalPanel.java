@@ -13,9 +13,7 @@ import com.jediterm.terminal.model.hyperlinks.LinkInfo;
 import com.jediterm.terminal.ui.settings.SettingsProvider;
 import com.jediterm.terminal.util.CharUtils;
 import com.jediterm.terminal.util.Pair;
-
 import muon.terminal.Ascii;
-
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -612,8 +610,11 @@ public class TerminalPanel extends JComponent
 	private void sizeTerminalFromComponent() {
 		if (myTerminalStarter != null) {
 			Dimension newSize = getTerminalSizeFromComponent();
-			if (newSize != null) {
+			if (newSize != null ) {
 				myTerminalStarter.postResize(newSize, RequestOrigin.User);
+				JediTermWidget.actualDimension = newSize;
+			} else {
+				myTerminalStarter.postResize(JediTermWidget.actualDimension, RequestOrigin.User);
 			}
 		}
 	}

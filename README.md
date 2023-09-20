@@ -11,11 +11,8 @@ Easy and fun way to work with remote servers over SSH.
 
 This project is being renamed as previous name "Snowflake" is confusing since there is already a popular product with the same name.
 
-
 Muon is a graphical SSH client. It has a enhanced SFTP file browser, SSH terminal emulator, remote resource/process manager, server disk space analyzer, remote text editor, huge remote log viewer and lots of other helpful tools, which makes it easy to work with remote servers. Muon provides functionality similar to web based control panels but, it works over SSH from local computer, hence no installation required on server. It runs on Linux and Windows.
-Muon has been tested with serveral Linux and UNIX servers, like Ubuntu server, CentOS, RHEL, OpenSUSE, FreeBSD, OpenBSD, NetBSD and HP-UX.
-
-
+Muon has been tested with several Linux and UNIX servers, like Ubuntu server, CentOS, RHEL, OpenSUSE, FreeBSD, OpenBSD, NetBSD and HP-UX.
 
 [![IMAGE ALT TEXT](https://raw.githubusercontent.com/subhra74/snowflake-screenshots/master/Capture32.PNG)](https://youtu.be/G2qHZ2NodeM "View on YouTube")
 
@@ -129,7 +126,6 @@ Muon has been tested with serveral Linux and UNIX servers, like Ubuntu server, C
 <b>* You must have Java 11 installed minimum</b>
 </p>
 
-
 <h2>Building from source:</h2>
 <pre> This is a standard maven project. If you have configured Java and Maven use: 
  <b>mvn clean install</b> to build the project.
@@ -151,8 +147,6 @@ Muon has been tested with serveral Linux and UNIX servers, like Ubuntu server, C
   <li>Network tools</li>
   <li>MultiLanguage Support</li>
 </ul>
-
-
 
 <h2>Documentation:</h2>
 
