@@ -1,4 +1,4 @@
-# Muon SSH Terminal/SFTP client ( Formerly Snowflake ) ![Java CI](https://github.com/subhra74/snowflake/workflows/Java%20CI/badge.svg?branch=master) [![Github All Releases](https://img.shields.io/github/downloads/subhra74/snowflake/total.svg)]()
+# Muon SSH Terminal/SFTP client ( Formerly Snowflake )
 
 Easy and fun way to work with remote servers over SSH.
 
@@ -19,11 +19,9 @@ Muon has been tested with several Linux and UNIX servers, like Ubuntu server, Ce
 
 This fork is intended for developing features I find intresting and/or I need for my own.
 On Windows I used MobaXTerm but I'm now on Linux and Muon is the only application
-with the power to become a competitive good open source SSH client for linux in this case.
-I know it lacks a lot of features, like X-forwarding,
-more terminal buffer or a log viewer capable of reading from a stream (journalctl)
-and understanding of fields. So I will be developing in this repository without garantee
-and always for my own interest, I don't even try to make pull requests to the upstream repo
+with the power to become a competitive good open source SSH client for linux in this case. 
+I will be developing in this repository without guarantee
+and always for my own interest, I don't even try to make pull requests to the upstream repo,
 although I recognize the great job done in that repo.
 
 <h2>Building from source:</h2>
@@ -39,7 +37,7 @@ although I recognize the great job done in that repo.
 * Simply view and search huge log/text files in a jiffy
 * Fast powerful file and content search, powered by find command
 * Built in terminal and command snippet
-* Fully equiped task manager
+* Fully equipped task manager
 * Built in graphical disk space analyzer
 * Linux specific tools
 * Manage SSH keys easily
