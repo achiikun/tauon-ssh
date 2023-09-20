@@ -38,7 +38,7 @@ public class Settings {
     private boolean showPathBar = true;
     private boolean useDarkThemeForTerminal = false;
     private boolean showMessagePrompt = false;
-    private boolean useGlobalDarkTheme = true;
+    private boolean useGlobalDarkTheme = false;
     private int connectionTimeout = 60;
     private boolean connectionKeepAlive = false;
     private int logViewerFont = 14;
@@ -668,7 +668,15 @@ public class Settings {
     public void setFirstFileBrowserView(boolean firstFileBrowserView) {
         this.firstFileBrowserView = firstFileBrowserView;
     }
-
+    
+    public void setShowActualDateOnlyHour(boolean showActualDateOnlyHour) {
+        this.showActualDateOnlyHour = showActualDateOnlyHour;
+    }
+    
+    public boolean isShowActualDateOnlyHour() {
+        return showActualDateOnlyHour;
+    }
+    
     @JsonSetter("fileTransferMode")
     public void setOldFileTransferMode(String s) {
         if (s == null) {
@@ -705,5 +713,12 @@ public class Settings {
 
     public void setConnectionTimeout(int connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+    }
+    
+    public void fillUncompletedMaps() {
+        Settings defaultSettings = new Settings();
+        
+        defaultSettings.keyCodeMap.forEach((k, v) -> keyCodeMap.putIfAbsent(k, v));
+        defaultSettings.keyModifierMap.forEach((k, v) -> keyModifierMap.putIfAbsent(k, v));
     }
 }

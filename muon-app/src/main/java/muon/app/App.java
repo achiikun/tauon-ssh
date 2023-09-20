@@ -57,7 +57,7 @@ public class App {
     public static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
     public static GraphicalHostKeyVerifier HOST_KEY_VERIFIER;
     public static ResourceBundle bundle;
-    public static AppSkin SKIN;
+    public static AppSkin skin;
     private static Settings settings;
     private static InputBlocker inputBlocker;
     private static ExternalEditorHandler externalEditorHandler;
@@ -125,9 +125,9 @@ public class App {
 
 
 
-        SKIN = settings.isUseGlobalDarkTheme() ? new AppSkinDark() : new AppSkinLight();
+        skin = settings.isUseGlobalDarkTheme() ? new AppSkinDark() : new AppSkinLight();
 
-        UIManager.setLookAndFeel(SKIN.getLaf());
+        UIManager.setLookAndFeel(skin.getLaf());
 
         try {
             int maxKeySize = javax.crypto.Cipher.getMaxAllowedKeyLength("AES");
@@ -175,6 +175,7 @@ public class App {
             try {
                 settings = objectMapper.readValue(file, new TypeReference<Settings>() {
                 });
+                settings.fillUncompletedMaps();
                 return;
             } catch (IOException e) {
                 e.printStackTrace();
