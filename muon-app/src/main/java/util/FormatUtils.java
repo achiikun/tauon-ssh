@@ -33,10 +33,10 @@ public class FormatUtils {
                             .toInstant());
 
             if (FMT.format(actualDate).equals(FMT.format(objectDate))) {
-                return dateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+                return dateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
             }
         }
 
-        return dateTime.format(DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm"));
+        return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 }

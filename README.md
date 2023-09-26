@@ -62,6 +62,7 @@ although I recognize the great job done in that repo.
 * [x] Combination of keys to avoid inserting sudo password every time
 * [x] X11 Forwarding
 * [X] Bug: Session manager showed in primary screen instead of main window screen
+* [X] Dates in ISO format
 * [ ] Bug: Sometimes when shell is present, no cursor is blinking (After reconnecting, cursor disappears)
 * [ ] Swing File Picker sucks, change it to native
 * [ ] Refresh window after copying files
@@ -71,7 +72,6 @@ although I recognize the great job done in that repo.
 * [ ] Move an item to a folder in the same window
 * [ ] Open the program in the last location, or in the active screen if multiple
 * [ ] Copy PID from processes
-* [ ] Dates in ISO format
 * [ ] When a port forwarding fails, notify to the user
 
 **Here goes new features**
