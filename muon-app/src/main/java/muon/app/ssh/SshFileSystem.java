@@ -41,6 +41,7 @@ public class SshFileSystem implements FileSystem {
         }
         if (sftp == null) {
             this.sftp = ssh.createSftpClient();
+            this.sftp.getSFTPEngine().setTimeoutMs(ssh.getSession().getTimeout());
             this.sftp.getSFTPEngine().getSubsystem().setAutoExpand(true);
         }
     }
@@ -169,6 +170,7 @@ public class SshFileSystem implements FileSystem {
                 if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
                     throw new AccessDeniedException(path);
                 }
+                throw new IOException(e);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new IOException(e);

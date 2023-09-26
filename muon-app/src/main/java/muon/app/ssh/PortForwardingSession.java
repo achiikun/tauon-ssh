@@ -61,12 +61,14 @@ public class PortForwardingSession {
                     try {
                         forwardLocalPort(r);
                     } catch (Exception e) {
+                        // TODO make it know to the user
                         e.printStackTrace();
                     }
                 } else if (r.getType() == PortForwardingType.Remote) {
                     try {
                         forwardRemotePort(r);
                     } catch (Exception e) {
+                        // TODO make it know to the user
                         e.printStackTrace();
                     }
                 }

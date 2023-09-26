@@ -61,16 +61,19 @@ although I recognize the great job done in that repo.
 * [x] Add a cancel button to the dialog
 * [x] Combination of keys to avoid inserting sudo password every time
 * [x] X11 Forwarding
+* [ ] Bug: Sometimes when shell is present, no cursor is blinking
 * [ ] Swing File Picker sucks, change it to native
 * [ ] Refresh window after copying files
 * [ ] Don't blink the screen every time a folder is updated
 * [ ] Add a box to query what happens when copying a file that exists
-* [ ] Dialogs are always shown in the primary screen when more than one screen exist
+* [ ] Bug: Dialogs are always shown in the primary screen when more than one screen exist
 * [ ] Bug: After reconnecting, cursor disappears
 * [ ] When hit a CTRL+C, flush console buffer to receive the prompt ASAP 
 * [ ] Move an item to a folder in the same window
 * [ ] Open the program in the last location, or in the active screen if multiple
 * [ ] Copy PID from processes
+* [ ] Dates in ISO format
+* [ ] When a port forwarding fails, notify to the user
 
 **Here goes new features**
 

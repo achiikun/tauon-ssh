@@ -47,7 +47,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author subhro
  */
 public class SshClient2 implements Closeable {
-    private static final int CONNECTION_TIMEOUT = App.getGlobalSettings().getConnectionTimeout() * 1000;
+//    private static final int CONNECTION_TIMEOUT = App.getGlobalSettings().getConnectionTimeout() * 1000;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final SessionInfo info;
     private final PasswordFinderDialog passwordFinder;
@@ -281,8 +281,8 @@ public class SshClient2 implements Closeable {
                     
                 }
                 
-                this.sshj.setConnectTimeout(CONNECTION_TIMEOUT);
-                this.sshj.setTimeout(CONNECTION_TIMEOUT);
+                this.sshj.setConnectTimeout(App.getGlobalSettings().getConnectionTimeout() * 1000);
+                this.sshj.setTimeout(App.getGlobalSettings().getConnectionTimeout() * 1000);
                 if (hopStack.isEmpty()) {
                     this.setupProxyAndSocketFactory();
                     this.sshj.addHostKeyVerifier(App.hostKeyVerifier);

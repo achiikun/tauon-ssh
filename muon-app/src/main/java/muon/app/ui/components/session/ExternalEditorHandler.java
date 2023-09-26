@@ -44,6 +44,7 @@ public class ExternalEditorHandler extends JDialog {
     public ExternalEditorHandler(JFrame frame) {
         super(frame);
         setModal(true);
+        setUndecorated(true);
         this.frame = frame;
         setSize(400, 200);
 
@@ -180,12 +181,14 @@ public class ExternalEditorHandler extends JDialog {
         Path localFilePath = tempFolderPath.resolve(remoteFile.getName());
         this.stopFlag.set(false);
         this.progressLabel.setText(remoteFile.getName());
+        this.progressBar.setValue(0);
         File localFile = localFilePath.toFile();
-
+        
         App.EXECUTOR.submit(() -> {
+            SwingUtilities.invokeLater(this::repaint);
             try (InputStream in = remoteFs.inputTransferChannel().getInputStream(remoteFile.getPath());
                  OutputStream out = new FileOutputStream(localFile)) {
-                int cap = 8192;
+                int cap = 8192 * 8;
                 if (in instanceof SSHRemoteFileInputStream) {
                     cap = ((SSHRemoteFileInputStream) in).getBufferCapacity();
                 }
@@ -223,8 +226,13 @@ public class ExternalEditorHandler extends JDialog {
                 });
             }
         });
-
+        
         setLocationRelativeTo(frame);
+        revalidate();
+        repaint();
         setVisible(true);
+//        progressLabel.revalidate();
+//        progressLabel.repaint();
+    
     }
 }

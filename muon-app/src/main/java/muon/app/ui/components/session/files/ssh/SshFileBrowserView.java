@@ -144,15 +144,15 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
                         }
                         System.out.println("Exception caught in sftp file browser: " + e.getMessage());
 
-                        this.fileBrowser.getHolder().reconnect();
-
-                        e.printStackTrace();
                         // TODO i18n
                         if (JOptionPane.showConfirmDialog(null,
                                 "Unable to connect to server " + this.fileBrowser.getInfo().getName() + " at "
                                         + this.fileBrowser.getInfo().getHost()
                                         + (e.getMessage() != null ? "\n\nReason: " + e.getMessage() : "\n")
                                         + "\n\nDo you want to retry?") == JOptionPane.YES_OPTION) {
+                            
+                            this.fileBrowser.getHolder().reconnect();
+                            
                             continue;
                         }
                         break;
