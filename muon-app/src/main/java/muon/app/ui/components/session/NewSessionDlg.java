@@ -15,11 +15,14 @@ import java.util.Enumeration;
 import java.util.UUID;
 
 import static muon.app.App.bundle;
+import static muon.app.App.getAppWindow;
 
 public class NewSessionDlg extends JDialog implements ActionListener, TreeSelectionListener, TreeModelListener {
 
     private static final long serialVersionUID = -1182844921331289546L;
-
+    
+    private final Window window;
+    
     private DefaultTreeModel treeModel;
     private JTree tree;
     private DefaultMutableTreeNode rootNode;
@@ -38,6 +41,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
 
     public NewSessionDlg(Window wnd) {
         super(wnd);
+        this.window = wnd;
         createUI();
     }
 
@@ -433,7 +437,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
     }
 
     public SessionInfo newSession() {
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(window);
         setVisible(true);
         return this.info;
     }
