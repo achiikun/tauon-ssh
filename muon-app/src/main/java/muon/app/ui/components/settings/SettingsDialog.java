@@ -9,6 +9,7 @@ import muon.app.App;
 import muon.app.PasswordStore;
 import muon.app.Settings;
 import muon.app.ui.components.KeyShortcutComponent;
+import muon.app.ui.components.NativeFileChooser;
 import muon.app.ui.components.SkinnedScrollPane;
 import muon.app.ui.components.SkinnedTextField;
 import util.*;
@@ -747,7 +748,7 @@ public class SettingsDialog extends JDialog {
         panel.add(box, BorderLayout.SOUTH);
 
         btnAddEditor.addActionListener(e -> {
-            JFileChooser jfc = new JFileChooser();
+            NativeFileChooser jfc = new NativeFileChooser();
             if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File file = jfc.getSelectedFile();
                 JTextField txt = new SkinnedTextField(30);

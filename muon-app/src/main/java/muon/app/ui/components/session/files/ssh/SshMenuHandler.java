@@ -4,6 +4,7 @@ import muon.app.App;
 import muon.app.common.FileInfo;
 import muon.app.common.FileType;
 import muon.app.common.local.LocalFileSystem;
+import muon.app.ui.components.NativeFileChooser;
 import muon.app.ui.components.session.BookmarkManager;
 import muon.app.ui.components.session.files.FileBrowser;
 import muon.app.ui.components.session.files.remote2remote.LocalPipeTransfer;
@@ -807,7 +808,7 @@ public class SshMenuHandler {
     }
 
     private void uploadFiles() throws IOException {
-        JFileChooser jfc = new JFileChooser();
+        NativeFileChooser jfc = new NativeFileChooser();
         jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         jfc.setMultiSelectionEnabled(true);
         if (jfc.showOpenDialog(SwingUtilities.getWindowAncestor(fileBrowser)) == JFileChooser.APPROVE_OPTION) {

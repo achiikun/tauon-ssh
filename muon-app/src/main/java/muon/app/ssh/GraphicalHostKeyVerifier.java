@@ -6,6 +6,7 @@ package muon.app.ssh;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import util.OpenSSHKnownHostsBugfixed;
 
 import javax.swing.*;
 import java.io.File;
@@ -16,7 +17,7 @@ import java.security.PublicKey;
  * @author subhro
  *
  */
-public class GraphicalHostKeyVerifier extends OpenSSHKnownHosts {
+public class GraphicalHostKeyVerifier extends OpenSSHKnownHostsBugfixed {
     /**
      * @throws IOException
      *

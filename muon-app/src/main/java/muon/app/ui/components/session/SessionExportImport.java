@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import muon.app.App;
+import muon.app.ui.components.NativeFileChooser;
 import muon.app.ui.components.session.importer.SSHConfigImporter;
 import util.Constants;
 
@@ -25,7 +26,7 @@ import static util.Constants.configDir;
 
 public class SessionExportImport {
     public static synchronized void exportSessions() {
-        JFileChooser jfc = new JFileChooser();
+        NativeFileChooser jfc = new NativeFileChooser();
         if (jfc.showSaveDialog(App.getAppWindow()) == JFileChooser.APPROVE_OPTION) {
             File file = jfc.getSelectedFile();
             try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file))) {
@@ -42,7 +43,7 @@ public class SessionExportImport {
     }
 
     public static synchronized boolean importSessions() {
-        JFileChooser jfc = new JFileChooser();
+        NativeFileChooser jfc = new NativeFileChooser();
         if (jfc.showOpenDialog(App.getAppWindow()) != JFileChooser.APPROVE_OPTION) {
             return false;
         }
@@ -70,7 +71,7 @@ public class SessionExportImport {
     }
 
     public static synchronized boolean importSessionsSSHConfig() {
-        JFileChooser jfc = new JFileChooser();
+        NativeFileChooser jfc = new NativeFileChooser();
         if (jfc.showOpenDialog(App.getAppWindow()) != JFileChooser.APPROVE_OPTION) {
             return false;
         }

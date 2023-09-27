@@ -1,6 +1,7 @@
 package muon.app.ui.components.session;
 
 import com.intellij.ui.components.JBCheckBox;
+import muon.app.ui.components.NativeFileChooser;
 import muon.app.ui.components.SkinnedTextArea;
 import muon.app.ui.components.SkinnedTextField;
 import muon.app.ui.components.TabbedPanel;
@@ -510,10 +511,10 @@ public class SessionInfoPanel extends JPanel {
 
         inpLocalBrowse = new JButton(bundle.getString("browse"));
         inpLocalBrowse.addActionListener(e -> {
-            JFileChooser jfc = new JFileChooser();
+            NativeFileChooser jfc = new NativeFileChooser();
             jfc.setFileHidingEnabled(false);
             jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            if (jfc.showOpenDialog(SwingUtilities.windowForComponent(this)) == JFileChooser.APPROVE_OPTION) {
                 inpLocalFolder.setText(jfc.getSelectedFile().getAbsolutePath());
             }
         });
@@ -691,13 +692,13 @@ public class SessionInfoPanel extends JPanel {
 
         inpKeyBrowse = new JButton(bundle.getString("browse"));// new
         inpKeyBrowse.addActionListener(e -> {
-            JFileChooser jfc = new JFileChooser();
+            NativeFileChooser jfc = new NativeFileChooser();
             jfc.setFileHidingEnabled(false);
 
             jfc.addChoosableFileFilter(new FileNameExtensionFilter("Putty key files (*.ppk)", "ppk"));
 
             jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            if (jfc.showOpenDialog(SwingUtilities.windowForComponent(this)) == JFileChooser.APPROVE_OPTION) {
                 String selectedFile = jfc.getSelectedFile().getAbsolutePath();
                 if (selectedFile.endsWith(".ppk") && !isSupportedPuttyKeyFile(jfc.getSelectedFile())) {
                     JOptionPane.showMessageDialog(this, bundle.getString("unsupported_key")

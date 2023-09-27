@@ -1,6 +1,7 @@
 package muon.app.ui.components.session;
 
 import muon.app.App;
+import muon.app.ui.components.NativeFileChooser;
 import muon.app.ui.components.SkinnedScrollPane;
 import muon.app.ui.components.SkinnedTextField;
 import util.FontAwesomeContants;
@@ -157,9 +158,9 @@ public class JumpHostPanel extends JPanel {
         }
 
         btnBrowse.addActionListener(ev -> {
-            JFileChooser jfc = new JFileChooser();
+            NativeFileChooser jfc = new NativeFileChooser();
             jfc.setFileHidingEnabled(false);
-            if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            if (jfc.showOpenDialog(SwingUtilities.windowForComponent(this)) == JFileChooser.APPROVE_OPTION) {
                 File f = jfc.getSelectedFile();
                 txtKeyFile.setText(f.getAbsolutePath());
             }
