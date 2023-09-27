@@ -17,16 +17,17 @@ public class DisabledPanel extends JPanel {
     Color c1 = new Color(3, 155, 229);
     Stroke basicStroke = new BasicStroke(15);
     Timer timer;
-    AlphaComposite alphaComposite = AlphaComposite.SrcOver.derive(0.65f);
+    float alpha = 0.65f;
+    AlphaComposite alphaComposite = AlphaComposite.SrcOver.derive(alpha);
     AlphaComposite alphaComposite1 = AlphaComposite.SrcOver.derive(0.85f);
-
+    private long time;
+    
     public DisabledPanel() {
         BoxLayout layout = new BoxLayout(this, BoxLayout.PAGE_AXIS);
         setLayout(layout);
         btn.setContentAreaFilled(false);
         btn.setBorderPainted(false);
         btn.setFont(App.skin.getIconFont().deriveFont(20.0f));
-        btn.setForeground(Color.WHITE);
         btn.setText("\uf00d");
         btn.setAlignmentX(Box.CENTER_ALIGNMENT);
         setOpaque(false);
@@ -41,14 +42,24 @@ public class DisabledPanel extends JPanel {
         add(Box.createVerticalGlue());
         int size = 400;
         timer = new Timer(20, e -> {
+            this.time += 20;
             angle += Math.toRadians(5); // 5 degrees per 100 ms = 50
             // degrees/second
             while (angle > 2 * Math.PI) {
                 angle -= 2 * Math.PI; // keep angle in reasonable range.
             }
-            int x = getWidth() / 2 - size / 2;
-            int y = getHeight() / 2 - size / 2;
-            repaint(x, y, size, size);
+            
+            if(time > 500 && btn.getForeground().getAlpha() != 255)
+                btn.setForeground(Color.WHITE);
+            
+            if(time >= 3000){
+                int x = getWidth() / 2 - size / 2;
+                int y = getHeight() / 2 - size / 2;
+                repaint(x, y, size, size);
+            }else{
+                repaint();
+            }
+
         });
         addMouseListener(new MouseAdapter() {
         });
@@ -66,6 +77,8 @@ public class DisabledPanel extends JPanel {
     }
 
     public void startAnimation(AtomicBoolean stopFlag) {
+        this.time = 0;
+        btn.setForeground(new Color(255,255,255,0));
         this.stopFlag = stopFlag;
         this.btn.setVisible(stopFlag != null);
         timer.start();
@@ -78,6 +91,19 @@ public class DisabledPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        
+        if(time < 500)
+            return;
+        
+        AlphaComposite alphaComposite = null;
+        
+        if(time >= 3000){
+            alphaComposite = this.alphaComposite;
+        }else{
+            float customAlpha = alpha * (1 - ((3000-time) / 2500f));
+            alphaComposite = AlphaComposite.SrcOver.derive(customAlpha);
+        }
+        
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);

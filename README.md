@@ -3,7 +3,7 @@
 Easy and fun way to work with remote servers over SSH.
 
 This project is being renamed as previous name "Snowflake" is confusing since there is already a popular product with the same name.
-Personally I don't like "Snowflake" nor "Muon". Maybe one day I'll change its name.
+Personally I don't like "Snowflake" nor "Muon". Maybe one day I'll change its name (to "Tauon").
 
 Muon is a graphical SSH client. 
 It has an enhanced SFTP file browser, SSH terminal emulator, remote resource/process manager, 
@@ -63,10 +63,10 @@ although I recognize the great job done in that repo.
 * [x] X11 Forwarding
 * [X] Bug: Session manager showed in primary screen instead of main window screen
 * [X] Dates in ISO format
+* [X] Don't blink the screen every time a folder is updated
 * [ ] Bug: Sometimes when shell is present, no cursor is blinking (After reconnecting, cursor disappears)
 * [ ] Swing File Picker sucks, change it to native
 * [ ] Refresh window after copying files
-* [ ] Don't blink the screen every time a folder is updated
 * [ ] Add a box to query what happens when copying a file that exists
 * [ ] When hit a CTRL+C, flush console buffer to receive the prompt ASAP 
 * [ ] Move an item to a folder in the same window
