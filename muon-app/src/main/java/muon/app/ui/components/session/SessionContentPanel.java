@@ -166,8 +166,9 @@ public class SessionContentPanel extends JPanel implements PageHolder, CachedCre
 
     public void disableUi() {
         SwingUtilities.invokeLater(() -> {
-            this.disabledPanel.startAnimation(new AtomicBoolean(true));
+            this.disabledPanel.startAnimation(null);
             this.rootPane.setGlassPane(this.disabledPanel);
+            System.out.println("Showing disable panel");
             this.disabledPanel.setVisible(true);
         });
     }

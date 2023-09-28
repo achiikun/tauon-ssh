@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -64,7 +65,14 @@ public class LocalMenuHandler {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    PlatformUtils.openFolderInExplorer(folderView.getSelectedFiles()[0].getPath(), null);
+                    FileInfo file = folderView.getSelectedFiles()[0];
+                    if(file.isDirectory()){
+                        PlatformUtils.openFolderInExplorer(folderView.getSelectedFiles()[0].getPath(), null);
+                    }else{
+                        File file1 = new File(file.getPath());
+                        PlatformUtils.openFolderInExplorer(file1.getParent(), file1.getName());
+                    }
+                    
                 } catch (FileNotFoundException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
@@ -149,6 +157,7 @@ public class LocalMenuHandler {
         if (selectionCount == 1) {
             if (selectedFiles[0].getType() == FileType.File || selectedFiles[0].getType() == FileType.FileLink) {
                 popup.add(mOpen);
+                popup.add(mOpenInFileExplorer);
             }
             if (selectedFiles[0].getType() == FileType.Directory || selectedFiles[0].getType() == FileType.DirLink) {
                 popup.add(mOpenInNewTab);

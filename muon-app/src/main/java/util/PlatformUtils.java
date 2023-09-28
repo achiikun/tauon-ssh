@@ -17,7 +17,9 @@ import muon.app.ui.components.settings.EditorEntry;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author subhro
@@ -111,30 +113,82 @@ public class PlatformUtils {
      * @throws FileNotFoundException
      */
     public static void openFolderInExplorer(String folder, String file) throws FileNotFoundException {
-        if (file == null) {
-            openFolder2(folder);
-            return;
-        }
         try {
+            if (file == null) {
+                openFolder2(folder);
+                return;
+            }
+            
             File f = new File(folder, file);
             if (!f.exists()) {
                 throw new FileNotFoundException();
             }
-            ProcessBuilder builder = new ProcessBuilder();
-            builder.command(Arrays.asList("explorer", "/select,", f.getAbsolutePath()));
-            builder.start();
+            
+            String os = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
+            if (os.contains("mac")) {
+                openMac(new File(folder));
+            } else if (os.contains("linux")) {
+                // Let's run gdbus
+                if(linuxExistCommand("gdbus")) {
+                    ProcessBuilder builder = new ProcessBuilder();
+                    builder.command("gdbus", "call", "--session", "--dest", "org.freedesktop.FileManager1", "--object-path", "/org/freedesktop/FileManager1", "--method",
+                            "org.freedesktop.FileManager1.ShowItems",
+                            "['file://" + f.getAbsolutePath() + "']",
+                            ""
+                    );
+                    Process p = builder.start();
+                    if(p.waitFor(50, TimeUnit.MILLISECONDS) && p.waitFor() != 0){
+                        openFolder2(folder);
+                    }
+                } else {
+                    openFolder2(folder);
+                }
+            } else if (os.contains("windows")) {
+                ProcessBuilder builder = new ProcessBuilder();
+                builder.command(Arrays.asList("explorer", "/select,", f.getAbsolutePath()));
+                builder.start();
+            } else {
+                throw new IOException("Unsupported OS: '" + System.getProperty("os.name", "") + "'");
+            }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
-
-    private static void openFolder2(String folder) {
+    
+    private static boolean linuxExistCommand(String command) {
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.command("/bin/sh", "-c", "command", "-v", command);
+        Process p = null;
         try {
-            ProcessBuilder builder = new ProcessBuilder();
-            builder.command(Arrays.asList("explorer", folder));
-            builder.start();
-        } catch (Exception e) {
-            e.printStackTrace();
+            p = builder.start();
+        } catch (IOException e) {
+            return false;
+        }
+        try {
+            return p.waitFor() == 0;
+        } catch (InterruptedException e) {
+            return false;
+        }
+    }
+    
+    private static void openFolder2(String folder) throws IOException{
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
+        if (os.contains("mac")) {
+            openMac(new File(folder));
+        } else if (os.contains("linux")) {
+            openLinux(new File(folder));
+        } else if (os.contains("windows")) {
+            try {
+                ProcessBuilder builder = new ProcessBuilder();
+                builder.command(Arrays.asList("explorer", folder));
+                builder.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            throw new IOException("Unsupported OS: '" + System.getProperty("os.name", "") + "'");
         }
     }
 

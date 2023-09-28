@@ -2,10 +2,12 @@ package muon.app.common.local;
 
 import muon.app.common.FileSystem;
 import muon.app.common.*;
+import org.jetbrains.annotations.NotNull;
 import util.PathUtils;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -25,13 +27,25 @@ public class LocalFileSystem implements FileSystem {
         if (!f.exists()) {
             throw new FileNotFoundException(path);
         }
-        Path p = f.toPath();
-        BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class);
-        return new FileInfo(f.getName(), path, f.length(),
-                f.isDirectory() ? FileType.Directory : FileType.File, f.lastModified(), -1, PROTO_LOCAL_FILE, "",
-                attrs.creationTime().toMillis(), "", f.isHidden());
+        
+        return getFileInfo(f);
     }
-
+    
+    @NotNull
+    private static FileInfo getFileInfo(File f) throws IOException {
+        Path p = f.toPath();
+        
+        BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        
+        FileType type = Files.isSymbolicLink(p) ?
+                (f.isDirectory() ? FileType.DirLink : FileType.FileLink) :
+                (f.isDirectory() ? FileType.Directory : FileType.File);
+        
+        return new FileInfo(f.getName(), f.getAbsolutePath(), f.length(),
+                type, f.lastModified(), -1, PROTO_LOCAL_FILE,
+                "", attrs.creationTime().toMillis(), "", f.isHidden());
+    }
+    
     @Override
     public String getHome() throws IOException {
         return System.getProperty("user.home");
@@ -52,12 +66,7 @@ public class LocalFileSystem implements FileSystem {
         }
         for (File f : childs) {
             try {
-                Path p = f.toPath();
-                BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class);
-                FileInfo info = new FileInfo(f.getName(), f.getAbsolutePath(), f.length(),
-                        f.isDirectory() ? FileType.Directory : FileType.File, f.lastModified(), -1, PROTO_LOCAL_FILE,
-                        "", attrs.creationTime().toMillis(), "", f.isHidden());
-                list.add(info);
+                list.add(getFileInfo(f));
             } catch (Exception e) {
                 e.printStackTrace();
             }
