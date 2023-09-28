@@ -3,10 +3,6 @@ package muon.app.updater;
 public class VersionEntry implements Comparable<VersionEntry> {
     private String tag_name;
 
-    public VersionEntry() {
-        // TODO Auto-generated constructor stub
-    }
-
     public VersionEntry(String tag_name) {
         this.tag_name = tag_name;
     }

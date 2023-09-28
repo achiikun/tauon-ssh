@@ -154,10 +154,10 @@ public class ExternalEditorHandler extends JDialog {
                 });
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
+            // TODO handle exception
             e.printStackTrace();
         } catch (Exception e) {
-            // TODO Auto-generated catch block
+            // TODO handle exception
             e.printStackTrace();
         }
         return info.remoteFile.getSize();

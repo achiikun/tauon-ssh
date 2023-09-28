@@ -144,13 +144,11 @@ public class NetworkToolsPage extends UtilPageItemView {
 
     @Override
     protected void onComponentVisible() {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     protected void onComponentHide() {
-        // TODO Auto-generated method stub
 
     }
 }

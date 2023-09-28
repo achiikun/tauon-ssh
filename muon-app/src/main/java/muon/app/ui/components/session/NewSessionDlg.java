@@ -492,19 +492,16 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
 
     @Override
     public void treeNodesInserted(TreeModelEvent e) {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void treeNodesRemoved(TreeModelEvent e) {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void treeStructureChanged(TreeModelEvent e) {
-        // TODO Auto-generated method stub
 
     }
 

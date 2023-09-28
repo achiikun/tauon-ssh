@@ -432,7 +432,7 @@ public class SettingsDialog extends JDialog {
         chkShowMessagePrompt = new JCheckBox(App.bundle.getString("show_banner"));
 
         chkStartMaximized = new JCheckBox(App.bundle.getString("start_maximized"));
-        chkShowActualDateOnlyHour = new JCheckBox("show actual date in hours"); //TODO devlinx9
+        chkShowActualDateOnlyHour = new JCheckBox("show actual date in hours"); //TODO i18n
 
         chkLogWrap = new JCheckBox(App.bundle.getString("word_wrap"));
         spLogLinesPerPage = new JSpinner(new SpinnerNumberModel(50, 10, 500, 1));

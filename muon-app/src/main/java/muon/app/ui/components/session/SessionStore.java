@@ -35,7 +35,7 @@ public class SessionStore {
                 PasswordStore.getSharedInstance().populatePassword(savedSessionTree);
                 System.out.println("Loading passwords... done");
             } catch (Exception e) {
-                // TODO Auto-generated catch block
+                // TODO handle exception
                 e.printStackTrace();
             }
             return savedSessionTree;

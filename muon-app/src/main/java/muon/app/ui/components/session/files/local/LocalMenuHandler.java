@@ -74,7 +74,7 @@ public class LocalMenuHandler {
                     }
                     
                 } catch (FileNotFoundException e1) {
-                    // TODO Auto-generated catch block
+                    // TODO handle exception
                     e1.printStackTrace();
                 }
             }

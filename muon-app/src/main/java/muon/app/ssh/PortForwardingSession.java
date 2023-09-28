@@ -110,7 +110,7 @@ public class PortForwardingSession {
                 // Something to hang on to so that the forwarding stays
                 ssh.getTransport().join();
             } catch (ConnectionException | TransportException e) {
-                // TODO Auto-generated catch block
+                // TODO handle exception
                 e.printStackTrace();
             }
         });

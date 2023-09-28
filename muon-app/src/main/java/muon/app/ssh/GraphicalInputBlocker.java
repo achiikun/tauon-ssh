@@ -19,7 +19,6 @@ public class GraphicalInputBlocker extends JDialog implements InputBlocker, Acti
 
     private final JPanel jPanel = new JPanel(null);
     
-    //Todo devlinx9 fix this.
     private final JLabel connectingLabel = new JLabel(App.bundle.getString("connecting"));
     
     private final JButton cancelButton = new JButton();

@@ -11,13 +11,6 @@ public class SnippetItem {
     private String command;
     private String id;
 
-    /**
-     *
-     */
-    public SnippetItem() {
-        // TODO Auto-generated constructor stub
-    }
-
     public SnippetItem(String name, String command) {
         this.id = UUID.randomUUID().toString();
         this.name = name;

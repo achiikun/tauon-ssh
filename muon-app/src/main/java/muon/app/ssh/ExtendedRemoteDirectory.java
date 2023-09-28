@@ -30,7 +30,7 @@ public class ExtendedRemoteDirectory extends RemoteDirectory {
     public List<RemoteResourceInfoWrapper> scanExtended(
             RemoteResourceFilter filter) throws IOException {
         List<RemoteResourceInfoWrapper> rri = new ArrayList<>();
-        // TODO: Remove GOTO!
+
         loop:
         for (; ; ) {
             final Response res = requester

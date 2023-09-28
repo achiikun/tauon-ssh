@@ -22,7 +22,7 @@ public class RemoteServerEntry {
         this.path = path;
     }
     public RemoteServerEntry() {
-        // TODO Auto-generated constructor stub
+
     }
 
     public String getId() {

@@ -148,7 +148,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
         try {
             shell.join();
         } catch (ConnectionException e) {
-            // TODO Auto-generated catch block
+            // TODO handle exception
             e.printStackTrace();
         }
         return shell.getExitStatus();
@@ -194,7 +194,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
             try {
                 shell.changeWindowDimensions(col, row, wp, hp);
             } catch (TransportException e) {
-                // TODO Auto-generated catch block
+                // TODO handle exception
                 e.printStackTrace();
             }
         }

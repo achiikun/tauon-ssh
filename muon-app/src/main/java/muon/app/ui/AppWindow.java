@@ -185,6 +185,7 @@ public class AppWindow extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 if (Desktop.isDesktopSupported()) {
                     try {
+                        // TODO Fix linux: The BROWSE action is not supported on the current platform!
                         Desktop.getDesktop().browse(new URI(REPOSITORY_URL));
                     } catch (IOException ex) {
                         ex.printStackTrace();

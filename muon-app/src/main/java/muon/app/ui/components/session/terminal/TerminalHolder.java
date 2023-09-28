@@ -62,13 +62,11 @@ public class TerminalHolder extends Page implements AutoCloseable {
 
             @Override
             public void ancestorRemoved(AncestorEvent event) {
-                // TODO Auto-generated method stub
 
             }
 
             @Override
             public void ancestorMoved(AncestorEvent event) {
-                // TODO Auto-generated method stub
 
             }
 

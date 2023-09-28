@@ -90,7 +90,7 @@ public class SshMenuHandler {
                     App.getExternalEditorHandler().openRemoteFile(fileInfo, fileBrowser.getSSHFileSystem(),
                             fileBrowser.getActiveSessionId(), false, null);
                 } catch (IOException e1) {
-                    // TODO Auto-generated catch block
+                    // TODO handle exception
                     e1.printStackTrace();
                 }
             }
@@ -112,7 +112,7 @@ public class SshMenuHandler {
                     App.getExternalEditorHandler().openRemoteFile(fileInfo, fileBrowser.getSSHFileSystem(),
                             fileBrowser.getActiveSessionId(), true, null);
                 } catch (IOException e1) {
-                    // TODO Auto-generated catch block
+                    // TODO handle exception
                     e1.printStackTrace();
                 }
             });

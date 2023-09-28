@@ -52,7 +52,6 @@ public class PasswordFinderDialog implements PasswordFinder {
 
     @Override
     public boolean shouldRetry(Resource<?> resource) {
-        // TODO Auto-generated method stub
         return retry;
     }
 
