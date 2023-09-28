@@ -35,6 +35,7 @@ public class LocalFileSystem implements FileSystem {
     private static FileInfo getFileInfo(File f) throws IOException {
         Path p = f.toPath();
         
+        // TODO follow links to get parameters of the real file (note that the real file may not exist)
         BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
         
         FileType type = Files.isSymbolicLink(p) ?
