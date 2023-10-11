@@ -173,22 +173,32 @@ public class JnaFileChooser
 			for (final FileNameExtensionFilter spec : filters) {
 				ord.add(new SuffixFileFilter(spec.getExtensions()));
 			}
-			OrFileFilter ordFileFilter = new OrFileFilter(ord);
-			fc.setFilenameFilter(new AndFileFilter(DirectoryFileFilter.DIRECTORY, ordFileFilter));
+			if(ord.isEmpty()){
+				fc.setFilenameFilter(DirectoryFileFilter.DIRECTORY);
+			}else {
+				OrFileFilter ordFileFilter = new OrFileFilter(ord);
+				fc.setFilenameFilter(new AndFileFilter(DirectoryFileFilter.DIRECTORY, ordFileFilter));
+			}
 		}else if(mode == Mode.Files){
 			ArrayList<IOFileFilter> ord = new ArrayList<>();
 			for (final FileNameExtensionFilter spec : filters) {
 				ord.add(new SuffixFileFilter(spec.getExtensions()));
 			}
-			OrFileFilter ordFileFilter = new OrFileFilter(ord);
-			fc.setFilenameFilter(new AndFileFilter(FileFileFilter.FILE, ordFileFilter));
+			if(ord.isEmpty()){
+				fc.setFilenameFilter(FileFileFilter.FILE);
+			}else {
+				OrFileFilter ordFileFilter = new OrFileFilter(ord);
+				fc.setFilenameFilter(new AndFileFilter(FileFileFilter.FILE, ordFileFilter));
+			}
 		}else{
 			ArrayList<IOFileFilter> ord = new ArrayList<>();
 			for (final FileNameExtensionFilter spec : filters) {
 				ord.add(new SuffixFileFilter(spec.getExtensions()));
 			}
-			OrFileFilter ordFileFilter = new OrFileFilter(ord);
-			fc.setFilenameFilter(ordFileFilter);
+			if(ord.isEmpty()) {
+				OrFileFilter ordFileFilter = new OrFileFilter(ord);
+				fc.setFilenameFilter(ordFileFilter);
+			}
 		}
 		
 		fc.setVisible(true);
