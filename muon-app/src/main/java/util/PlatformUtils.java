@@ -14,12 +14,11 @@ import com.sun.jna.win32.StdCallLibrary;
 import muon.app.App;
 import muon.app.ui.components.settings.EditorEntry;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author subhro
@@ -85,7 +84,17 @@ public class PlatformUtils {
         try {
             ProcessBuilder pb = new ProcessBuilder();
             pb.command("xdg-open", f.getAbsolutePath());
-            pb.start();
+            Process p = pb.start();
+            if (p.waitFor(15, TimeUnit.SECONDS)) {
+                if(p.exitValue() != 0){
+                    try(InputStreamReader isr = new InputStreamReader(p.getErrorStream())){
+                        String text = new BufferedReader(isr)
+                                .lines()
+                                .collect(Collectors.joining("\n"));
+                        System.err.println(text);
+                    }
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
