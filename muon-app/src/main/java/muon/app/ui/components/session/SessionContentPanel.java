@@ -130,6 +130,21 @@ public class SessionContentPanel extends JPanel implements PageHolder, CachedCre
     }
 
     public void reconnect() {
+        
+        // If the main remote session is reconnected (the cached sessions must be also, because the failure
+        // has been produced in the connection itself)
+        try {
+            this.remoteSessionInstance.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            this.cachedSessions.forEach(RemoteSessionInstance::close);
+        } catch (Exception e2) {
+            e2.printStackTrace();
+        }
+        cachedSessions.clear();
+        
         this.remoteSessionInstance.close();
         this.remoteSessionInstance = new RemoteSessionInstance(info, App.getInputBlocker(), this);
     }

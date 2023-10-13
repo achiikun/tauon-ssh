@@ -36,7 +36,7 @@ public class RemoteSessionInstance {
             if (this.closed.get()) {
                 throw new OperationCancelledException();
             }
-            try {
+//            try {
                 if (!ssh.isConnected()) {
                     ssh.connect();
                 }
@@ -50,10 +50,10 @@ public class RemoteSessionInstance {
                     }
                 }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return 1;
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            return 1;
         }
     }
 
@@ -89,7 +89,7 @@ public class RemoteSessionInstance {
             if (stopFlag.get()) {
                 return -1;
             }
-            try {
+//            try {
                 if (!ssh.isConnected()) {
                     ssh.connect();
                 }
@@ -149,10 +149,10 @@ public class RemoteSessionInstance {
                         return cmd.getExitStatus();
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return 1;
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            return 1;
         }
     }
 

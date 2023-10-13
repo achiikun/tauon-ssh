@@ -330,6 +330,7 @@ public class SshFileSystem implements FileSystem {
             }
 
             try {
+                // If stat crashes, the file does not exist
                 sftp.stat(absPath);
                 return false;
             } catch (Exception e) {

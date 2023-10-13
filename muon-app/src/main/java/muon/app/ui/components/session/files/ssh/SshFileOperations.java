@@ -271,6 +271,7 @@ public class SshFileOperations {
                           RemoteSessionInstance instance, String password) {
         try {
             try {
+                // Try to remove it using "rm -rf" because it's faster than sftp
                 delete(Arrays.asList(targetList), instance);
                 return true;
             } catch (FileNotFoundException e) {
@@ -279,6 +280,7 @@ public class SshFileOperations {
                 throw e;
             } catch (Exception e) {
                 e.printStackTrace();
+                // Fallback to sftp
                 for (FileInfo s : targetList) {
                     fs.delete(s);
                 }
