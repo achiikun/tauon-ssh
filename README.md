@@ -67,16 +67,19 @@ although I recognize the great job done in that repo.
 * [X] Native Windows File Picker, AWT for Linux, Swing for Mac :D
 * [X] Bug: SymLinks not showed in Local File Explorer
 * [X] Bug: Open in explorer not supported on linux and mac. (Added opening files in explorer)
-* [ ] Bug: Sometimes when shell is present, no cursor is blinking (After reconnecting, cursor disappears)
-* [ ] File browser arrows (history) don't work
-* [ ] Download is not implemented
-* [ ] Refresh window after copying files
-* [ ] Add a box to query what happens when copying a file that exists
-* [ ] When hit a CTRL+C, flush console buffer to receive the prompt ASAP 
-* [ ] Move an item to a folder in the same window
+* [X] Bug: Sometimes when shell is present, no cursor is blinking (After reconnecting, cursor disappears)
+* [ ] When hit a CTRL+C, flush console buffer to receive the prompt ASAP
 * [ ] Open the program in the last location, or in the active screen if multiple
 * [ ] Copy PID from processes
 * [ ] When a port forwarding fails, notify to the user
+* [ ] File Browser Issues
+  * [ ] Unify behavior for all file tasks (ask for sudo, ask for reconnect)
+  * [ ] File browser arrows (history) don't work
+  * [ ] Download is not implemented
+  * [ ] Refresh window after copying files
+  * [ ] Add a box to query what happens when copying a file that exists
+  * [ ] Move an item to a folder in the same window
+
 
 **Here goes new features**
 

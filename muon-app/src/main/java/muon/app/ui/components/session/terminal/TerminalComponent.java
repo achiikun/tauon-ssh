@@ -65,6 +65,8 @@ public class TerminalComponent extends JPanel implements ClosableTabContent {
             contentPane.repaint();
             tty = new SshTtyConnector(info, command, sessionContentPanel);
             term.setTtyConnector(tty);
+            // Quick fix: terminal sets cursor invisible if disconnected, set it back to visible after reconnecting
+            term.getTerminal().setCursorVisible(true);
             term.start();
         });
         reconnectionBox.add(Box.createHorizontalGlue());
