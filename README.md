@@ -68,6 +68,7 @@ although I recognize the great job done in that repo.
 * [X] Bug: SymLinks not showed in Local File Explorer
 * [X] Bug: Open in explorer not supported on linux and mac. (Added opening files in explorer)
 * [X] Bug: Sometimes when shell is present, no cursor is blinking (After reconnecting, cursor disappears)
+* [ ] Bug: Unicode characters in terminal (tree is not displaying properly)
 * [ ] When hit a CTRL+C, flush console buffer to receive the prompt ASAP
 * [ ] Open the program in the last location, or in the active screen if multiple
 * [ ] Copy PID from processes
