@@ -12,6 +12,11 @@ import static util.Constants.BOOKMARKS_FILE;
 import static util.Constants.configDir;
 
 public final class BookmarkManager {
+
+    private BookmarkManager() {
+
+    }
+
     public static synchronized Map<String, List<String>> getAll() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -19,7 +24,7 @@ public final class BookmarkManager {
         if (bookmarkFile.exists()) {
             try {
                 Map<String, List<String>> bookmarkMap = objectMapper.readValue(bookmarkFile,
-                        new TypeReference<Map<String, List<String>>>() {
+                        new TypeReference<>() {
                         });
                 return Collections.synchronizedMap(bookmarkMap);
             } catch (IOException e) {
@@ -77,7 +82,7 @@ public final class BookmarkManager {
         if (bookmarkFile.exists()) {
             try {
                 Map<String, List<String>> bookmarkMap = objectMapper.readValue(bookmarkFile,
-                        new TypeReference<Map<String, List<String>>>() {
+                        new TypeReference<>() {
                         });
                 List<String> bookmarks = bookmarkMap.get(id);
                 if (bookmarks != null) {

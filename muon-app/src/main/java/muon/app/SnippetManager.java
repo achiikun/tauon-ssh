@@ -31,7 +31,7 @@ public class SnippetManager {
         if (file.exists()) {
             try {
                 snippetItems = objectMapper.readValue(file,
-                        new TypeReference<List<SnippetItem>>() {
+                        new TypeReference<>() {
                         });
                 return;
             } catch (IOException e) {

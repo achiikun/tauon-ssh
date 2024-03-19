@@ -245,9 +245,9 @@ public class SettingsDialog extends JDialog {
         cmbLanguage.setMaximumSize(d);
         cmbLanguage.setMinimumSize(d);
         cmbLanguage.setPreferredSize(d);
-        Settings settings = App.loadSettings2();
-
-        cmbLanguage.setSelectedItem(settings.getLanguage());
+        
+        App.loadSettings();
+        cmbLanguage.setSelectedItem(App.getGlobalSettings().getLanguage());
 
         Component boxLanguage = createRow(new JLabel(App.bundle.getString("language")), Box.createRigidArea(new Dimension(10, 10)),
                 cmbLanguage);

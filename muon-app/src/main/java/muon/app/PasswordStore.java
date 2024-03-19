@@ -77,7 +77,7 @@ public final class PasswordStore {
     private Map<String, char[]> deserializePasswordMap(char[] chars) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper.readValue(new CharArrayReader(chars), new TypeReference<Map<String, char[]>>() {
+        return objectMapper.readValue(new CharArrayReader(chars), new TypeReference<>() {
         });
     }
 
