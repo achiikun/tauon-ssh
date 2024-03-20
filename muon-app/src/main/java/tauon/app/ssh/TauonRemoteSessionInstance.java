@@ -6,7 +6,8 @@ package tauon.app.ssh;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ssh.filesystem.SshFileSystem;
 
@@ -29,7 +30,7 @@ import java.util.function.Function;
  */
 public class TauonRemoteSessionInstance {
     
-    private static final Logger LOG = Logger.getLogger(TauonSSHClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TauonRemoteSessionInstance.class);
     
     private final TauonSSHClient ssh;
     private final SshFileSystem sshFs;

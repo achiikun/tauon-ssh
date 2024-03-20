@@ -5,8 +5,9 @@ import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
 import net.schmizz.sshj.connection.channel.forwarded.ConnectListener;
-import org.apache.log4j.Logger;
 import org.newsclub.net.unix.AFSocketAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -14,7 +15,8 @@ import java.net.SocketAddress;
 import java.util.concurrent.TimeUnit;
 
 public class SocketForwardingConnectListener implements ConnectListener {
-    private static final Logger LOG = Logger.getLogger(SocketForwardingConnectListener.class);
+    
+    private static final Logger LOG = LoggerFactory.getLogger(SocketForwardingConnectListener.class);
     
     protected final SocketAddress addr;
     

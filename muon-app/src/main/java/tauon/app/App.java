@@ -3,22 +3,22 @@ package tauon.app;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.settings.Settings;
 import tauon.app.settings.SnippetManager;
-import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
 import tauon.app.ui.components.glasspanes.AppInputBlocker;
 import tauon.app.ui.components.glasspanes.InputBlocker;
 import tauon.app.ui.containers.main.AppWindow;
-import tauon.app.util.externaleditor.ExternalEditorHandler;
+import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.dialogs.sessions.SessionExportImport;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.ui.laf.AppSkin;
 import tauon.app.ui.laf.AppSkinDark;
 import tauon.app.ui.laf.AppSkinLight;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import tauon.app.settings.Settings;
+import tauon.app.util.externaleditor.ExternalEditorHandler;
 import util.Constants;
 import util.Language;
 import util.PlatformUtils;
@@ -41,10 +41,10 @@ import static util.Constants.*;
  */
 public class App {
 
-    private static final Logger LOG = Logger.getLogger(App.class);
+    private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
     public static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
-    public static final SnippetManager SNIPPET_MANAGER = new SnippetManager();
+    
     public static final boolean IS_MAC = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
             .startsWith("mac");
     public static final boolean IS_WINDOWS = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
@@ -54,6 +54,7 @@ public class App {
     public static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
     
     
+    public static final SnippetManager SNIPPET_MANAGER = new SnippetManager();
     public static GraphicalHostKeyVerifier hostKeyVerifier;
     public static ResourceBundle bundle;
     public static AppSkin skin;
@@ -65,16 +66,23 @@ public class App {
 
     static {
         System.setProperty("java.net.useSystemProxies", "true");
+        System.setProperty("log4j.debug", "true");
+        
+    }
+    
+    private App(){
+    
     }
 
-    public static void main(String[] args) throws UnsupportedLookAndFeelException {
-        LOG.setLevel(Level.INFO);
+    public static void main(String[] args) throws UnsupportedLookAndFeelException, IOException {
+        
+        LOG.info("Hello!");
         LOG.debug("Java version : ".concat(System.getProperty("java.version")));
 
-        if (Boolean.parseBoolean(System.getProperty("debugMuon"))) {
-            LOG.setLevel(Level.DEBUG);
-        }
-
+//        if (Boolean.parseBoolean(System.getProperty("debugMuon"))) {
+//            Logger.getRootLogger().setLevel(Level.DEBUG);
+//        }
+        
         Security.addProvider(new BouncyCastleProvider());
         Security.setProperty("networkaddress.cache.ttl", "1");
         Security.setProperty("networkaddress.cache.negative.ttl", "1");
@@ -82,10 +90,10 @@ public class App {
         
         validateCustomMuonPath();
         boolean importOnFirstRun = validateConfigPath();
-
+        
         setBundleLanguage();
         loadSettings();
-
+        
         if (importOnFirstRun) {
             SessionExportImport.importOnFirstRun();
         
@@ -99,29 +107,29 @@ public class App {
             firstRun = true;
             */
         }
-
+        
         if (settings.isManualScaling()) {
             System.setProperty("sun.java2d.uiScale.enabled", "true");
             System.setProperty("sun.java2d.uiScale", String.format("%.2f", settings.getUiScaling()));
         }
-
+        
         if (settings.getEditors().isEmpty()) {
             LOG.info("Searching for known editors...");
             settings.setEditors(PlatformUtils.getKnownEditors());
             saveSettings();
             LOG.info("Searching for known editors...done");
         }
-
+        
         setBundleLanguage();
         Constants.TransferMode.update();
         Constants.ConflictAction.update();
-
+        
         skin = settings.isUseGlobalDarkTheme() ? new AppSkinDark() : new AppSkinLight();
-
+        
         UIManager.setLookAndFeel(skin.getLaf());
-
+        
         validateMaxKeySize();
-
+        
         // JediTerm seems to take a long time to load, this might make UI more
         // responsive
         App.EXECUTOR.submit(() -> {
@@ -131,7 +139,8 @@ public class App {
                 LOG.error(e.getMessage(), e);
             }
         });
-
+        
+        
         mw = new AppWindow();
         inputBlocker = new AppInputBlocker(mw);
         externalEditorHandler = new ExternalEditorHandler(mw);

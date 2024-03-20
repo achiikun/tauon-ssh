@@ -1,5 +1,7 @@
 package tauon.app.ssh;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.settings.PortForwardingRule;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.DefaultConfig;
@@ -15,7 +17,6 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.AuthNone;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
-import org.apache.log4j.Logger;
 import tauon.app.App;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ui.dialogs.sessions.HopEntry;
@@ -47,7 +48,7 @@ public class TauonSSHClient {
         Thread thread;
     }
     
-    private static final Logger LOG = Logger.getLogger(TauonSSHClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TauonSSHClient.class);
     
     private final SessionInfo info;
     private final GuiHandle<TauonSSHClient> guiHandle;
@@ -79,8 +80,12 @@ public class TauonSSHClient {
     
     public synchronized boolean connect() throws InterruptedException {
         
-        if(isConnected())
+        if(isConnected()) {
+            LOG.warn("Client is already connected.");
             return true;
+        }
+        
+        LOG.info("Begin connecting client.");
         
         AtomicBoolean cancelled = new AtomicBoolean();
         AtomicReference<Future<Boolean>> future = new AtomicReference<>();

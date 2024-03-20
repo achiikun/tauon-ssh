@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1} - %m%n</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Console appender configuration -->
+        <Console name="console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <!-- Root logger referring to console appender -->
+        <Root level="warn">
+            <AppenderRef ref="console" />
+        </Root>
+
+        <Logger name="tauon.app" additivity="false" level="trace">
+            <AppenderRef ref="console" />
+        </Logger>
+
+    </Loggers>
+
+</Configuration>
+
+<!--        Root logger option-->
+<!--        log4j.rootLogger=DEBUG, file, stdout-->
+<!--        log4j.logger.tauon.app.App= DEBUG, file, stdout-->
+
+<!--        # Direct log messages to a log file-->
+<!--        log4j.appender.file=org.apache.log4j.RollingFileAppender-->
+<!--        log4j.appender.file.File=/tmp/logs.log-->
+<!--        log4j.appender.file.MaxFileSize=10MB-->
+<!--        log4j.appender.file.MaxBackupIndex=10-->
+<!--        log4j.appender.file.layout=org.apache.log4j.PatternLayout-->
+<!--        log4j.appender.file.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n-->
+
+<!--        # Direct log messages to stdout-->
+<!--        log4j.appender.stdout=org.apache.log4j.ConsoleAppender-->
+<!--        log4j.appender.stdout.Target=System.out-->
+<!--        log4j.appender.stdout.layout=org.apache.log4j.PatternLayout-->
+<!--        log4j.appender.stdout.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n-->
