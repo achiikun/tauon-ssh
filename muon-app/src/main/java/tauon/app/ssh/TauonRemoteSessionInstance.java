@@ -11,6 +11,7 @@ import tauon.app.settings.SessionInfo;
 import tauon.app.ssh.filesystem.SshFileSystem;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -162,7 +163,7 @@ public class TauonRemoteSessionInstance {
     /**
      *
      */
-    public void close() throws InterruptedException {
+    public void close() throws InterruptedException, IOException {
         
         if(!closed.getAndSet(true))
             return;

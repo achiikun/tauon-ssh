@@ -165,6 +165,8 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
                     r.close();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e); // TODO
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             });
         } catch (Exception e2) {
@@ -174,7 +176,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         
         try {
             this.remoteSessionInstance.close();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | IOException e) {
             throw new RuntimeException(e);
         }
         
@@ -326,7 +328,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
             this.cachedSessions.forEach(c -> {
                 try {
                     c.close();
-                } catch (InterruptedException e) {
+                } catch (InterruptedException | IOException e) {
                     throw new RuntimeException(e); // TODO
                 }
             });

@@ -128,7 +128,6 @@ public class TauonSSHClient {
             }catch (Exception e){
                 e.printStackTrace();
                 sshConnectedHop.disconnect();
-                disconnectPortForwardingStates();
                 return false;
             }
         }));
@@ -183,7 +182,7 @@ public class TauonSSHClient {
         return sshConnectedHop != null && sshConnectedHop.sshj.isConnected();
     }
     
-    public synchronized void close() {
+    public synchronized void close() throws IOException, InterruptedException {
         
         if(!closed.getAndSet(true))
             return;
@@ -645,7 +644,9 @@ public class TauonSSHClient {
             this.sshj.connect("127.0.0.1", port);
         }
         
-        public void disconnect() {
+        public void disconnect() throws IOException, InterruptedException {
+            
+            disconnectPortForwardingStates();
             
             try {
                 if (sshj != null)
