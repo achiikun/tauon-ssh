@@ -1,7 +1,8 @@
 package util;
 
-import muon.app.common.FileInfo;
-import muon.app.common.FileType;
+import tauon.app.ssh.filesystem.FileInfo;
+import tauon.app.ssh.filesystem.FileType;
+import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import java.util.Locale;
 import java.util.regex.Pattern;

@@ -11,11 +11,10 @@ import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinReg;
 import com.sun.jna.platform.win32.WinReg.HKEY;
 import com.sun.jna.win32.StdCallLibrary;
-import muon.app.App;
-import muon.app.ui.components.settings.EditorEntry;
+import tauon.app.App;
+import tauon.app.ui.components.editortablemodel.EditorEntry;
 
 import java.io.*;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;

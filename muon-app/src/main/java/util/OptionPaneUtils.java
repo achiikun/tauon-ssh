@@ -3,7 +3,7 @@
  */
 package util;
 
-import muon.app.ui.components.SkinnedTextField;
+import tauon.app.ui.components.misc.SkinnedTextField;
 
 import javax.swing.*;
 import java.awt.*;

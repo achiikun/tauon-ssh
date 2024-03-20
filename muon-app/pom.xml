@@ -214,7 +214,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>muon.app.App</mainClass>
+                            <mainClass>tauon.app.App</mainClass>
                         </manifest>
                         <compress>false</compress>
                     </archive>
@@ -325,7 +325,7 @@
                             <errTitle>Failed to load muonssh</errTitle>
                             <downloadUrl>https://www.oracle.com/java/technologies/downloads/#java11-windows</downloadUrl>
                             <classPath>
-                                <mainClass>muon.app.App</mainClass>
+                                <mainClass>tauon.app.App</mainClass>
                                 <addDependencies>false</addDependencies>
                                 <preCp>anything</preCp>
                             </classPath>
@@ -356,7 +356,7 @@
                         <CFBundleIconFile>src/dmg/muonssh-logo.icns</CFBundleIconFile>
                         <CFBundleDisplayName>Muon</CFBundleDisplayName>
                         <CFBundleDevelopmentRegion>English</CFBundleDevelopmentRegion>
-                        <JVMMainClassName>muon.app.App</JVMMainClassName>
+                        <JVMMainClassName>tauon.app.App</JVMMainClassName>
                         <JVMVersion>11+</JVMVersion>
                     </plist>
                     <!--

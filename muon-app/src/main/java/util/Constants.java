@@ -5,7 +5,7 @@ import muon.app.updater.VersionEntry;
 
 import java.io.File;
 
-import static muon.app.App.bundle;
+import static tauon.app.App.bundle;
 
 public class Constants {
     public static final String BASE_URL = "https://github.com/achiikun/muon-ssh";//"https://github.com/devlinx9";
@@ -13,8 +13,8 @@ public class Constants {
     public static final String UPDATE_URL = "https://devlinx9.github.io/muon-ssh";
     public static final String API_UPDATE_URL = "https://api.github.com/repos/devlinx9/muon-ssh/releases/latest";
     public static final String REPOSITORY_URL = BASE_URL + "/muon-ssh";
-    public static final String APPLICATION_VERSION = "2.2.0";
-    public static final String APPLICATION_NAME = "Muon SSH";
+    public static final String APPLICATION_VERSION = "1.0.0";
+    public static final String APPLICATION_NAME = "Tauon SSH";
 
     public static final VersionEntry VERSION = new VersionEntry("v" + APPLICATION_VERSION);
     public static final String UPDATE_URL2 = UPDATE_URL + "/check-update.html?v="
