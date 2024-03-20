@@ -79,8 +79,9 @@ public class App {
         Security.setProperty("networkaddress.cache.ttl", "1");
         Security.setProperty("networkaddress.cache.negative.ttl", "1");
         Security.setProperty("crypto.policy", "unlimited");
-
-        boolean importOnFirstRun = validateCustomMuonPath() || !validateConfigPath();
+        
+        validateCustomMuonPath();
+        boolean importOnFirstRun = validateConfigPath();
 
         setBundleLanguage();
         loadSettings();

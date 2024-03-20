@@ -149,7 +149,8 @@ public class SessionExportImport {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
-            SavedSessionTree savedSessionTree = objectMapper.readValue(new File(configDir + File.separator + SESSION_DB_FILE),
+            SavedSessionTree savedSessionTree = objectMapper.readValue(
+                    new File(configDir + File.separator + SESSION_DB_FILE),
                     new TypeReference<>() {
                     });
             save(savedSessionTree.getFolder(), savedSessionTree.getLastSelection(),

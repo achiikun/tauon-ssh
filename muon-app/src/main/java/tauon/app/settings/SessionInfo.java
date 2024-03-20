@@ -10,103 +10,37 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class SessionInfo extends NamedItem implements Serializable {
-    private String host;
-    private String user;
+public class SessionInfo extends HopEntry implements Serializable {
+    
     private String localFolder;
     private String remoteFolder;
-    private int port = 22;
+    
     private List<String> favouriteRemoteFolders = new ArrayList<>();
     private List<String> favouriteLocalFolders = new ArrayList<>();
-    private String privateKeyFile;
+
     private int proxyPort = 8080;
     private String proxyHost;
     private String proxyUser;
     private String proxyPassword;
     private int proxyType = 0;
+    
     private boolean XForwardingEnabled = false;
+    
     private boolean useJumpHosts = false;
     private JumpType jumpType = JumpType.TcpForwarding;
     private List<HopEntry> jumpHosts = new ArrayList<>();
     private List<PortForwardingRule> portForwardingRules = new ArrayList<>();
-
-    private String password;
+    
+    public SessionInfo(String id, String host, int port, String user, String password, String keypath) {
+        super(id, host, port, user, password, keypath);
+    }
+    public SessionInfo() {
+    
+    }
     
     @Override
     public String toString() {
         return name;
-    }
-
-    /**
-     * @return the id
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * @param id the id to set
-     */
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    /**
-     * @return the name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @param name the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @return the host
-     */
-    public String getHost() {
-        return host;
-    }
-
-    /**
-     * @param host the host to set
-     */
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    /**
-     * @return the user
-     */
-    public String getUser() {
-        return user;
-    }
-
-    /**
-     * @param user the user to set
-     */
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    /**
-     * @return the password
-     */
-    @JsonIgnore
-    public String getPassword() {
-        return password;
-    }
-
-    /**
-     * @param password the password to set
-     */
-    @JsonProperty
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     /**
@@ -138,20 +72,6 @@ public class SessionInfo extends NamedItem implements Serializable {
     }
 
     /**
-     * @return the port
-     */
-    public int getPort() {
-        return port;
-    }
-
-    /**
-     * @param port the port to set
-     */
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    /**
      * @return the favouriteFolders
      */
     public List<String> getFavouriteRemoteFolders() {
@@ -165,32 +85,18 @@ public class SessionInfo extends NamedItem implements Serializable {
         this.favouriteRemoteFolders = favouriteFolders;
     }
 
-    /**
-     * @return the privateKeyFile
-     */
-    public String getPrivateKeyFile() {
-        return privateKeyFile;
-    }
-
-    /**
-     * @param privateKeyFile the privateKeyFile to set
-     */
-    public void setPrivateKeyFile(String privateKeyFile) {
-        this.privateKeyFile = privateKeyFile;
-    }
-
     public SessionInfo copy() {
         SessionInfo info = new SessionInfo();
         info.setId(UUID.randomUUID().toString());
-        info.setHost(this.host);
-        info.setPort(this.port);
+        info.setHost(this.getHost());
+        info.setPort(this.getPort());
         info.getFavouriteRemoteFolders().addAll(favouriteRemoteFolders);
         info.getFavouriteLocalFolders().addAll(favouriteLocalFolders);
         info.setLocalFolder(this.localFolder);
         info.setRemoteFolder(this.remoteFolder);
-        info.setPassword(this.password);
-        info.setPrivateKeyFile(privateKeyFile);
-        info.setUser(user);
+        info.setPassword(this.getPassword());
+        info.setPrivateKeyFile(this.getPrivateKeyFile());
+        info.setUser(this.getUser());
         info.setName(name);
         return info;
     }
@@ -324,17 +230,30 @@ public class SessionInfo extends NamedItem implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SessionInfo that = (SessionInfo) o;
-        return Objects.equals(host, that.host);
+        return Objects.equals(getHost(), that.getHost());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(host, user, localFolder, remoteFolder, port, favouriteRemoteFolders, favouriteLocalFolders, privateKeyFile, proxyPort, proxyHost, proxyUser, proxyPassword, proxyType, XForwardingEnabled, useJumpHosts, jumpType, jumpHosts, portForwardingRules, password);
+        return Objects.hash(this.getHost(), this.getUser(), localFolder, remoteFolder, this.getPort(),
+                favouriteRemoteFolders, favouriteLocalFolders, this.getPrivateKeyFile(),
+                proxyPort, proxyHost, proxyUser, proxyPassword, proxyType,
+                XForwardingEnabled, useJumpHosts, jumpType, jumpHosts, portForwardingRules,
+                this.getPassword());
     }
     
     public String getSudoPassword() {
         // TODO ask user for password
-        return password;
+        return getPassword();
+    }
+    
+    public char[][] getHopPasswords() {
+        List<char[]> pass = new ArrayList<>();
+        for(HopEntry h: jumpHosts){
+            String password = h.getPassword();
+            pass.add(password == null || password.isBlank() ? null : password.toCharArray());
+        }
+        return pass.toArray(new char[0][]);
     }
     
     public enum JumpType {

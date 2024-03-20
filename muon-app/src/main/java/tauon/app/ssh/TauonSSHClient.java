@@ -50,7 +50,7 @@ public class TauonSSHClient {
     private static final Logger LOG = Logger.getLogger(TauonSSHClient.class);
     
     private final SessionInfo info;
-    private final GuiHandle guiHandle;
+    private final GuiHandle<TauonSSHClient> guiHandle;
     private final PasswordFinder passwordFinder;
     private final ExecutorService executor;
     private final boolean openPortForwarding;
@@ -65,7 +65,7 @@ public class TauonSSHClient {
     
     public TauonSSHClient(
             SessionInfo info,
-            GuiHandle guiHandle,
+            GuiHandle<TauonSSHClient> guiHandle,
             PasswordFinder passwordFinder,
             ExecutorService executor,
             boolean openPortForwarding
@@ -85,7 +85,7 @@ public class TauonSSHClient {
         AtomicBoolean cancelled = new AtomicBoolean();
         AtomicReference<Future<Boolean>> future = new AtomicReference<>();
         
-        GuiHandle.BlockHandle blockHandle = guiHandle.blockUi(blockHandle2 -> {
+        GuiHandle.BlockHandle blockHandle = guiHandle.blockUi(this, blockHandle2 -> {
             if(!cancelled.getAndSet(true)){
                 Future<Boolean> f = future.get();
                 if(f != null)
@@ -101,8 +101,8 @@ public class TauonSSHClient {
             portForwardingStates.clear();
             
             try {
-                sshConnectedHop = new SSHConnectedHop();
-                sshConnectedHop.connect(this.info.getJumpHosts(), 0);
+                sshConnectedHop = new SSHConnectedHop(info);
+                sshConnectedHop.connect(0);
                 
                 if(openPortForwarding) {
                     
@@ -312,7 +312,13 @@ public class TauonSSHClient {
         private ServerSocket serverSocket;
         private Thread thread;
         
-        private void connect(List<HopEntry> hopStack, int index) throws IOException, OperationCancelledException {
+        private final HopEntry hopEntry;
+        
+        public SSHConnectedHop(HopEntry hopEntry){
+            this.hopEntry = hopEntry;
+        }
+        
+        private void connect(int index) throws IOException, OperationCancelledException {
             
             try {
                 
@@ -346,15 +352,15 @@ public class TauonSSHClient {
                 
                 this.sshj.setConnectTimeout(App.getGlobalSettings().getConnectionTimeout() * 1000);
                 this.sshj.setTimeout(App.getGlobalSettings().getConnectionTimeout() * 1000);
-                if (hopStack.isEmpty() || index >= hopStack.size()) {
+                if (info.getJumpHosts().isEmpty() || index >= info.getJumpHosts().size()) {
                     this.setupProxyAndSocketFactory();
                     this.sshj.addHostKeyVerifier(App.hostKeyVerifier);
-                    this.sshj.connect(info.getHost(), info.getPort());
+                    this.sshj.connect(hopEntry.getHost(), hopEntry.getPort());
                 } else {
                     
                     try {
                         LOG.debug("Tunneling through...");
-                        tunnelThrough(hopStack, index);
+                        tunnelThrough(index);
                         LOG.debug("adding host key verifier");
                         this.sshj.addHostKeyVerifier(App.hostKeyVerifier);
                         LOG.debug("Host key verifier added");
@@ -458,7 +464,7 @@ public class TauonSSHClient {
         
         private String promptUser(int index){
             
-            UserPassCache userPassCache = null;
+            UserPassCache userPassCache;
             
             if(cache.size() > index){
                 userPassCache = cache.get(index);
@@ -470,11 +476,11 @@ public class TauonSSHClient {
             
             if(userPassCache.user == null || userPassCache.user.isBlank()) {
                 
-                if(info.getUser() != null && !info.getUser().isBlank()){
-                    userPassCache.user = info.getUser();
+                if(hopEntry.getUser() != null && !hopEntry.getUser().isBlank()){
+                    userPassCache.user = hopEntry.getUser();
                 }else{
                     AtomicBoolean remember = new AtomicBoolean();
-                    String user = guiHandle.promptUser(info, remember);
+                    String user = guiHandle.promptUser(hopEntry, remember);
                     if(remember.get())
                         userPassCache.user = user;
                     return user;
@@ -487,20 +493,23 @@ public class TauonSSHClient {
         
         private char[] promptPassword(String user, int index){
             
-            if (cache.size() <= index) {
-                while (cache.size() <= index)
-                    cache.add(new UserPassCache());
-            }
+            UserPassCache userPassCache;
             
-            UserPassCache userPassCache = cache.get(index);
+            if(cache.size() > index){
+                userPassCache = cache.get(index);
+            }else{
+                while(cache.size() <= index)
+                    cache.add(new UserPassCache());
+                userPassCache = cache.get(index);
+            }
             
             if(userPassCache.password == null || userPassCache.password.length == 0) {
                 
-                if(info.getPassword() != null && !info.getPassword().isBlank()){
-                    userPassCache.password = info.getPassword().toCharArray();
+                if(hopEntry.getPassword() != null && !hopEntry.getPassword().isBlank()){
+                    userPassCache.password = hopEntry.getPassword().toCharArray();
                 }else {
                     AtomicBoolean remember = new AtomicBoolean();
-                    char[] password = guiHandle.promptPassword(info, user, remember);
+                    char[] password = guiHandle.promptPassword(hopEntry, user, remember);
                     if (remember.get())
                         userPassCache.password = password;
                     return password;
@@ -582,22 +591,23 @@ public class TauonSSHClient {
         }
         
         // recursively
-        private void tunnelThrough(List<HopEntry> hopStack, int index) throws Exception {
-            HopEntry ent = hopStack.get(index);
-            SessionInfo hopInfo = new SessionInfo();
-            assert ent != null;
-            hopInfo.setHost(ent.getHost());
-            hopInfo.setPort(ent.getPort());
-            hopInfo.setUser(ent.getUser());
-            hopInfo.setPassword(ent.getPassword());
-            hopInfo.setPrivateKeyFile(ent.getKeypath());
-            previousHop = new SSHConnectedHop();
-            previousHop.connect(hopStack, index+1);
+        private void tunnelThrough(int index) throws Exception {
+            HopEntry ent = info.getJumpHosts().get(index);
+//            SessionInfo hopInfo = new SessionInfo();
+//            assert ent != null;
+//            hopInfo.setHost(ent.getHost());
+//            hopInfo.setPort(ent.getPort());
+//            hopInfo.setUser(ent.getUser());
+//            hopInfo.setPassword(ent.getPassword());
+//            hopInfo.setPrivateKeyFile(ent.getKeypath());
+            previousHop = new SSHConnectedHop(ent);
+            previousHop.connect(index+1);
         }
         
         private void connectViaTcpForwarding() throws Exception {
-            this.sshj.connectVia(this.previousHop.sshj.newDirectConnection(info.getHost(), info.getPort()), info.getHost(),
-                    info.getPort());
+            this.sshj.connectVia(this.previousHop.sshj.newDirectConnection(
+                    hopEntry.getHost(), hopEntry.getPort()), hopEntry.getHost(), hopEntry.getPort()
+            );
         }
         
         private void connectViaPortForwarding() throws Exception {

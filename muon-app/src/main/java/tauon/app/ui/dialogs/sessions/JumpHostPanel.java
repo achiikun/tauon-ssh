@@ -153,6 +153,8 @@ public class JumpHostPanel extends JPanel {
                 txtHost.setText(e.getHost());
             if (e.getUser() != null)
                 txtUser.setText(e.getUser());
+            if (e.getPassword() != null)
+                txtPassword.setText(e.getPassword());
             if (e.getKeypath() != null)
                 txtKeyFile.setText(e.getKeypath());
             spPort.setValue(e.getPort());

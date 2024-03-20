@@ -3,6 +3,7 @@
  */
 package tauon.app.ui.containers.session;
 
+import tauon.app.ssh.TauonSSHClient;
 import tauon.app.ui.containers.session.pages.diskspace.DiskspaceAnalyzer;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import tauon.app.ssh.filesystem.SshFileSystem;
@@ -31,6 +32,7 @@ import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.PageHolder;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.containers.main.FileTransferProgress;
+import tauon.app.ui.dialogs.sessions.HopEntry;
 import util.Constants;
 import util.LayoutUtilities;
 
@@ -51,7 +53,7 @@ import java.util.function.Consumer;
  * @author subhro
  *
  */
-public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle, PasswordFinder {
+public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle<TauonRemoteSessionInstance>, PasswordFinder {
     public final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final SessionInfo info;
     private final AppWindow appWindow;
@@ -416,7 +418,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     @Override
-    public char[] promptPassword(SessionInfo info, String user, AtomicBoolean remember) {
+    public char[] promptPassword(HopEntry info, String user, AtomicBoolean remember) {
         return new char[0];
     }
     
@@ -426,19 +428,22 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     @Override
-    public BlockHandle blockUi(UserCancellable userCancellable) {
-        BlockHandle block = new BlockHandle() {
-            @Override
-            public void unblock() {
-                App.getInputBlocker().unblockInput();
-            }
-        };
-        App.getInputBlocker().blockInput(() -> userCancellable.userCancelled(block));
-        return block;
+    public BlockHandle blockUi(TauonRemoteSessionInstance client, UserCancellable userCancellable) {
+        if(client == this.remoteSessionInstance) {
+            BlockHandle block = new BlockHandle() {
+                @Override
+                public void unblock() {
+                    App.getInputBlocker().unblockInput();
+                }
+            };
+            App.getInputBlocker().blockInput(() -> userCancellable.userCancelled(block));
+            return block;
+        }
+        return () -> {}; // No block
     }
     
     @Override
-    public String promptUser(SessionInfo info, AtomicBoolean remember) {
+    public String promptUser(HopEntry info, AtomicBoolean remember) {
         
         JTextField txtUser = new SkinnedTextField(30);
         JCheckBox chkCacheUser = new JCheckBox(App.bundle.getString("remember_username"));

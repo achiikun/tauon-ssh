@@ -1,5 +1,6 @@
 package tauon.app.settings;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +30,7 @@ public final class PasswordStore {
     private final AtomicBoolean unlocked = new AtomicBoolean(false);
     private KeyStore.PasswordProtection protParam;
 
-    private Map<String, char[]> passwordMap = new HashMap<>();
+    private Map<String, PasswordEntry> passwordMap = new HashMap<>();
 
     private PasswordStore() throws KeyStoreException {
         keyStore = KeyStore.getInstance("PKCS12");
@@ -73,26 +74,50 @@ public final class PasswordStore {
         this.passwordMap = deserializePasswordMap(chars);
     }
 
-    private Map<String, char[]> deserializePasswordMap(char[] chars) throws Exception {
+    private Map<String, PasswordEntry> deserializePasswordMap(char[] chars) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper.readValue(new CharArrayReader(chars), new TypeReference<>() {
-        });
+        
+        try{
+            return objectMapper.readValue(new CharArrayReader(chars), new TypeReference<>() {
+            });
+        }catch(Exception e){
+            Map<String, char[]> mapOfString = objectMapper.readValue(new CharArrayReader(chars), new TypeReference<>() {
+            });
+            Map<String, PasswordEntry> map = new HashMap<>();
+            for(Map.Entry<String, char[]> entry: mapOfString.entrySet()){
+                PasswordEntry passwordEntry = new PasswordEntry();
+                passwordEntry.infoPassword = entry.getValue();
+                passwordEntry.hopPasswords = new char[0][];
+                map.put(entry.getKey(), passwordEntry);
+            }
+            return map;
+        }
     }
 
-    private char[] serializePasswordMap(Map<String, char[]> map) throws Exception {
+    private char[] serializePasswordMap(Map<String, PasswordEntry> map) throws Exception {
         CharArrayWriter writer = new CharArrayWriter();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(writer, map);
         return writer.toCharArray();
     }
 
-    public synchronized char[] getSavedPassword(String alias) throws Exception {
+    public synchronized PasswordEntry getSavedPassword(String alias) throws Exception {
         return this.passwordMap.get(alias);
     }
-
-    public synchronized void savePassword(String alias, char[] password) throws Exception {
-        this.passwordMap.put(alias, password);
+    
+    public synchronized void savePassword(String alias, char[] password, char[][] hopPasswords) throws Exception {
+        PasswordEntry passwordEntry = new PasswordEntry();
+        passwordEntry.infoPassword = password;
+        passwordEntry.hopPasswords = hopPasswords;
+        this.passwordMap.put(alias, passwordEntry);
+    }
+    
+    public synchronized void savePassword(String alias, String password, char[][] hopPasswords) throws Exception {
+        PasswordEntry passwordEntry = new PasswordEntry();
+        passwordEntry.infoPassword = password == null || password.isBlank() ? null : password.toCharArray();
+        passwordEntry.hopPasswords = hopPasswords;
+        this.passwordMap.put(alias, passwordEntry);
     }
 
     public synchronized void saveKeyStore() throws Exception {
@@ -141,8 +166,19 @@ public final class PasswordStore {
     private void populatePassword(SessionFolder folder) {
         for (SessionInfo info : folder.getItems()) {
             try {
-                char[] password = this.getSavedPassword(info.getId());
-                info.setPassword(new String(password));
+                PasswordEntry password = this.getSavedPassword(info.getId());
+                
+                if(password.infoPassword != null){
+                    info.setPassword(new String(password.infoPassword));
+                }
+                
+                int i = 0;
+                for(char[] hopPass: password.hopPasswords){
+                    if(hopPass != null && i < info.getJumpHosts().size()){
+                        info.getJumpHosts().get(i).setPassword(new String(hopPass));
+                    }
+                }
+                
             } catch (Exception e) {
             }
         }
@@ -176,14 +212,14 @@ public final class PasswordStore {
 
     private void savePassword(SessionFolder folder) {
         for (SessionInfo info : folder.getItems()) {
-            String password = info.getPassword();
-            if (password != null && password.length() > 0) {
+//            String password = info.getPassword();
+//            if (password != null && !password.isEmpty()) {
                 try {
-                    savePassword(info.getId(), password.toCharArray());
+                    savePassword(info.getId(), info.getPassword(), info.getHopPasswords());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }
+//            }
         }
         for (SessionFolder f : folder.getFolders()) {
             savePassword(f);
@@ -225,7 +261,7 @@ public final class PasswordStore {
         }
 
         Enumeration<String> aliases = keyStore.aliases();
-        Map<String, char[]> passMap = new HashMap<>();
+        Map<String, PasswordEntry> passMap = new HashMap<>();
 
         while (aliases.hasMoreElements()) {
             String alias = aliases.nextElement();
@@ -235,10 +271,15 @@ public final class PasswordStore {
 
         protParam = new KeyStore.PasswordProtection(newPassword, "PBEWithHmacSHA256AndAES_256", null);
 
-        for (Map.Entry<String, char[]> entry : passMap.entrySet()) {
-            savePassword(entry.getKey(), entry.getValue());
+        for (Map.Entry<String, PasswordEntry> entry : passMap.entrySet()) {
+            savePassword(entry.getKey(), entry.getValue().infoPassword, entry.getValue().hopPasswords);
         }
         saveKeyStore();
         return true;
+    }
+    
+    public static class PasswordEntry{
+        public char[] infoPassword;
+        public char[][] hopPasswords;
     }
 }

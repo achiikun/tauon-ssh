@@ -1,6 +1,10 @@
 package tauon.app.ui.dialogs.sessions;
 
-public class HopEntry {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import tauon.app.settings.NamedItem;
+
+public class HopEntry extends NamedItem {
     private String id, host, user, password, keypath;
     private int port;
 
@@ -40,13 +44,35 @@ public class HopEntry {
     public void setUser(String user) {
         this.user = user;
     }
-
+    
+    /**
+     * @return the password
+     */
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
-
+    
+    /**
+     * @param password the password to set
+     */
+    @JsonIgnore
     public void setPassword(String password) {
         this.password = password;
+    }
+    
+    /**
+     * @return the privateKeyFile
+     */
+    public String getPrivateKeyFile() {
+        return keypath;
+    }
+    
+    /**
+     * @param privateKeyFile the privateKeyFile to set
+     */
+    public void setPrivateKeyFile(String privateKeyFile) {
+        this.keypath = privateKeyFile;
     }
 
     public String getKeypath() {

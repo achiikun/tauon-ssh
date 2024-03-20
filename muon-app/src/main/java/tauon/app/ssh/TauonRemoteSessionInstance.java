@@ -36,8 +36,16 @@ public class TauonRemoteSessionInstance {
     
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     
-    public TauonRemoteSessionInstance(SessionInfo info, GuiHandle guiHandle, PasswordFinder passwordFinder, boolean openPortForwarding) {
-        this.ssh = new TauonSSHClient(info, guiHandle, passwordFinder, executorService, openPortForwarding);
+    public TauonRemoteSessionInstance(SessionInfo info, GuiHandle<TauonRemoteSessionInstance> guiHandle, PasswordFinder passwordFinder, boolean openPortForwarding) {
+        
+        GuiHandle.Delegate<TauonSSHClient> guiHandleDelagate = new GuiHandle.Delegate<>(guiHandle) {
+            @Override
+            public BlockHandle blockUi(TauonSSHClient client, UserCancellable userCancellable) {
+                return guiHandle.blockUi(TauonRemoteSessionInstance.this, userCancellable);
+            }
+        };
+        
+        this.ssh = new TauonSSHClient(info, guiHandleDelagate, passwordFinder, executorService, openPortForwarding);
         this.sshFs = new SshFileSystem(this.ssh);
     }
     
@@ -183,4 +191,5 @@ public class TauonRemoteSessionInstance {
     public Session openSession() throws Exception {
         return ssh.openSession();
     }
+    
 }
