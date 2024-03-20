@@ -1,7 +1,7 @@
 /**
  *
  */
-package tauon.app.ui.dialogs.sessions;
+package tauon.app.ui.containers.main;
 
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.App;

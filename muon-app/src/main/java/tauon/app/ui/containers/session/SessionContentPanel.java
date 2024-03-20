@@ -311,12 +311,12 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         
         if (this.backgroundTransferPool != null) {
             this.backgroundTransferPool.shutdownNow();
-        }
-        
-        try {
-            this.backgroundTransferPool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-        } catch (InterruptedException e1) {
-            e1.printStackTrace();
+            
+            try {
+                this.backgroundTransferPool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
         }
         
         try {

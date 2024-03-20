@@ -7,7 +7,6 @@ import tauon.app.App;
 import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
-import tauon.app.ui.dialogs.sessions.SessionListPanel;
 import tauon.app.ui.containers.session.pages.files.transfer.BackgroundFileTransfer;
 import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
