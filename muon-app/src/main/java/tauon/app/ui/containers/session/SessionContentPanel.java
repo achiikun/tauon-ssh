@@ -435,10 +435,10 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
             BlockHandle block = new BlockHandle() {
                 @Override
                 public void unblock() {
-                    App.getInputBlocker().unblockInput();
+                    appWindow.getInputBlocker().unblockInput();
                 }
             };
-            App.getInputBlocker().blockInput(() -> userCancellable.userCancelled(block));
+            appWindow.getInputBlocker().blockInput(() -> userCancellable.userCancelled(block));
             return block;
         }
         return () -> {}; // No block

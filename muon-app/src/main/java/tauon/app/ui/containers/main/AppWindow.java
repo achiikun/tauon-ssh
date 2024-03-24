@@ -4,6 +4,8 @@
 package tauon.app.ui.containers.main;
 
 import tauon.app.App;
+import tauon.app.ui.components.glasspanes.AppInputBlocker;
+import tauon.app.ui.components.glasspanes.InputBlocker;
 import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
@@ -43,7 +45,8 @@ public class AppWindow extends JFrame {
     private JLabel lblUploadCount, lblDownloadCount;
     private JPopupMenu popup;
     private JLabel lblUpdate, lblUpdateText;
-
+    
+    private final InputBlocker inputBlocker;
     /**
      *
      */
@@ -55,6 +58,7 @@ public class AppWindow extends JFrame {
             e.printStackTrace();
         }
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        inputBlocker = new AppInputBlocker(this);
 
         Insets inset = Toolkit.getDefaultToolkit().getScreenInsets(
                 GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
@@ -348,5 +352,9 @@ public class AppWindow extends JFrame {
     public void openSettings(SettingsPageName page) {
         SettingsDialog settingsDialog = new SettingsDialog(this);
         settingsDialog.showDialog(this, page);
+    }
+    
+    public InputBlocker getInputBlocker() {
+        return inputBlocker;
     }
 }

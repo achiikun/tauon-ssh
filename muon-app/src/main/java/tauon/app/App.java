@@ -59,7 +59,6 @@ public class App {
     public static ResourceBundle bundle;
     public static AppSkin skin;
     private static Settings settings;
-    private static InputBlocker inputBlocker;
     private static ExternalEditorHandler externalEditorHandler;
     private static AppWindow mw;
     private static Map<String, List<String>> pinnedLogs = new HashMap<>();
@@ -142,7 +141,6 @@ public class App {
         
         
         mw = new AppWindow();
-        inputBlocker = new AppInputBlocker(mw);
         externalEditorHandler = new ExternalEditorHandler(mw);
         SwingUtilities.invokeLater(() -> mw.setVisible(true));
 
@@ -256,13 +254,6 @@ public class App {
 
     public static synchronized Settings getGlobalSettings() {
         return settings;
-    }
-
-    /**
-     * @return the inputBlocker
-     */
-    public static InputBlocker getInputBlocker() {
-        return inputBlocker;
     }
 
     /**
