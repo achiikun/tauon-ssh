@@ -2,6 +2,8 @@ package tauon.app.ui.containers.session.pages.utilpage.keys;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.InputTransferChannel;
 import tauon.app.ssh.filesystem.OutputTransferChannel;
@@ -13,17 +15,18 @@ import net.schmizz.sshj.sftp.SFTPException;
 import util.PathUtils;
 
 import javax.swing.*;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SshKeyManager {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(SshKeyManager.class);
+    
     public static SshKeyHolder getKeyDetails(SessionContentPanel content) throws Exception {
         SshKeyHolder holder = new SshKeyHolder();
         loadLocalKey(getPubKeyPath(content.getInfo()), holder);
@@ -40,8 +43,10 @@ public class SshKeyManager {
             byte[] bytes = Files.readAllBytes(defaultPath);
             holder.setLocalPublicKey(new String(bytes, StandardCharsets.UTF_8));
             holder.setLocalPubKeyFile(defaultPath.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch(NoSuchFileException e){
+            LOG.warn("Local ssh keys file not found.");
+        }catch (Exception e) {
+            LOG.error("Error while reading ssh keys.", e);
         }
     }
 
