@@ -120,6 +120,7 @@ public class SshKeyManager {
         Path sshDir = Paths.get(System.getProperty("user.home"), ".ssh");
         Path pubKeyPath = Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa.pub").toAbsolutePath();
         Path keyPath = Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa").toAbsolutePath();
+        // TODO get rid of jsch, copy the functionality
         JSch jsch = new JSch();
         KeyPair kpair = KeyPair.genKeyPair(jsch, KeyPair.RSA);
         Files.createDirectories(sshDir);
