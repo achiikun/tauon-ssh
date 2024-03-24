@@ -34,7 +34,7 @@ import static tauon.app.App.bundle;
 public class ExternalEditorHandler extends JDialog {
     private final JProgressBar progressBar;
     private final JLabel progressLabel;
-    private final JButton btnCanel;
+    private final JButton btnCancel;
     private final JFrame frame;
     private final AtomicBoolean stopFlag = new AtomicBoolean(false);
     private FileChangeWatcher fileWatcher;
@@ -54,10 +54,10 @@ public class ExternalEditorHandler extends JDialog {
         progressLabel = new JLabel("Transferring...");
         progressLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
         progressLabel.setFont(App.skin.getDefaultFont().deriveFont(18.0f));
-        btnCanel = new JButton(bundle.getString("cancel"));
+        btnCancel = new JButton(bundle.getString("cancel"));
         Box bottomBox = Box.createHorizontalBox();
         bottomBox.add(Box.createHorizontalGlue());
-        bottomBox.add(btnCanel);
+        bottomBox.add(btnCancel);
 
         progressLabel.setAlignmentX(Box.LEFT_ALIGNMENT);
         progressBar.setAlignmentX(Box.LEFT_ALIGNMENT);
@@ -73,6 +73,7 @@ public class ExternalEditorHandler extends JDialog {
 
         this.add(box);
         this.fileWatcher = new FileChangeWatcher(files -> {
+            // TODO wait until returning to the app to show this dialog
             List<String> messages = new ArrayList<>();
             // TODO i18n
             messages.add("Some file(s) have been modified, upload changes to server?\n");
