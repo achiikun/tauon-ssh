@@ -1,5 +1,6 @@
 package tauon.app.ui.dialogs.sessions;
 
+import tauon.app.settings.HopEntry;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ui.components.misc.NativeFileChooser;
 import tauon.app.ui.components.misc.SkinnedTextArea;

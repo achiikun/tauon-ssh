@@ -1,9 +1,5 @@
 package tauon.app.settings;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import tauon.app.ui.dialogs.sessions.HopEntry;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

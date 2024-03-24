@@ -19,7 +19,7 @@ import net.schmizz.sshj.userauth.method.AuthNone;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import tauon.app.App;
 import tauon.app.settings.SessionInfo;
-import tauon.app.ui.dialogs.sessions.HopEntry;
+import tauon.app.settings.HopEntry;
 import tauon.app.util.ssh.SshUtil;
 import util.ExceptionUtils;
 

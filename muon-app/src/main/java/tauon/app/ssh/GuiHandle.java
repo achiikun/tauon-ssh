@@ -1,8 +1,7 @@
 package tauon.app.ssh;
 
 import tauon.app.settings.PortForwardingRule;
-import tauon.app.settings.SessionInfo;
-import tauon.app.ui.dialogs.sessions.HopEntry;
+import tauon.app.settings.HopEntry;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;

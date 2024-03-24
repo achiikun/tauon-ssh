@@ -1,4 +1,4 @@
-package tauon.app.ui.dialogs.sessions;
+package tauon.app.settings;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

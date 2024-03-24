@@ -3,7 +3,6 @@
  */
 package tauon.app.ui.containers.session;
 
-import tauon.app.ssh.TauonSSHClient;
 import tauon.app.ui.containers.session.pages.diskspace.DiskspaceAnalyzer;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import tauon.app.ssh.filesystem.SshFileSystem;
@@ -32,7 +31,7 @@ import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.PageHolder;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.containers.main.FileTransferProgress;
-import tauon.app.ui.dialogs.sessions.HopEntry;
+import tauon.app.settings.HopEntry;
 import util.Constants;
 import util.LayoutUtilities;
 
