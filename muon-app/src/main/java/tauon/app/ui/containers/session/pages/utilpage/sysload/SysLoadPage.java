@@ -11,7 +11,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
@@ -125,7 +125,7 @@ public class SysLoadPage extends UtilPageItemView {
 
         topPanel.add(titleLabel);
         topPanel.add(Box.createHorizontalGlue());
-        topPanel.add(new JLabel(bundle.getString("refresh_interval")));
+        topPanel.add(new JLabel(getBundle().getString("refresh_interval")));
         topPanel.add(Box.createHorizontalStrut(5));
         topPanel.add(spInterval);
         topPanel.add(Box.createHorizontalStrut(5));

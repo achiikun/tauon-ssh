@@ -1,6 +1,7 @@
 package tauon.app.ui.containers.session.pages.files;
 
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ui.components.closabletabs.ClosableTabContent;
 import tauon.app.ui.components.closabletabs.ClosableTabbedPanel.TabTitle;
@@ -48,7 +49,7 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
             }
             if (text != null && text.length() > 0) {
                 addBack(this.path);
-                render(text, App.getGlobalSettings().isDirectoryCache());
+                render(text, SettingsService.getSettings().isDirectoryCache());
             }
         });
         Box smallToolbar = Box.createHorizontalBox();
@@ -74,7 +75,7 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
         btnBack.addActionListener(e -> {
             String item = history.prevElement();
             addNext(this.path);
-            render(item, App.getGlobalSettings().isDirectoryCache());
+            render(item, SettingsService.getSettings().isDirectoryCache());
         });
 
         btnNext = new JButton();
@@ -84,7 +85,7 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
         btnNext.addActionListener(e -> {
             String item = history.nextElement();
             addBack(this.path);
-            render(item, App.getGlobalSettings().isDirectoryCache());
+            render(item, SettingsService.getSettings().isDirectoryCache());
         });
 
         JButton btnHome = new JButton();

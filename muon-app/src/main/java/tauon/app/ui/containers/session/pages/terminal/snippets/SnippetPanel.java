@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class SnippetPanel extends JPanel {
     private final DefaultListModel<SnippetItem> listModel = new DefaultListModel<>();
@@ -66,16 +66,17 @@ public class SnippetPanel extends JPanel {
         listView.setCellRenderer(new SnippetListRenderer());
         listView.setBackground(App.skin.getTableBackgroundColor());
 
-        btnAdd = new JButton(bundle.getString("add"));
-        btnEdit = new JButton(bundle.getString("edit"));
-        btnDel = new JButton(bundle.getString("delete"));
-        btnInsert = new JButton(bundle.getString("insert"));
-        btnCopy = new JButton(bundle.getString("copy"));
+        btnAdd = new JButton(getBundle().getString("add"));
+        btnEdit = new JButton(getBundle().getString("edit"));
+        btnDel = new JButton(getBundle().getString("delete"));
+        btnInsert = new JButton(getBundle().getString("insert"));
+        btnCopy = new JButton(getBundle().getString("copy"));
 
         btnAdd.addActionListener(e -> {
             JTextField txtName = new SkinnedTextField(30);
             JTextField txtCommand = new SkinnedTextField(30);
-
+            
+            // TODO i18n
             if (JOptionPane.showOptionDialog(null,
                     new Object[]{"Snippet name", txtName, "Command",
                             txtCommand},

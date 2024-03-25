@@ -9,6 +9,8 @@ import tauon.app.App;
 
 import com.jediterm.core.Color;
 
+import static tauon.app.services.SettingsService.getSettings;
+
 /**
  * @author subhro
  *
@@ -32,30 +34,30 @@ public class CustomTerminalTheme implements TerminalTheme {
     @Override
     public TextStyle getDefaultStyle() {
         return new TextStyle(
-                getTerminalColor(App.getGlobalSettings().getDefaultColorFg()),
-                getTerminalColor(App.getGlobalSettings().getDefaultColorBg()));
+                getTerminalColor(getSettings().getDefaultColorFg()),
+                getTerminalColor(getSettings().getDefaultColorBg()));
     }
 
     @Override
     public TextStyle getSelectionColor() {
         return new TextStyle(
                 getTerminalColor(
-                        App.getGlobalSettings().getDefaultSelectionFg()),
+                        getSettings().getDefaultSelectionFg()),
                 getTerminalColor(
-                        App.getGlobalSettings().getDefaultSelectionBg()));
+                        getSettings().getDefaultSelectionBg()));
     }
 
     @Override
     public TextStyle getFoundPatternColor() {
         return new TextStyle(
-                getTerminalColor(App.getGlobalSettings().getDefaultFoundFg()),
-                getTerminalColor(App.getGlobalSettings().getDefaultFoundFg()));
+                getTerminalColor(getSettings().getDefaultFoundFg()),
+                getTerminalColor(getSettings().getDefaultFoundFg()));
     }
 
     @Override
     public TextStyle getHyperlinkColor() {
         return new TextStyle(
-                getTerminalColor(App.getGlobalSettings().getDefaultHrefFg()),
-                getTerminalColor(App.getGlobalSettings().getDefaultHrefBg()));
+                getTerminalColor(getSettings().getDefaultHrefFg()),
+                getTerminalColor(getSettings().getDefaultHrefBg()));
     }
 }

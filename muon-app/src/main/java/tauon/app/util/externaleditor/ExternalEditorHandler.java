@@ -3,12 +3,12 @@
  */
 package tauon.app.util.externaleditor;
 
-import tauon.app.ssh.filesystem.SshFileSystem;
-import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.SSHRemoteFileInputStream;
 import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
+import tauon.app.ssh.filesystem.SshFileSystem;
+import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.util.externaleditor.FileChangeWatcher.FileModificationInfo;
 import util.OptionPaneUtils;
 import util.PlatformUtils;
@@ -25,7 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
@@ -54,7 +54,7 @@ public class ExternalEditorHandler extends JDialog {
         progressLabel = new JLabel("Transferring...");
         progressLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
         progressLabel.setFont(App.skin.getDefaultFont().deriveFont(18.0f));
-        btnCancel = new JButton(bundle.getString("cancel"));
+        btnCancel = new JButton(getBundle().getString("cancel"));
         Box bottomBox = Box.createHorizontalBox();
         bottomBox.add(Box.createHorizontalGlue());
         bottomBox.add(btnCancel);

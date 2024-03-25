@@ -5,6 +5,7 @@ import com.jediterm.terminal.ui.JediTermWidget;
 import com.jediterm.terminal.ui.TerminalPanelListener;
 import com.jediterm.terminal.ui.TerminalSession;
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.ui.components.closabletabs.ClosableTabContent;
 import tauon.app.ui.components.closabletabs.ClosableTabbedPanel.TabTitle;
 import tauon.app.ui.containers.session.SessionContentPanel;
@@ -28,7 +29,7 @@ public class TerminalComponent extends JPanel implements ClosableTabContent {
 
     public TerminalComponent(SessionInfo info, String name, String command, SessionContentPanel sessionContentPanel) {
         setLayout(new BorderLayout());
-        System.out.println("Current terminal font: " + App.getGlobalSettings().getTerminalFontName());
+        System.out.println("Current terminal font: " + SettingsService.getSettings().getTerminalFontName());
         this.name = name;
         this.tabTitle = new TabTitle();
         contentPane = new JPanel(new BorderLayout());

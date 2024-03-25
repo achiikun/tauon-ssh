@@ -2,11 +2,11 @@ package tauon.app.ui.dialogs.sessions;
 
 import tauon.app.App;
 import tauon.app.settings.PortForwardingRule;
+import tauon.app.settings.PortForwardingRule.PortForwardingType;
 import tauon.app.settings.SessionInfo;
+import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
-import tauon.app.settings.PortForwardingRule.PortForwardingType;
-import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -15,7 +15,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class PortForwardingPanel extends JPanel {
     private final PFTableModel model;
@@ -92,7 +92,7 @@ public class PortForwardingPanel extends JPanel {
     }
 
     private PortForwardingRule addOrEditEntry(PortForwardingRule r) {
-        JComboBox<String> cmbPFType = new JComboBox<>(new String[]{bundle.getString("local"), bundle.getString("remote")});
+        JComboBox<String> cmbPFType = new JComboBox<>(new String[]{getBundle().getString("local"), getBundle().getString("remote")});
 
         JTextField txtHost = new SkinnedTextField(30);
 
@@ -122,7 +122,7 @@ public class PortForwardingPanel extends JPanel {
             String bindAddress = txtBindAddress.getText();
 
             if (host.length() < 1 || bindAddress.length() < 1 || port1 <= 0 || port2 <= 0) {
-                JOptionPane.showMessageDialog(this, bundle.getString("invalid_input"));
+                JOptionPane.showMessageDialog(this, getBundle().getString("invalid_input"));
                 continue;
             }
 
@@ -141,7 +141,7 @@ public class PortForwardingPanel extends JPanel {
 
     private static class PFTableModel extends AbstractTableModel {
 
-        private final String[] columns = {bundle.getString("type"), bundle.getString("host"), bundle.getString("source_port"), bundle.getString("target_port"), bundle.getString("bind_host")};
+        private final String[] columns = {getBundle().getString("type"), getBundle().getString("host"), getBundle().getString("source_port"), getBundle().getString("target_port"), getBundle().getString("bind_host")};
         private final List<PortForwardingRule> list = new ArrayList<>();
 
         @Override

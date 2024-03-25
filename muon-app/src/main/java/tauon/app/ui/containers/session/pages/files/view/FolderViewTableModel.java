@@ -10,13 +10,13 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class FolderViewTableModel extends AbstractTableModel implements ListModel<FileInfo> {
 
     private static final long serialVersionUID = 7212506492710233442L;
     private final List<FileInfo> files = new ArrayList<>();
-    private final String[] columns = {bundle.getString("name"), bundle.getString("modified"), bundle.getString("size"), bundle.getString("type"), bundle.getString("permission"), bundle.getString("owner")};
+    private final String[] columns = {getBundle().getString("name"), getBundle().getString("modified"), getBundle().getString("size"), getBundle().getString("type"), getBundle().getString("permission"), getBundle().getString("owner")};
     protected EventListenerList listenerList = new EventListenerList();
     private boolean local = false;
 

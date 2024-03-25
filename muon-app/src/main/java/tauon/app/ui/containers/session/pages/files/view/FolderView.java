@@ -1,6 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.view;
 
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
@@ -39,7 +40,7 @@ public class FolderView extends JPanel {
         this.listener = listener;
         this.popup = new JPopupMenu();
 
-        showHiddenFiles = App.getGlobalSettings().isShowHiddenFilesByDefault();
+        showHiddenFiles = SettingsService.getSettings().isShowHiddenFilesByDefault();
 
 
         folderViewModel = new FolderViewTableModel(false);
@@ -208,7 +209,7 @@ public class FolderView extends JPanel {
                 if (files.length > 0) {
                     if (files[0].getType() == FileType.Directory || files[0].getType() == FileType.DirLink) {
                         String str = files[0].getPath();
-                        listener.render(str, App.getGlobalSettings().isDirectoryCache());
+                        listener.render(str, SettingsService.getSettings().isDirectoryCache());
                     }
                 }
             }
@@ -247,7 +248,7 @@ public class FolderView extends JPanel {
                         FileInfo fileInfo = folderViewModel.getItemAt(getRow(r));
                         if (fileInfo.getType() == FileType.Directory || fileInfo.getType() == FileType.DirLink) {
                             listener.addBack(fileInfo.getPath());
-                            listener.render(fileInfo.getPath(), App.getGlobalSettings().isDirectoryCache());
+                            listener.render(fileInfo.getPath(), SettingsService.getSettings().isDirectoryCache());
                         } else {
                             listener.openApp(fileInfo);
                         }
@@ -298,7 +299,7 @@ public class FolderView extends JPanel {
                         FileInfo fileInfo = folderViewModel.getItemAt(getRow(r));
                         if (fileInfo.getType() == FileType.Directory || fileInfo.getType() == FileType.DirLink) {
                             listener.addBack(fileInfo.getPath());
-                            listener.render(fileInfo.getPath(), App.getGlobalSettings().isDirectoryCache());
+                            listener.render(fileInfo.getPath(), SettingsService.getSettings().isDirectoryCache());
                         } else {
                             listener.openApp(fileInfo);
                         }
@@ -452,7 +453,7 @@ public class FolderView extends JPanel {
      * Note: caller must call revalidate and repaint after calling this method
      */
     public void refreshViewMode() {
-        if (App.getGlobalSettings().isListViewEnabled()) {
+        if (SettingsService.getSettings().isListViewEnabled()) {
             this.remove(tableScroller);
             this.add(listScroller);
         } else {

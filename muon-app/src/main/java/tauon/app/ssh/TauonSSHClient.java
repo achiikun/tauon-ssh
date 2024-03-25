@@ -2,6 +2,8 @@ package tauon.app.ssh;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.services.SettingsService;
 import tauon.app.settings.PortForwardingRule;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.DefaultConfig;
@@ -331,7 +333,7 @@ public class TauonSSHClient {
                 ///////
                 
                 DefaultConfig defaultConfig = new DefaultConfig();
-                if (App.getGlobalSettings().isShowMessagePrompt()) {
+                if (SettingsService.getSettings().isShowMessagePrompt()) {
                     System.out.println("enabled KeepAliveProvider");
                     defaultConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
                 }
@@ -354,8 +356,8 @@ public class TauonSSHClient {
                     
                 }
                 
-                this.sshj.setConnectTimeout(App.getGlobalSettings().getConnectionTimeout() * 1000);
-                this.sshj.setTimeout(App.getGlobalSettings().getConnectionTimeout() * 1000);
+                this.sshj.setConnectTimeout(SettingsService.getSettings().getConnectionTimeout() * 1000);
+                this.sshj.setTimeout(SettingsService.getSettings().getConnectionTimeout() * 1000);
                 if (info.getJumpHosts().isEmpty() || index >= info.getJumpHosts().size()) {
                     this.setupProxyAndSocketFactory();
                     this.sshj.addHostKeyVerifier(App.hostKeyVerifier);

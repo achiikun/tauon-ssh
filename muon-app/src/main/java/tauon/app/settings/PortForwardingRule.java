@@ -73,7 +73,18 @@ public class PortForwardingRule {
     public void setBindHost(String bindHost) {
         this.bindHost = bindHost;
     }
-
+    
+    public PortForwardingRule copyTo(PortForwardingRule portForwardingRule) {
+        portForwardingRule.type = type;
+        portForwardingRule.host = host;
+        portForwardingRule.bindHost = bindHost;
+        portForwardingRule.sourcePort = sourcePort;
+        portForwardingRule.targetPort = targetPort;
+        return portForwardingRule;
+    }
+    
+    
+    
     public enum PortForwardingType {
         Local, Remote
     }

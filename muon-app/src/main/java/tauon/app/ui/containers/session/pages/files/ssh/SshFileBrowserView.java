@@ -1,11 +1,12 @@
 package tauon.app.ui.containers.session.pages.files.ssh;
 
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.LocalFileSystem;
-import tauon.app.ssh.OperationCancelledException;
+import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.view.AddressBar;
@@ -47,7 +48,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
             this.path = initialPath;
         }
 
-        this.render(path, App.getGlobalSettings().isDirectoryCache());
+        this.render(path, SettingsService.getSettings().isDirectoryCache());
     }
 
     private void openDefaultAction() {
@@ -68,7 +69,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
                 System.out.println("clicked");
             }
         });
-        if (App.getGlobalSettings().isShowPathBar()) {
+        if (SettingsService.getSettings().isShowPathBar()) {
             addressBar.switchToPathBar();
         } else {
             addressBar.switchToText();
@@ -187,13 +188,13 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         if (path != null) {
             String parent = PathUtils.getParent(path);
             addBack(path);
-            render(parent, App.getGlobalSettings().isDirectoryCache());
+            render(parent, SettingsService.getSettings().isDirectoryCache());
         }
     }
 
     protected void home() {
         addBack(path);
-        render(null, App.getGlobalSettings().isDirectoryCache());
+        render(null, SettingsService.getSettings().isDirectoryCache());
     }
 
     @Override
@@ -210,7 +211,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
     }
 
     public boolean handleDrop(DndTransferData transferData) {
-        if (App.getGlobalSettings().isConfirmBeforeMoveOrCopy()
+        if (SettingsService.getSettings().isConfirmBeforeMoveOrCopy()
                 && JOptionPane.showConfirmDialog(null, "Move/copy files?") != JOptionPane.YES_OPTION) {
             return false;
         }

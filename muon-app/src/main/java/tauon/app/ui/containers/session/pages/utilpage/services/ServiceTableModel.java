@@ -7,14 +7,14 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
  *
  */
 public class ServiceTableModel extends AbstractTableModel {
-    private final String[] columns = {bundle.getString("name"), bundle.getString("status"), bundle.getString("state"), bundle.getString("description")};
+    private final String[] columns = {getBundle().getString("name"), getBundle().getString("status"), getBundle().getString("state"), getBundle().getString("description")};
     private final List<ServiceEntry> list = new ArrayList<>();
 
     public void addEntry(ServiceEntry e) {

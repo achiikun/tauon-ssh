@@ -17,7 +17,7 @@ import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class PropertiesDialog extends JDialog {
     public static final int S_IRUSR = 00400; // read by owner
@@ -190,7 +190,7 @@ public class PropertiesDialog extends JDialog {
             chmodAsync(getPermissions(), details);
             dispose();
         });
-        btnCancel = new JButton(bundle.getString("cancel"));
+        btnCancel = new JButton(getBundle().getString("cancel"));
         btnCancel.addActionListener(e -> {
             dialogResult = JOptionPane.CANCEL_OPTION;
             dispose();
@@ -509,7 +509,7 @@ public class PropertiesDialog extends JDialog {
             } catch (Exception e) {
                 e.printStackTrace();
                 if (!fileBrowser.isSessionClosed()) {
-                    JOptionPane.showMessageDialog(null, App.bundle.getString("operation_failed"));
+                    JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
                 }
             }
             SwingUtilities.invokeLater(() -> {

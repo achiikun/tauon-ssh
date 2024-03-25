@@ -3,6 +3,8 @@
  */
 package tauon.app.ui.containers.session;
 
+import tauon.app.services.SettingsService;
+import tauon.app.settings.SessionService;
 import tauon.app.ui.containers.session.pages.diskspace.DiskspaceAnalyzer;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import tauon.app.ssh.filesystem.SshFileSystem;
@@ -47,6 +49,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+
+import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
@@ -109,7 +113,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         utilityPage = new UtilityPage(this);
 
         Page[] pageArr = null;
-        if (App.getGlobalSettings().isFirstFileBrowserView()) {
+        if (SettingsService.getSettings().isFirstFileBrowserView()) {
             pageArr = new Page[]{fileBrowser, terminalHolder, logViewer, searchPanel, diskspaceAnalyzer,
                     processViewer, utilityPage};
         } else {
@@ -388,14 +392,14 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     public synchronized ThreadPoolExecutor getBackgroundTransferPool() {
         if (this.backgroundTransferPool == null) {
             this.backgroundTransferPool = new ThreadPoolExecutor(
-                    App.getGlobalSettings().getBackgroundTransferQueueSize(),
-                    App.getGlobalSettings().getBackgroundTransferQueueSize(), 0, TimeUnit.NANOSECONDS,
+                    SettingsService.getSettings().getBackgroundTransferQueueSize(),
+                    SettingsService.getSettings().getBackgroundTransferQueueSize(), 0, TimeUnit.NANOSECONDS,
                     new LinkedBlockingQueue<>());
         } else {
-            if (this.backgroundTransferPool.getMaximumPoolSize() != App.getGlobalSettings()
+            if (this.backgroundTransferPool.getMaximumPoolSize() != SettingsService.getSettings()
                     .getBackgroundTransferQueueSize()) {
                 this.backgroundTransferPool
-                        .setMaximumPoolSize(App.getGlobalSettings().getBackgroundTransferQueueSize());
+                        .setMaximumPoolSize(SettingsService.getSettings().getBackgroundTransferQueueSize());
             }
         }
         return this.backgroundTransferPool;
@@ -447,9 +451,9 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     public String promptUser(HopEntry info, AtomicBoolean remember) {
         
         JTextField txtUser = new SkinnedTextField(30);
-        JCheckBox chkCacheUser = new JCheckBox(App.bundle.getString("remember_username"));
+        JCheckBox chkCacheUser = new JCheckBox(getBundle().getString("remember_username"));
         // TODO i18n
-        int ret = JOptionPane.showOptionDialog(null, new Object[]{"User name", txtUser, chkCacheUser}, App.bundle.getString("user"),
+        int ret = JOptionPane.showOptionDialog(null, new Object[]{"User name", txtUser, chkCacheUser}, getBundle().getString("user"),
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
         if (ret == JOptionPane.OK_OPTION) {
             String user = txtUser.getText();
@@ -481,7 +485,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     
     public char[] showReqPasswordDialog(Resource<?> resource) {
         JPasswordField txtPass = new JPasswordField();
-        JCheckBox chkUseCache = new JCheckBox(App.bundle.getString("remember_session"));
+        JCheckBox chkUseCache = new JCheckBox(getBundle().getString("remember_session"));
         
         // TODO i18n
         int ret = JOptionPane.showOptionDialog(null,

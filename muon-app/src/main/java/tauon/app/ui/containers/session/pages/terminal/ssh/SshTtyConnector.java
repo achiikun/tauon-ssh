@@ -2,6 +2,7 @@ package tauon.app.ui.containers.session.pages.terminal.ssh;
 
 import com.jediterm.terminal.Questioner;
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -54,8 +55,8 @@ public class SshTtyConnector implements DisposableTtyConnector {
             this.channel = sessionContentPanel.openSession();
             this.channel.setAutoExpand(true);
 
-            this.channel.allocatePTY(App.getGlobalSettings().getTerminalType(), App.getGlobalSettings().getTermWidth(),
-                    App.getGlobalSettings().getTermHeight(), 0, 0, Collections.emptyMap());
+            this.channel.allocatePTY(SettingsService.getSettings().getTerminalType(), SettingsService.getSettings().getTermWidth(),
+                    SettingsService.getSettings().getTermHeight(), 0, 0, Collections.emptyMap());
             
 //            this.channel.reqX11Forwarding("MIT-MAGIC-COOKIE-1", "b0956167c9ad8f34c8a2788878307dc9", 0);
 

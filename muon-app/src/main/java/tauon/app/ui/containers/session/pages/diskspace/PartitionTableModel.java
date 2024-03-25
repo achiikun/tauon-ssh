@@ -4,10 +4,10 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class PartitionTableModel extends AbstractTableModel {
-    private final String[] columns = {bundle.getString("filesystem"), bundle.getString("total_size"), bundle.getString("used"), bundle.getString("available"), bundle.getString("percentage_use"), bundle.getString("mount_point")};
+    private final String[] columns = {getBundle().getString("filesystem"), getBundle().getString("total_size"), getBundle().getString("used"), getBundle().getString("available"), getBundle().getString("percentage_use"), getBundle().getString("mount_point")};
 
     private final List<PartitionEntry> list = new ArrayList<>();
 

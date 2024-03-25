@@ -11,7 +11,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.function.Consumer;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class RemoteKeyPanel extends JPanel {
     private final JTextField txtKeyFile;
@@ -35,7 +35,7 @@ public class RemoteKeyPanel extends JPanel {
         this.info = info;
         this.callback1 = callback1;
         this.callback2 = callback3;
-        JLabel lblTitle = new JLabel(bundle.getString("public_key_file"));
+        JLabel lblTitle = new JLabel(getBundle().getString("public_key_file"));
         txtKeyFile = new SkinnedTextField(20);
         txtKeyFile.setBorder(null);
         txtKeyFile.setBackground(App.skin.getDefaultBackground());
@@ -51,8 +51,8 @@ public class RemoteKeyPanel extends JPanel {
         txtPubKey.setLineWrap(true);
         JScrollPane jScrollPane = new SkinnedScrollPane(txtPubKey);
 
-        btnGenNewKey = new JButton(bundle.getString("generate_new_key"));
-        btnRefresh = new JButton(bundle.getString("generate"));
+        btnGenNewKey = new JButton(getBundle().getString("generate_new_key"));
+        btnRefresh = new JButton(getBundle().getString("generate"));
 
         btnGenNewKey.addActionListener(e -> callback1.accept(null));
 
@@ -74,12 +74,12 @@ public class RemoteKeyPanel extends JPanel {
         jList = new JList<>(model);
         jList.setBackground(App.skin.getTextFieldBackground());
 
-        btnAdd = new JButton(bundle.getString("add"));
-        btnEdit = new JButton(bundle.getString("edit"));
+        btnAdd = new JButton(getBundle().getString("add"));
+        btnEdit = new JButton(getBundle().getString("edit"));
         btnRemove = new JButton();
 
         btnAdd.addActionListener(e -> {
-            String text = JOptionPane.showInputDialog(null, bundle.getString("new_entry"));
+            String text = JOptionPane.showInputDialog(null, getBundle().getString("new_entry"));
             if (text != null && text.length() > 0) {
                 model.addElement(text);
                 callback3.accept(getAuthorizedKeys());
@@ -89,11 +89,11 @@ public class RemoteKeyPanel extends JPanel {
         btnEdit.addActionListener(e -> {
             int index = jList.getSelectedIndex();
             if (index < 0) {
-                JOptionPane.showMessageDialog(null, bundle.getString("no_entry_selected"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("no_entry_selected"));
                 return;
             }
             String str = model.get(index);
-            String text = JOptionPane.showInputDialog(null, bundle.getString("new_entry"), str);
+            String text = JOptionPane.showInputDialog(null, getBundle().getString("new_entry"), str);
             if (text != null && text.length() > 0) {
                 model.set(index, text);
                 callback3.accept(getAuthorizedKeys());
@@ -103,7 +103,7 @@ public class RemoteKeyPanel extends JPanel {
         btnRemove.addActionListener(e -> {
             int index = jList.getSelectedIndex();
             if (index < 0) {
-                JOptionPane.showMessageDialog(null, bundle.getString("no_entry_selected"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("no_entry_selected"));
                 return;
             }
             model.remove(index);
@@ -121,7 +121,7 @@ public class RemoteKeyPanel extends JPanel {
 
         Box hbox2 = Box.createHorizontalBox();
         hbox2.setBorder(new EmptyBorder(10, 10, 10, 10));
-        hbox2.add(new JLabel(bundle.getString("authorized_keys")));
+        hbox2.add(new JLabel(getBundle().getString("authorized_keys")));
         hbox2.add(Box.createHorizontalStrut(10));
 
         JPanel authorizedKeysPanel = new JPanel(new BorderLayout());

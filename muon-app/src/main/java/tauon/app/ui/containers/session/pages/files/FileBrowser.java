@@ -1,6 +1,7 @@
 package tauon.app.ui.containers.session.pages.files;
 
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.FileInfo;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class FileBrowser extends Page {
     private final JSplitPane horizontalSplitter;
@@ -91,7 +92,7 @@ public class FileBrowser extends Page {
         horizontalSplitter.setRightComponent(this.rightTabs);
         horizontalSplitter.setDividerSize(5);
 
-        if (App.getGlobalSettings().isDualPaneMode()) {
+        if (SettingsService.getSettings().isDualPaneMode()) {
             switchToDualPaneMode();
         } else {
             switchToSinglePanelMode();
@@ -195,7 +196,7 @@ public class FileBrowser extends Page {
                 SwingUtilities.invokeLater(() -> {
                     holder.endFileTransfer();
                     if (!holder.isSessionClosed()) {
-                        JOptionPane.showMessageDialog(null, App.bundle.getString("operation_failed"));
+                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
                     }
                 });
             }
@@ -252,7 +253,7 @@ public class FileBrowser extends Page {
 
     @Override
     public String getText() {
-        return bundle.getString("file_browser");
+        return getBundle().getString("file_browser");
     }
 
     /**
@@ -271,15 +272,15 @@ public class FileBrowser extends Page {
     }
 
     public boolean selectTransferModeAndConflictAction(ResponseHolder holder) throws Exception {
-        holder.transferMode = App.getGlobalSettings().getFileTransferMode();
-        holder.conflictAction = App.getGlobalSettings().getConflictAction();
+        holder.transferMode = SettingsService.getSettings().getFileTransferMode();
+        holder.conflictAction = SettingsService.getSettings().getConflictAction();
         return true;
     }
 
     public boolean handleLocalDrop(DndTransferData transferData, SessionInfo info, FileSystem currentFileSystem,
                                    String currentPath) {
         // TODO i18n
-        if (App.getGlobalSettings().isConfirmBeforeMoveOrCopy()
+        if (SettingsService.getSettings().isConfirmBeforeMoveOrCopy()
                 && JOptionPane.showConfirmDialog(null, "Move/copy files?") != JOptionPane.YES_OPTION) {
             return false;
         }

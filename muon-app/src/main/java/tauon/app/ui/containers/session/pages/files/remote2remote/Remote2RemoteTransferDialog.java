@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import tauon.app.App;
+import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
@@ -25,9 +26,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
+import static tauon.app.services.LanguageService.getBundle;
 import static util.Constants.TRANSFER_HOSTS;
-import static util.Constants.configDir;
+import static util.Constants.CONFIG_DIR;
 
 public class Remote2RemoteTransferDialog extends JDialog {
     private final DefaultListModel<RemoteServerEntry> remoteHostModel;
@@ -37,7 +39,7 @@ public class Remote2RemoteTransferDialog extends JDialog {
     private final String currentDirectory;
     private final List<RemoteServerEntry> list = new ArrayList<>();
 
-    public Remote2RemoteTransferDialog(JFrame frame, SessionContentPanel session, FileInfo[] selectedFiles,
+    public Remote2RemoteTransferDialog(Window frame, SessionContentPanel session, FileInfo[] selectedFiles,
                                        String currentDirectory) {
         super(frame);
         setTitle("Server to server SFTP");
@@ -65,22 +67,28 @@ public class Remote2RemoteTransferDialog extends JDialog {
         }
 
         Box bottom = Box.createHorizontalBox();
-        JButton btnAddKnown = new JButton(bundle.getString("add_from_manager"));
-        JButton btnAdd = new JButton(bundle.getString("add"));
-        JButton btnRemove = new JButton(bundle.getString("delete"));
-        JButton btnEdit = new JButton(bundle.getString("edit"));
-        JButton btnSend = new JButton(bundle.getString("send_files"));
+        JButton btnAddKnown = new JButton(getBundle().getString("add_from_manager"));
+        JButton btnAdd = new JButton(getBundle().getString("add"));
+        JButton btnRemove = new JButton(getBundle().getString("delete"));
+        JButton btnEdit = new JButton(getBundle().getString("edit"));
+        JButton btnSend = new JButton(getBundle().getString("send_files"));
 
         btnAddKnown.addActionListener(e -> {
-            SessionInfo info = new NewSessionDlg(this).newSession();
-            if (info != null) {
-                RemoteServerEntry ent = getEntryDetails(info.getHost(), info.getUser(), info.getRemoteFolder(),
-                        info.getPort());
-                if (ent != null) {
-                    remoteHostModel.insertElementAt(ent, 0);
-                    remoteHostList.setSelectedIndex(0);
-                    save();
+            try {
+                SessionInfo info = new NewSessionDlg(this).newSession();
+                
+                if (info != null) {
+                    RemoteServerEntry ent = getEntryDetails(info.getHost(), info.getUser(), info.getRemoteFolder(),
+                            info.getPort());
+                    if (ent != null) {
+                        remoteHostModel.insertElementAt(ent, 0);
+                        remoteHostList.setSelectedIndex(0);
+                        save();
+                    }
                 }
+                
+            } catch (OperationCancelledException ignore) {
+            
             }
         });
 
@@ -244,7 +252,7 @@ public class Remote2RemoteTransferDialog extends JDialog {
         for (int i = 0; i < remoteHostModel.size(); i++) {
             list.add(remoteHostModel.get(i));
         }
-        File file = new File(configDir, TRANSFER_HOSTS);
+        File file = new File(CONFIG_DIR, TRANSFER_HOSTS);
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             objectMapper.writeValue(file, list);
@@ -256,7 +264,7 @@ public class Remote2RemoteTransferDialog extends JDialog {
     }
 
     private List<RemoteServerEntry> load() {
-        File file = new File(configDir, TRANSFER_HOSTS);
+        File file = new File(CONFIG_DIR, TRANSFER_HOSTS);
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         if (file.exists()) {

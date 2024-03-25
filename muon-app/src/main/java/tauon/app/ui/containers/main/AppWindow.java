@@ -4,6 +4,8 @@
 package tauon.app.ui.containers.main;
 
 import tauon.app.App;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.services.SettingsService;
 import tauon.app.ui.components.glasspanes.AppInputBlocker;
 import tauon.app.ui.components.glasspanes.InputBlocker;
 import tauon.app.ui.dialogs.sessions.NewSessionDlg;
@@ -29,7 +31,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 import static util.Constants.*;
 
 /**
@@ -68,7 +70,7 @@ public class AppWindow extends JFrame {
         int screenWidth = screenD.width - inset.left - inset.right;
         int screenHeight = screenD.height - inset.top - inset.bottom;
 
-        if (screenWidth < 1024 || screenHeight < 650 || App.getGlobalSettings().isStartMaximized()) {
+        if (screenWidth < 1024 || screenHeight < 650 || SettingsService.getSettings().isStartMaximized()) {
             setSize(screenWidth, screenHeight);
         } else {
             int width = (screenWidth * 80) / 100;
@@ -106,16 +108,22 @@ public class AppWindow extends JFrame {
     }
 
     public void createFirstSessionPanel() {
-        SessionInfo info = new NewSessionDlg(this).newSession();
-        if (info != null) {
-            sessionListPanel.createSession(info);
+        try {
+            
+            SessionInfo info = new NewSessionDlg(this).newSession();
+            if (info != null) {
+                sessionListPanel.createSession(info);
+            }
+            
+        } catch (OperationCancelledException ignored) {
+        
         }
     }
 
     private JPanel createSessionPanel() {
-        JLabel lblSession = new JLabel(bundle.getString("sessions"));
+        JLabel lblSession = new JLabel(getBundle().getString("sessions"));
         lblSession.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
-        JButton btnNew = new JButton(bundle.getString("add"));
+        JButton btnNew = new JButton(getBundle().getString("add"));
         btnNew.setFont(App.skin.getDefaultFont().deriveFont(12.0f));
         btnNew.addActionListener(e -> this.createFirstSessionPanel());
 
@@ -299,7 +307,7 @@ public class AppWindow extends JFrame {
 
         b1.add(Box.createRigidArea(new Dimension(5, 10)));
 
-        lblUpdateText = new JLabel(bundle.getString("chk_update"));
+        lblUpdateText = new JLabel(getBundle().getString("chk_update"));
         lblUpdateText.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblUpdateText.addMouseListener(new MouseAdapter() {
             @Override

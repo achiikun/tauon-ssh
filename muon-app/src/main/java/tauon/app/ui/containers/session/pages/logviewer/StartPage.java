@@ -18,7 +18,7 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
@@ -57,8 +57,8 @@ public class StartPage extends JPanel {
         JScrollPane jsp = new SkinnedScrollPane(pinnedLogList);
         jsp.setBorder(new EmptyBorder(0, 10, 0, 10));
         this.add(jsp);
-        JButton btnAddLog = new JButton(bundle.getString("add_log"));
-        JButton btnDelLog = new JButton(bundle.getString("delete"));
+        JButton btnAddLog = new JButton(getBundle().getString("add_log"));
+        JButton btnDelLog = new JButton(getBundle().getString("delete"));
         btnAddLog.addActionListener(e -> {
             String logPath = promptLogPath();
             if (logPath != null) {

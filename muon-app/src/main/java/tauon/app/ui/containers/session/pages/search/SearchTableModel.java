@@ -4,16 +4,16 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class SearchTableModel extends AbstractTableModel {
 
     private static final long serialVersionUID = 7212506492710233442L;
     private final List<SearchResult> list = new ArrayList<>();
     private final String[] columns = new String[]{
-            bundle.getString("filename"),
-            bundle.getString("type"),
-            bundle.getString("path")};
+            getBundle().getString("filename"),
+            getBundle().getString("type"),
+            getBundle().getString("path")};
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {

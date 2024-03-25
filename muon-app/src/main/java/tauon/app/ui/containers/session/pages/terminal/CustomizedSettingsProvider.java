@@ -8,6 +8,7 @@ import com.jediterm.terminal.TextStyle;
 import com.jediterm.terminal.emulator.ColorPalette;
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider;
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.settings.Settings;
 import tauon.app.settings.SessionInfo;
 import util.FontUtils;
@@ -32,7 +33,7 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
         this.info = info;
         
         Color[] colors = new Color[16];
-        int[] colorArr = App.getGlobalSettings().getPalleteColors();
+        int[] colorArr = SettingsService.getSettings().getPalleteColors();
         for (int i = 0; i < 16; i++) {
             colors[i] = new Color(colorArr[i]);
         }
@@ -79,33 +80,33 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
 
     @Override
     public TextStyle getDefaultStyle() {
-        return new TextStyle(getTerminalColor(App.getGlobalSettings().getDefaultColorFg()),
-                getTerminalColor(App.getGlobalSettings().getDefaultColorBg()));
+        return new TextStyle(getTerminalColor(SettingsService.getSettings().getDefaultColorFg()),
+                getTerminalColor(SettingsService.getSettings().getDefaultColorBg()));
     }
 
     @Override
     public TextStyle getFoundPatternColor() {
-        return new TextStyle(getTerminalColor(App.getGlobalSettings().getDefaultFoundFg()),
-                getTerminalColor(App.getGlobalSettings().getDefaultFoundBg()));
+        return new TextStyle(getTerminalColor(SettingsService.getSettings().getDefaultFoundFg()),
+                getTerminalColor(SettingsService.getSettings().getDefaultFoundBg()));
     }
 
     @Override
     public TextStyle getSelectionColor() {
-        return new TextStyle(getTerminalColor(App.getGlobalSettings().getDefaultSelectionFg()),
-                getTerminalColor(App.getGlobalSettings().getDefaultSelectionBg()));
+        return new TextStyle(getTerminalColor(SettingsService.getSettings().getDefaultSelectionFg()),
+                getTerminalColor(SettingsService.getSettings().getDefaultSelectionBg()));
         //
     }
 
     @Override
     public TextStyle getHyperlinkColor() {
-        return new TextStyle(getTerminalColor(App.getGlobalSettings().getDefaultHrefFg()),
-                getTerminalColor(App.getGlobalSettings().getDefaultHrefBg()));
+        return new TextStyle(getTerminalColor(SettingsService.getSettings().getDefaultHrefFg()),
+                getTerminalColor(SettingsService.getSettings().getDefaultHrefBg()));
 
     }
 
     @Override
     public boolean emulateX11CopyPaste() {
-        return App.getGlobalSettings().isPuttyLikeCopyPaste();
+        return SettingsService.getSettings().isPuttyLikeCopyPaste();
     }
 
     @Override
@@ -115,29 +116,29 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
 
     @Override
     public boolean pasteOnMiddleMouseClick() {
-        return App.getGlobalSettings().isPuttyLikeCopyPaste();
+        return SettingsService.getSettings().isPuttyLikeCopyPaste();
     }
 
     @Override
     public boolean copyOnSelect() {
-        return App.getGlobalSettings().isPuttyLikeCopyPaste();
+        return SettingsService.getSettings().isPuttyLikeCopyPaste();
     }
 
     @Override
     public Font getTerminalFont() {
-        System.out.println("Called terminal font: " + App.getGlobalSettings().getTerminalFontName());
-        return FontUtils.loadTerminalFont(App.getGlobalSettings().getTerminalFontName()).deriveFont(Font.PLAIN,
-                App.getGlobalSettings().getTerminalFontSize());
+        System.out.println("Called terminal font: " + SettingsService.getSettings().getTerminalFontName());
+        return FontUtils.loadTerminalFont(SettingsService.getSettings().getTerminalFontName()).deriveFont(Font.PLAIN,
+                SettingsService.getSettings().getTerminalFontSize());
     }
 
     @Override
     public float getTerminalFontSize() {
-        return App.getGlobalSettings().getTerminalFontSize();
+        return SettingsService.getSettings().getTerminalFontSize();
     }
 
     @Override
     public boolean audibleBell() {
-        return App.getGlobalSettings().isTerminalBell();
+        return SettingsService.getSettings().isTerminalBell();
     }
 
     public final TerminalColor getTerminalColor(int rgb) {
@@ -170,8 +171,8 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
     
     private KeyStroke getKeyStroke(String key) {
         return KeyStroke.getKeyStroke(
-                App.getGlobalSettings().getKeyCodeMap().get(key),
-                App.getGlobalSettings().getKeyModifierMap().get(key)
+                SettingsService.getSettings().getKeyCodeMap().get(key),
+                SettingsService.getSettings().getKeyModifierMap().get(key)
         );
     }
     

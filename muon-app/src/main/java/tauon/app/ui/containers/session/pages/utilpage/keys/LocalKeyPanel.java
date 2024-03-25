@@ -10,7 +10,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.function.Consumer;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class LocalKeyPanel extends JPanel {
     private final SessionInfo info;
@@ -27,7 +27,7 @@ public class LocalKeyPanel extends JPanel {
         this.info = info;
         this.callback1 = callback1;
         this.callback2 = callback2;
-        JLabel lblTitle = new JLabel(bundle.getString("public_key_file"));
+        JLabel lblTitle = new JLabel(getBundle().getString("public_key_file"));
         txtKeyFile = new SkinnedTextField(20);
         txtKeyFile.setBackground(App.skin.getDefaultBackground());
         txtKeyFile.setBorder(null);
@@ -45,8 +45,8 @@ public class LocalKeyPanel extends JPanel {
         JScrollPane jScrollPane = new JScrollPane(txtPubKey);
         add(jScrollPane);
 
-        btnGenNewKey = new JButton(bundle.getString("generate_new_key"));
-        btnRefresh = new JButton(bundle.getString("refresh"));
+        btnGenNewKey = new JButton(getBundle().getString("generate_new_key"));
+        btnRefresh = new JButton(getBundle().getString("refresh"));
 
         btnGenNewKey.addActionListener(e -> callback1.accept(null));
 

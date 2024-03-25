@@ -4,6 +4,7 @@
 package tauon.app.ui.containers.session.pages.logviewer;
 
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.ui.components.closabletabs.ClosableTabContent;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
@@ -102,8 +103,8 @@ public class LogContent extends JPanel implements ClosableTabContent {
         textArea.setEditable(false);
         textArea.setBackground(App.skin.getSelectedTabColor());
         textArea.setWrapStyleWord(true);
-        textArea.setFont(textArea.getFont().deriveFont((float) App.getGlobalSettings().getLogViewerFont()));
-        this.textArea.setLineWrap(App.getGlobalSettings().isLogViewerUseWordWrap());
+        textArea.setFont(textArea.getFont().deriveFont((float) SettingsService.getSettings().getLogViewerFont()));
+        this.textArea.setLineWrap(SettingsService.getSettings().isLogViewerUseWordWrap());
         
         gutter = new TextGutter(textArea);
         JScrollPane scrollPane = new SkinnedScrollPane(textArea);
@@ -114,13 +115,14 @@ public class LogContent extends JPanel implements ClosableTabContent {
         
         chkLineWrap.addActionListener(e -> {
             this.textArea.setLineWrap(chkLineWrap.isSelected());
-            App.getGlobalSettings().setLogViewerUseWordWrap(chkLineWrap.isSelected());
-            App.saveSettings();
+            SettingsService.getInstance().setAndSave(settings ->
+                    settings.setLogViewerUseWordWrap(chkLineWrap.isSelected())
+            );
         });
         
-        chkLineWrap.setSelected(App.getGlobalSettings().isLogViewerUseWordWrap());
+        chkLineWrap.setSelected(SettingsService.getSettings().isLogViewerUseWordWrap());
         
-        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(App.getGlobalSettings().getLogViewerFont(), 5, 255, 1);
+        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(SettingsService.getSettings().getLogViewerFont(), 5, 255, 1);
         JSpinner spFontSize = new JSpinner(spinnerNumberModel);
         spFontSize.setMaximumSize(spFontSize.getPreferredSize());
         spFontSize.addChangeListener(e -> {
@@ -129,8 +131,9 @@ public class LogContent extends JPanel implements ClosableTabContent {
             gutter.setFont(textArea.getFont());
             gutter.revalidate();
             gutter.repaint();
-            App.getGlobalSettings().setLogViewerFont(fontSize);
-            App.saveSettings();
+            SettingsService.getInstance().setAndSave(settings ->
+                    settings.setLogViewerFont(fontSize)
+            );
         });
         
         JButton btnReload = new JButton();

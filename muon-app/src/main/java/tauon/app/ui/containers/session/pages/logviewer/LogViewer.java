@@ -16,7 +16,7 @@ import javax.swing.*;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
@@ -61,7 +61,7 @@ public class LogViewer extends Page {
 
     @Override
     public String getText() {
-        return bundle.getString("server_logs");
+        return getBundle().getString("server_logs");
     }
 
     public void openLog(FileInfo remotePath) {

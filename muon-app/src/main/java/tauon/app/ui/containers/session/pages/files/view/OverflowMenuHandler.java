@@ -1,7 +1,8 @@
 package tauon.app.ui.containers.session.pages.files.view;
 
-import tauon.app.App;
 import muon.app.ui.components.session.BookmarkManager;
+import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.local.LocalFileBrowserView;
@@ -13,7 +14,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class OverflowMenuHandler {
     private final JRadioButtonMenuItem mSortName;
@@ -37,8 +38,8 @@ public class OverflowMenuHandler {
         this.fileBrowser = fileBrowser;
         ksHideShow = KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK);
 
-        mShowHiddenFiles = new JCheckBoxMenuItem(bundle.getString("show_hidden_files2"));
-        mShowHiddenFiles.setSelected(App.getGlobalSettings().isShowHiddenFilesByDefault());
+        mShowHiddenFiles = new JCheckBoxMenuItem(getBundle().getString("show_hidden_files2"));
+        mShowHiddenFiles.setSelected(SettingsService.getSettings().isShowHiddenFilesByDefault());
 
         aHideShow = new AbstractAction() {
             @Override
@@ -67,7 +68,7 @@ public class OverflowMenuHandler {
 
         mSortDesc = createSortMenuItem("Sort descending", 1, bg2);
 
-        this.favouriteLocations = new JMenu(bundle.getString("bookmarks"));
+        this.favouriteLocations = new JMenu(getBundle().getString("bookmarks"));
 
         popup = new JPopupMenu();
         mSortMenu = new JMenu("Sort");

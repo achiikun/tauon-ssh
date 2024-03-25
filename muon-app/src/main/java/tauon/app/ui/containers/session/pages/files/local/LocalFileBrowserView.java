@@ -1,6 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.local;
 
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.LocalFileSystem;
@@ -76,7 +77,7 @@ public class LocalFileBrowserView extends AbstractFileBrowserView {
                 System.out.println("clicked");
             }
         });
-        if (App.getGlobalSettings().isShowPathBar()) {
+        if (SettingsService.getSettings().isShowPathBar()) {
             addressBar.switchToPathBar();
         } else {
             addressBar.switchToText();

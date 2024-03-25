@@ -620,6 +620,7 @@ public class Settings {
 
     public void setEditors(List<EditorEntry> editors) {
         this.editors = editors;
+        
     }
 
     public double getUiScaling() {
@@ -724,4 +725,5 @@ public class Settings {
         defaultSettings.keyCodeMap.forEach((k, v) -> keyCodeMap.putIfAbsent(k, v));
         defaultSettings.keyModifierMap.forEach((k, v) -> keyModifierMap.putIfAbsent(k, v));
     }
+    
 }

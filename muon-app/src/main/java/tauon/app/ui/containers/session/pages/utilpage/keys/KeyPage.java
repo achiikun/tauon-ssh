@@ -9,7 +9,7 @@ import tauon.app.ui.containers.session.pages.utilpage.UtilPageItemView;
 
 import javax.swing.*;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
@@ -105,8 +105,8 @@ public class KeyPage extends UtilPageItemView {
                 }
             });
         });
-        tabs.addTab(bundle.getString("server"), remoteKeyPanel);
-        tabs.addTab(bundle.getString("local_computer"), localKeyPanel);
+        tabs.addTab(getBundle().getString("server"), remoteKeyPanel);
+        tabs.addTab(getBundle().getString("local_computer"), localKeyPanel);
         this.add(tabs);
 
         holder.executor.submit(() -> {

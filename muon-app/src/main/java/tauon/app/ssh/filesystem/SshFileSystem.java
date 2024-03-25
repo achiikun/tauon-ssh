@@ -3,7 +3,7 @@ package tauon.app.ssh.filesystem;
 import net.schmizz.sshj.sftp.*;
 import net.schmizz.sshj.sftp.FileMode.Type;
 import net.schmizz.sshj.xfer.FilePermission;
-import tauon.app.ssh.OperationCancelledException;
+import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ssh.TauonSSHClient;
 import util.PathUtils;
 

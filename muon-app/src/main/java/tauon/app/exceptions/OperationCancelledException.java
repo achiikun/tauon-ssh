@@ -1,7 +1,7 @@
 /**
  *
  */
-package tauon.app.ssh;
+package tauon.app.exceptions;
 
 /**
  * @author subhro

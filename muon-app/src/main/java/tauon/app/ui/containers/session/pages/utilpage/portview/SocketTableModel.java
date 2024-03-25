@@ -4,10 +4,10 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class SocketTableModel extends AbstractTableModel {
-    private final String[] columns = {bundle.getString("processes"), bundle.getString("pid"), bundle.getString("host"), bundle.getString("port")};
+    private final String[] columns = {getBundle().getString("processes"), getBundle().getString("pid"), getBundle().getString("host"), getBundle().getString("port")};
     private final List<SocketEntry> list = new ArrayList<>();
 
     public void addEntry(SocketEntry e) {

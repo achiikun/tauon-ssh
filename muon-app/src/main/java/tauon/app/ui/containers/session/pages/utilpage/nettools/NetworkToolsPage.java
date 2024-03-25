@@ -17,7 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
@@ -59,7 +59,7 @@ public class NetworkToolsPage extends UtilPageItemView {
 
         btn1.addActionListener(e -> {
             if (JOptionPane.showOptionDialog(this,
-                    new Object[]{bundle.getString("host_ping"), cmbHost}, "Ping",
+                    new Object[]{getBundle().getString("host_ping"), cmbHost}, "Ping",
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
                     null, null, null) == JOptionPane.OK_OPTION) {
                 executeAsync("ping -c 4 " + cmbHost.getSelectedItem());
@@ -68,7 +68,7 @@ public class NetworkToolsPage extends UtilPageItemView {
 
         btn2.addActionListener(e -> {
             if (JOptionPane.showOptionDialog(this,
-                    new Object[]{bundle.getString("host_name"), cmbHost, bundle.getString("port_number"),
+                    new Object[]{getBundle().getString("host_name"), cmbHost, getBundle().getString("port_number"),
                             cmbPort},
                     "Port check", JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, null,
@@ -82,7 +82,7 @@ public class NetworkToolsPage extends UtilPageItemView {
 
         btn3.addActionListener(e -> {
             if (JOptionPane.showOptionDialog(this,
-                    new Object[]{bundle.getString("host_name"), cmbHost}, "Traceroute",
+                    new Object[]{getBundle().getString("host_name"), cmbHost}, "Traceroute",
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
                     null, null, null) == JOptionPane.OK_OPTION) {
                 executeAsync("traceroute " + cmbHost.getSelectedItem());
@@ -91,7 +91,7 @@ public class NetworkToolsPage extends UtilPageItemView {
 
         btn4.addActionListener(e -> {
             if (JOptionPane.showOptionDialog(this,
-                    new Object[]{bundle.getString("host_name"), cmbHost, bundle.getString("tool_use"),
+                    new Object[]{getBundle().getString("host_name"), cmbHost, getBundle().getString("tool_use"),
                             cmbDNSTool},
                     "DNS lookup", JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, null,
@@ -129,7 +129,7 @@ public class NetworkToolsPage extends UtilPageItemView {
                     System.out.println("Command stdout: " + outText);
                 } else {
                     JOptionPane.showMessageDialog(this,
-                            bundle.getString("executed_errors"));
+                            getBundle().getString("executed_errors"));
                 }
             } catch (Exception e) {
                 e.printStackTrace();

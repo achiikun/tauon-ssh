@@ -1,6 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.transfer;
 
 import tauon.app.App;
+import tauon.app.services.SettingsService;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.SSHRemoteFileInputStream;
 import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static tauon.app.services.LanguageService.getBundle;
 
 public class FileTransfer implements AutoCloseable {
     // -> skip
@@ -112,7 +115,7 @@ public class FileTransfer implements AutoCloseable {
             } catch (AccessDeniedException e) {
                 if (targetFs instanceof SshFileSystem) {
                     String tmpDir = "/tmp/" + UUID.randomUUID();
-                    if (App.getGlobalSettings().isTransferTemporaryDirectory()) {
+                    if (SettingsService.getSettings().isTransferTemporaryDirectory()) {
                         targetFs.mkdir(tmpDir);
                         transfer(tmpDir, callback);
                         callback.done(this);
@@ -121,10 +124,10 @@ public class FileTransfer implements AutoCloseable {
                         tmpFilePath.setEnabled(true);
                         JOptionPane.showMessageDialog(null, tmpFilePath, "Copied to temp directory", JOptionPane.WARNING_MESSAGE);
 
-                        if (!App.getGlobalSettings().isPromptForSudo() ||
+                        if (!SettingsService.getSettings().isPromptForSudo() ||
                                 JOptionPane.showConfirmDialog(null,
                                         "Permission denied, do you want to copy files from the temporary folder to destination with sudo?",
-                                        App.bundle.getString("insufficient_permisions"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                                        getBundle().getString("insufficient_permisions"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                             String command = "sh -c  \"cd '" + tmpDir + "'; cp -r * '" + this.targetFolder + "'\"";
 
                             System.out.println("Invoke sudo: " + command);
@@ -258,7 +261,7 @@ public class FileTransfer implements AutoCloseable {
 
             if (JOptionPane.showOptionDialog(null,
                     new Object[]{"Some file with the same name already exists. Please choose an action", cmbs},
-                    App.bundle.getString("action_required"), JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, null,
+                    getBundle().getString("action_required"), JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, null,
                     null) == JOptionPane.YES_OPTION) {
                 action = (ConflictAction) cmbs.getSelectedItem();
             }

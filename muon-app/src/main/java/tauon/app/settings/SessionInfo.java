@@ -17,7 +17,7 @@ public class SessionInfo extends HopEntry implements Serializable {
     private int proxyPort = 8080;
     private String proxyHost;
     private String proxyUser;
-    private String proxyPassword;
+    private String proxyPassword; // TODO encrypt
     private int proxyType = 0;
     
     private boolean XForwardingEnabled = false;
@@ -82,18 +82,28 @@ public class SessionInfo extends HopEntry implements Serializable {
     }
 
     public SessionInfo copy() {
-        SessionInfo info = new SessionInfo();
-        info.setId(UUID.randomUUID().toString());
-        info.setHost(this.getHost());
-        info.setPort(this.getPort());
-        info.getFavouriteRemoteFolders().addAll(favouriteRemoteFolders);
-        info.getFavouriteLocalFolders().addAll(favouriteLocalFolders);
+        SessionInfo info = (SessionInfo) super.copyTo(new SessionInfo());
         info.setLocalFolder(this.localFolder);
         info.setRemoteFolder(this.remoteFolder);
-        info.setPassword(this.getPassword());
-        info.setPrivateKeyFile(this.getPrivateKeyFile());
-        info.setUser(this.getUser());
-        info.setName(name);
+        
+        info.getFavouriteRemoteFolders().addAll(favouriteRemoteFolders);
+        info.getFavouriteLocalFolders().addAll(favouriteLocalFolders);
+        
+        info.setProxyPort(this.getProxyPort());
+        info.setProxyHost(this.getProxyHost());
+        info.setProxyUser(this.getProxyUser());
+        info.setProxyPassword(this.getProxyPassword());
+        info.setProxyType(this.getProxyType());
+        
+        info.setXForwardingEnabled(this.isXForwardingEnabled());
+        
+        info.setUseJumpHosts(this.isUseJumpHosts());
+        getJumpHosts().stream().map(jh -> jh.copyTo(new HopEntry())).forEach(info.getJumpHosts()::add);
+        
+        getPortForwardingRules().stream()
+                .map(jh -> jh.copyTo(new PortForwardingRule()))
+                .forEach(info.getPortForwardingRules()::add);
+        
         return info;
     }
 

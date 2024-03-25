@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
@@ -53,7 +53,7 @@ public class DiskspaceAnalyzer extends Page {
         resultTree = new JTree(treeModel);
         resultTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
-        JButton btnStart = new JButton(bundle.getString("start_another_analysis"));
+        JButton btnStart = new JButton(getBundle().getString("start_another_analysis"));
         btnStart.addActionListener(e -> {
             cardLayout.show(this, "firstPanel");
         });
@@ -64,7 +64,7 @@ public class DiskspaceAnalyzer extends Page {
         resultBox.add(Box.createHorizontalStrut(10));
         resultBox.add(btnStart);
 
-        JLabel resultTitle = new JLabel(bundle.getString("directory_usage"));
+        JLabel resultTitle = new JLabel(getBundle().getString("directory_usage"));
         resultTitle.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel resultPanel = new JPanel(new BorderLayout());
@@ -75,8 +75,8 @@ public class DiskspaceAnalyzer extends Page {
     }
 
     private Component createFirstPanel() {
-        JRadioButton radFolder = new JRadioButton(bundle.getString("analyze_folder"));
-        JRadioButton radVolume = new JRadioButton(bundle.getString("analyze_volume"));
+        JRadioButton radFolder = new JRadioButton(getBundle().getString("analyze_folder"));
+        JRadioButton radVolume = new JRadioButton(getBundle().getString("analyze_volume"));
         radFolder.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
         radVolume.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
         radFolder.setHorizontalAlignment(JRadioButton.LEFT);
@@ -84,7 +84,7 @@ public class DiskspaceAnalyzer extends Page {
         JLabel lblIcon = new JLabel();
         lblIcon.setFont(App.skin.getIconFont().deriveFont(128.0f));
         lblIcon.setText(FontAwesomeContants.FA_HDD_O);
-        JButton btnNext = new JButton(bundle.getString("next"));
+        JButton btnNext = new JButton(getBundle().getString("next"));
         btnNext.addActionListener(e -> {
             if (radVolume.isSelected()) {
                 cardLayout.show(this, "volPanel");
@@ -141,9 +141,9 @@ public class DiskspaceAnalyzer extends Page {
         table.setSelectionForeground(App.skin.getDefaultSelectionForeground());
         JScrollPane jsp = new SkinnedScrollPane(table);
 
-        JButton btnBack = new JButton(bundle.getString("back"));
-        JButton btnNext = new JButton(bundle.getString("next"));
-        JButton btnReload = new JButton(bundle.getString("reload"));
+        JButton btnBack = new JButton(getBundle().getString("back"));
+        JButton btnNext = new JButton(getBundle().getString("next"));
+        JButton btnReload = new JButton(getBundle().getString("reload"));
 
         btnNext.addActionListener(e -> {
             int x = table.getSelectedRow();
@@ -152,7 +152,7 @@ public class DiskspaceAnalyzer extends Page {
                 cardLayout.show(this, "resultPanel");
                 analyze(model.get(r).getMountPoint());
             } else {
-                JOptionPane.showMessageDialog(this, bundle.getString("select_partition"));
+                JOptionPane.showMessageDialog(this, getBundle().getString("select_partition"));
             }
         });
 
@@ -168,7 +168,7 @@ public class DiskspaceAnalyzer extends Page {
         bottomBox.add(btnNext);
         bottomBox.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JLabel lblTitle = new JLabel(bundle.getString("select_volume"));
+        JLabel lblTitle = new JLabel(getBundle().getString("select_volume"));
         lblTitle.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -190,7 +190,7 @@ public class DiskspaceAnalyzer extends Page {
 
     @Override
     public String getText() {
-        return bundle.getString("diskspace");
+        return getBundle().getString("diskspace");
     }
 
     private void listPartitions(AtomicBoolean stopFlag) {

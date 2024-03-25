@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import tauon.app.settings.NamedItem;
 
+import java.util.UUID;
+
 public class HopEntry extends NamedItem {
     private String id, host, user, password, keypath;
     private int port;
@@ -94,5 +96,16 @@ public class HopEntry extends NamedItem {
     @Override
     public String toString() {
         return host != null ? (user != null ? user + "@" + host : host) : "";
+    }
+    
+    protected HopEntry copyTo(HopEntry newInstance) {
+        newInstance.setId(UUID.randomUUID().toString());
+        newInstance.setName(name);
+        newInstance.setHost(this.getHost());
+        newInstance.setPort(this.getPort());
+        newInstance.setUser(this.getUser());
+        newInstance.setPassword(this.getPassword());
+        newInstance.setPrivateKeyFile(this.getKeypath());
+        return newInstance;
     }
 }

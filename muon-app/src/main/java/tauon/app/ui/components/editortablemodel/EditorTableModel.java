@@ -4,11 +4,11 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class EditorTableModel extends AbstractTableModel {
     private final List<EditorEntry> list = new ArrayList<>();
-    private final String[] cols = {bundle.getString("editor_name"), bundle.getString("path_executable")};
+    private final String[] cols = {getBundle().getString("editor_name"), getBundle().getString("path_executable")};
 
     @Override
     public int getRowCount() {

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class ProcessListPanel extends JPanel {
     private final ProcessTableModel model;
@@ -47,7 +47,7 @@ public class ProcessListPanel extends JPanel {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getColumnModel().getColumn(0).setPreferredWidth(200);
 
-        lblProcessCount = new JLabel(bundle.getString("total_processes") + " 0");
+        lblProcessCount = new JLabel(getBundle().getString("total_processes") + " 0");
 
         rowFilter = new RowFilter<ProcessTableModel, Integer>() {
             @Override
@@ -78,7 +78,7 @@ public class ProcessListPanel extends JPanel {
         pan.add(jsp);
 
         Box b1 = Box.createHorizontalBox();
-        b1.add(new JLabel(bundle.getString("processes")));
+        b1.add(new JLabel(getBundle().getString("processes")));
         b1.add(Box.createHorizontalStrut(10));
         txtFilter = new SkinnedTextField(30);
         txtFilter.addActionListener(e -> {
@@ -87,7 +87,7 @@ public class ProcessListPanel extends JPanel {
         });
         b1.add(txtFilter);
         b1.add(Box.createHorizontalStrut(5));
-        JButton btnFilter = new JButton(bundle.getString("filter"));
+        JButton btnFilter = new JButton(getBundle().getString("filter"));
         btnFilter.addActionListener(e -> {
             this.filterText = getProcessFilterText();
             model.fireTableDataChanged();
@@ -95,7 +95,7 @@ public class ProcessListPanel extends JPanel {
         b1.add(btnFilter);
         b1.add(Box.createHorizontalStrut(5));
 
-        JButton btnClearFilter = new JButton(bundle.getString("clear"));
+        JButton btnClearFilter = new JButton(getBundle().getString("clear"));
         b1.add(btnClearFilter);
         b1.add(Box.createHorizontalStrut(5));
         btnClearFilter.addActionListener(e -> {
@@ -104,14 +104,14 @@ public class ProcessListPanel extends JPanel {
             model.fireTableDataChanged();
         });
 
-        JButton btnRefresh = new JButton(bundle.getString("refresh"));
+        JButton btnRefresh = new JButton(getBundle().getString("refresh"));
         b1.add(btnRefresh);
         btnRefresh.addActionListener(e -> this.consumer.accept(null, CommandMode.LIST_PROCESS));
 
         killPopup = new JPopupMenu();
 
-        JMenuItem mKill = new JMenuItem(bundle.getString("kill"));
-        JMenuItem mKillAsRoot = new JMenuItem(bundle.getString("kill_sudo"));
+        JMenuItem mKill = new JMenuItem(getBundle().getString("kill"));
+        JMenuItem mKillAsRoot = new JMenuItem(getBundle().getString("kill_sudo"));
 
         mKill.addActionListener(e -> {
             int c = table.getSelectedRow();
@@ -145,8 +145,8 @@ public class ProcessListPanel extends JPanel {
         killPopup.pack();
 
         prioPopup = new JPopupMenu();
-        JMenuItem mPrio = new JMenuItem(bundle.getString("change_priority"));
-        JMenuItem mPrioAsRoot = new JMenuItem(bundle.getString("change_priority_sudo"));
+        JMenuItem mPrio = new JMenuItem(getBundle().getString("change_priority"));
+        JMenuItem mPrioAsRoot = new JMenuItem(getBundle().getString("change_priority_sudo"));
         prioPopup.add(mPrio);
         prioPopup.add(mPrioAsRoot);
         prioPopup.pack();
@@ -154,7 +154,7 @@ public class ProcessListPanel extends JPanel {
 
         Box b2 = Box.createHorizontalBox();
         b2.add(lblProcessCount);
-        btnCopyArgs = new JButton(bundle.getString("copy_command"));
+        btnCopyArgs = new JButton(getBundle().getString("copy_command"));
         btnCopyArgs.addActionListener(e -> {
             int c = table.getSelectedRow();
             if (c != -1) {
@@ -165,7 +165,7 @@ public class ProcessListPanel extends JPanel {
             }
         });
 
-        btnKill = new JButton(bundle.getString("kill_process"));
+        btnKill = new JButton(getBundle().getString("kill_process"));
         btnKill.addActionListener(e -> {
             Dimension d = killPopup.getPreferredSize();
             killPopup.show(btnKill, 0, -d.height);
@@ -189,8 +189,8 @@ public class ProcessListPanel extends JPanel {
     }
 
     public void setProcessList(List<ProcessTableEntry> list) {
-        lblProcessCount.setText(bundle.getString("total_processes") + " " + list.size()
-                + ", " + bundle.getString("last_updated") + " " + LocalDateTime.now().format(
+        lblProcessCount.setText(getBundle().getString("total_processes") + " " + list.size()
+                + ", " + getBundle().getString("last_updated") + " " + LocalDateTime.now().format(
                 DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)));
         int x = table.getSelectedRow();
         int selectedPid = -1;

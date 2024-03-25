@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static tauon.app.App.bundle;
+import static tauon.app.services.LanguageService.getBundle;
 
 public class JumpHostPanel extends JPanel {
     private final DefaultListModel<HopEntry> hopModel = new DefaultListModel<>();
@@ -171,7 +171,7 @@ public class JumpHostPanel extends JPanel {
         });
 
         while (JOptionPane.showOptionDialog(this,
-                new Object[]{bundle.getString("host"), txtHost, bundle.getString("port"), spPort, bundle.getString("user"), txtUser, bundle.getString("password"), txtPassword, bundle.getString("private_key_file"),
+                new Object[]{getBundle().getString("host"), txtHost, getBundle().getString("port"), spPort, getBundle().getString("user"), txtUser, getBundle().getString("password"), txtPassword, getBundle().getString("private_key_file"),
                         txtKeyFile},
                 "Hop entry", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null,
                 null) == JOptionPane.OK_OPTION) {
@@ -181,7 +181,7 @@ public class JumpHostPanel extends JPanel {
             String path = txtKeyFile.getText();
             int port = (Integer) spPort.getValue();
             if (host.length() < 1 || user.length() < 1 || port <= 0) {
-                JOptionPane.showMessageDialog(this, App.bundle.getString("invalid_input"));
+                JOptionPane.showMessageDialog(this, getBundle().getString("invalid_input"));
                 continue;
             }
 
