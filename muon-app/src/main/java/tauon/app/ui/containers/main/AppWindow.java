@@ -16,6 +16,7 @@ import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.updater.UpdateChecker;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.util.misc.PlatformUtils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -27,6 +28,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -123,13 +125,21 @@ public class AppWindow extends JFrame {
     private JPanel createSessionPanel() {
         JLabel lblSession = new JLabel(getBundle().getString("sessions"));
         lblSession.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
+        
+        Font font = App.skin.getIconFont().deriveFont(20.0f);
+        Dimension dimension = new Dimension(30,30);
+        
         JButton btnNew = new JButton(getBundle().getString("add"));
-        btnNew.setFont(App.skin.getDefaultFont().deriveFont(12.0f));
+        btnNew.setFont(font);
+        btnNew.setText(FontAwesomeContants.FA_DESKTOP);
+        btnNew.setMaximumSize(dimension);
+//        btnNew.setFont(App.skin.getDefaultFont().deriveFont(12.0f));
         btnNew.addActionListener(e -> this.createFirstSessionPanel());
 
         JButton btnSettings = new JButton();
-        btnSettings.setFont(App.skin.getIconFont().deriveFont(12.0f));
+        btnSettings.setFont(font);
         btnSettings.setText(FontAwesomeContants.FA_COG);
+        btnSettings.setMaximumSize(dimension);
         btnSettings.addActionListener(e -> openSettings(null));
 
         Box topBox = Box.createHorizontalBox();
@@ -193,16 +203,7 @@ public class AppWindow extends JFrame {
         MouseListener ml = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (Desktop.isDesktopSupported()) {
-                    try {
-                        // TODO Fix linux: The BROWSE action is not supported on the current platform!
-                        Desktop.getDesktop().browse(new URI(REPOSITORY_URL));
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    } catch (URISyntaxException ex) {
-                        ex.printStackTrace();
-                    }
-                }
+                PlatformUtils.openWeb(REPOSITORY_URL);
             }
         };
 
@@ -275,15 +276,7 @@ public class AppWindow extends JFrame {
         lblHelp.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (Desktop.isDesktopSupported()) {
-                    try {
-                        Desktop.getDesktop().browse(new URI(HELP_URL));
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    } catch (URISyntaxException ex) {
-                        ex.printStackTrace();
-                    }
-                }
+                PlatformUtils.openWeb(HELP_URL);
             }
         });
 
@@ -324,15 +317,7 @@ public class AppWindow extends JFrame {
     }
 
     protected void openUpdateURL() {
-        if (Desktop.isDesktopSupported()) {
-            try {
-                Desktop.getDesktop().browse(new URI(UPDATE_URL2));
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (URISyntaxException ex) {
-                ex.printStackTrace();
-            }
-        }
+        PlatformUtils.openWeb(UPDATE_URL2);
     }
 
     public FileTransferProgress addUpload(BackgroundFileTransfer transfer) {

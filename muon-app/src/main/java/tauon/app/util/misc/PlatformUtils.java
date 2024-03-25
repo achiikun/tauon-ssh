@@ -14,10 +14,15 @@ import com.sun.jna.win32.StdCallLibrary;
 import tauon.app.App;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
 
+import java.awt.*;
 import java.io.*;
+import java.net.URI;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static tauon.app.util.misc.Constants.HELP_URL;
 
 /**
  * @author subhro
@@ -28,7 +33,7 @@ public class PlatformUtils {
         if (os.contains("mac")) {
             openMac(file);
         } else if (os.contains("linux")) {
-            openLinux(file);
+            openLinux(file, false);
         } else if (os.contains("windows")) {
             openWin(file, openWith);
         } else {
@@ -76,7 +81,7 @@ public class PlatformUtils {
 
     }
 
-    public static void openLinux(final File f) throws FileNotFoundException {
+    public static void openLinux(final File f, boolean killIfNotFinished) throws FileNotFoundException {
         if (!f.exists()) {
             throw new FileNotFoundException();
         }
@@ -93,6 +98,32 @@ public class PlatformUtils {
                         System.err.println(text);
                     }
                 }
+            }else{
+                if(killIfNotFinished)
+                    p.destroy();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void openLinux(final String url, boolean killIfNotFinished) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder();
+            pb.command("xdg-open", url);
+            Process p = pb.start();
+            if (p.waitFor(15, TimeUnit.SECONDS)) {
+                if(p.exitValue() != 0){
+                    try(InputStreamReader isr = new InputStreamReader(p.getErrorStream())){
+                        String text = new BufferedReader(isr)
+                                .lines()
+                                .collect(Collectors.joining("\n"));
+                        System.err.println(text);
+                    }
+                }
+            }else{
+                if(killIfNotFinished)
+                    p.destroy();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,6 +137,18 @@ public class PlatformUtils {
         try {
             ProcessBuilder pb = new ProcessBuilder();
             pb.command("open", f.getAbsolutePath());
+            if (pb.start().waitFor() != 0) {
+                throw new FileNotFoundException();
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+    
+    public static void openMac(String url) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder();
+            pb.command("open", url);
             if (pb.start().waitFor() != 0) {
                 throw new FileNotFoundException();
             }
@@ -186,7 +229,7 @@ public class PlatformUtils {
         if (os.contains("mac")) {
             openMac(new File(folder));
         } else if (os.contains("linux")) {
-            openLinux(new File(folder));
+            openLinux(new File(folder), true);
         } else if (os.contains("windows")) {
             try {
                 ProcessBuilder builder = new ProcessBuilder();
@@ -288,7 +331,22 @@ public class PlatformUtils {
         }
         return null;
     }
-
+    
+    public static void openWeb(String url) {
+        if (Desktop.isDesktopSupported()) {
+            try {
+                Desktop.getDesktop().browse(new URI(HELP_URL));
+            } catch (Exception ex) {
+                String os = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
+                if (os.contains("mac")) {
+                    openMac(url);
+                } else if (os.contains("linux")) {
+                    openLinux(url, false);
+                }
+            }
+        }
+    }
+    
     public interface Shell32 extends ShellAPI, StdCallLibrary {
         WinDef.HINSTANCE shellExecuteW(WinDef.HWND hwnd, WString lpOperation, WString lpFile, WString lpParameters,
                                        WString lpDirectory, int nShowCmd);
