@@ -3,6 +3,8 @@
  */
 package tauon.app.ui.containers.session;
 
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.services.SessionService;
 import tauon.app.services.SettingsService;
 import tauon.app.ui.containers.session.pages.diskspace.DiskspaceAnalyzer;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -33,6 +35,7 @@ import tauon.app.ui.components.page.PageHolder;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.containers.main.FileTransferProgress;
 import tauon.app.settings.HopEntry;
+import tauon.app.ui.dialogs.sessions.PasswordPromptHelper;
 import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.LayoutUtilities;
 
@@ -55,7 +58,7 @@ import static tauon.app.services.LanguageService.getBundle;
  * @author subhro
  *
  */
-public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle<TauonRemoteSessionInstance>, PasswordFinder {
+public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle<TauonRemoteSessionInstance> {
     public final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final SessionInfo info;
     private final AppWindow appWindow;
@@ -97,7 +100,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         this.remoteSessionInstance = new TauonRemoteSessionInstance(
                 info,
                 this,
-                this,
+                new MyPasswordFinder(),
                 true);
         
         Box contentTabs = Box.createHorizontalBox();
@@ -182,7 +185,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
             throw new RuntimeException(e);
         }
         
-        this.remoteSessionInstance = new TauonRemoteSessionInstance(info, this, this, true);
+        this.remoteSessionInstance = new TauonRemoteSessionInstance(info, this, new MyPasswordFinder(), true);
         
         try {
             this.remoteSessionInstance.connect();
@@ -406,7 +409,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
 
     public synchronized TauonRemoteSessionInstance createBackgroundSession() {
         if (this.cachedSessions.isEmpty()) {
-            return new TauonRemoteSessionInstance(info, this, this, false);
+            return new TauonRemoteSessionInstance(info, this, new MyPasswordFinder(), false);
         }
         return this.cachedSessions.pop();
     }
@@ -422,8 +425,47 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     @Override
-    public char[] promptPassword(HopEntry info, String user, AtomicBoolean remember) {
-        return new char[0];
+    public char[] promptPassword(HopEntry info, String user, AtomicBoolean rememberPassword, boolean isRetrying) {
+        JPasswordField passwordField = new JPasswordField(30);
+        int ret;
+        if(rememberPassword != null) {
+            JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("remember_password"));
+            ret = JOptionPane.showOptionDialog(
+                    null,
+                    new Object[]{
+                            "Type the password for user '" + user + "'",
+                            passwordField,
+                            rememberCheckBox
+                    },
+                    "Input", // TODO i18n
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    null
+            );
+            rememberPassword.set(rememberCheckBox.isSelected());
+        }else{
+            ret = JOptionPane.showOptionDialog(
+                    null,
+                    new Object[]{
+                            "Type the password for user '" + user + "'",
+                            passwordField
+                    },
+                    "Input", // TODO i18n
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    null
+            );
+        }
+        
+        if (ret == JOptionPane.OK_OPTION) {
+            return passwordField.getPassword();
+        }
+        
+        return null;
     }
     
     @Override
@@ -465,45 +507,86 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         return null;
     }
     
-    @Override
-    public char[] reqPassword(Resource<?> resource) {
-        if(SwingUtilities.isEventDispatchThread()){
-            return showReqPasswordDialog(resource);
-        }else{
-            AtomicReference<char[]> ret = new AtomicReference<>();
-            try {
-                SwingUtilities.invokeAndWait(() -> ret.set(showReqPasswordDialog(resource)));
-            } catch (InterruptedException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+    private class MyPasswordFinder implements PasswordFinder{
+        
+        @Override
+        public char[] reqPassword(Resource<?> resource) {
+            if(SwingUtilities.isEventDispatchThread()){
+                return showReqPasswordDialog(resource);
+            }else{
+                AtomicReference<char[]> ret = new AtomicReference<>();
+                try {
+                    SwingUtilities.invokeAndWait(() -> ret.set(showReqPasswordDialog(resource)));
+                } catch (InterruptedException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+                return ret.get();
             }
-            return ret.get();
-        }
-    }
-    
-    private boolean retryPassword = true;
-    
-    public char[] showReqPasswordDialog(Resource<?> resource) {
-        JPasswordField txtPass = new JPasswordField();
-        JCheckBox chkUseCache = new JCheckBox(getBundle().getString("remember_session"));
-        
-        // TODO i18n
-        int ret = JOptionPane.showOptionDialog(null,
-                new Object[]{resource!=null?resource.toString(): "Private key passphrase:", txtPass, chkUseCache},
-                "Passphrase", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
-        if (ret == JOptionPane.OK_OPTION) {
-            return txtPass.getPassword();
-        }else{
-            retryPassword = false;
         }
         
-        return null;
+        private boolean retryPassword = true;
+        
+        public char[] showReqPasswordDialog(Resource<?> resource) {
+            JPasswordField txtPass = new JPasswordField();
+//        JCheckBox chkUseCache = new JCheckBox(getBundle().getString("remember_session"));
+            
+            // TODO i18n
+            int ret = JOptionPane.showOptionDialog(SessionContentPanel.this,
+                    new Object[]{resource!=null?resource.toString(): "Private key passphrase:", txtPass},//, chkUseCache},
+                    "Passphrase", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+            if (ret == JOptionPane.OK_OPTION) {
+                return txtPass.getPassword();
+            }else{
+                retryPassword = false;
+            }
+            
+            return null;
+        }
+        
+        @Override
+        public boolean shouldRetry(Resource<?> resource) {
+            boolean old = retryPassword;
+            retryPassword = true;
+            return old;
+        }
+        
     }
     
     @Override
-    public boolean shouldRetry(Resource<?> resource) {
-        boolean old = retryPassword;
-        retryPassword = true;
-        return old;
+    public void showMessage(String name, String instruction) {
+        JOptionPane.showMessageDialog(this, instruction, name, JOptionPane.PLAIN_MESSAGE);
     }
     
+    @Override
+    public String promptInput(String prompt, boolean echo) {
+        if(echo) {
+            return JOptionPane.showInputDialog(this, prompt);
+        }else{
+            JPasswordField passwordField = new JPasswordField(30);
+            int ret = JOptionPane.showOptionDialog(
+                    this,
+                    new Object[]{prompt, passwordField},
+                    "Input", // TODO i18n
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    null
+            );
+            if (ret == JOptionPane.OK_OPTION) {
+                return String.valueOf(passwordField.getPassword());
+            }
+            return null;
+        }
+    }
+    
+    @Override
+    public void saveInfo(SessionInfo info) {
+        SessionService.getInstance().setPasswordsFrom(info);
+        try {
+            SessionService.getInstance().save(new PasswordPromptHelper(this));
+        } catch (OperationCancelledException ignored) {
+        
+        }
+    }
 }

@@ -3,6 +3,7 @@ package tauon.app.ssh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.services.SessionService;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.PortForwardingRule;
 import net.schmizz.keepalive.KeepAliveProvider;
@@ -399,8 +400,31 @@ public class TauonSSHClient {
                 // methods
                 List<String> allowedMethodsIfNotAuthenticated = new ArrayList<>();
                 
-                boolean authenticated = this.getAuthMethods(allowedMethodsIfNotAuthenticated, index);
+                AtomicBoolean rememberUser = new AtomicBoolean();
+                boolean isUserRemembered = false;
                 
+                UserPassCache userPassCache;
+                while (cache.size() <= index)
+                    cache.add(new UserPassCache());
+                userPassCache = cache.get(index);
+                
+                if(userPassCache.user == null || userPassCache.user.isBlank()) {
+                    
+                    if(hopEntry.getUser() != null && !hopEntry.getUser().isBlank()){
+                        userPassCache.user = hopEntry.getUser();
+                        isUserRemembered = true;
+                    }else{
+                        userPassCache.user = guiHandle.promptUser(hopEntry, rememberUser);
+                    }
+                }else{
+                    isUserRemembered = true;
+                }
+                
+                if (userPassCache.user == null || userPassCache.user.isEmpty()) {
+                    throw new OperationCancelledException();
+                }
+                
+                boolean authenticated = this.getAuthMethods(allowedMethodsIfNotAuthenticated, userPassCache.user, rememberUser);
                 if (authenticated) {
                     return; // All right
                 }
@@ -409,7 +433,7 @@ public class TauonSSHClient {
                 // order sent by server
                 for (String authMethod : allowedMethodsIfNotAuthenticated) {
                     
-                    if(Thread.interrupted()){
+                    if (Thread.interrupted()) {
                         Thread.currentThread().interrupt();
                         throw new InterruptedException(); // Will be disconnected by TauonSSHClient
                     }
@@ -419,7 +443,11 @@ public class TauonSSHClient {
                     switch (authMethod) {
                         case "publickey":
                             try {
-                                this.authPublicKey(index);
+                                this.authPublicKey(index, userPassCache.user);
+                                if(rememberUser.get()){
+                                    info.setUser(userPassCache.user);
+                                    SessionService.getInstance().setPasswordsFrom(info);
+                                }
                                 return; // All right
                             } catch (OperationCancelledException e) {
                                 disconnect();
@@ -431,15 +459,8 @@ public class TauonSSHClient {
                         
                         case "keyboard-interactive":
                             try {
-                                String user = promptUser(index);
-                                
-                                if(user == null || user.isEmpty()){
-                                    throw new OperationCancelledException();
-                                }
-                                
-                                sshj.auth(user, new AuthKeyboardInteractive(new InteractiveResponseProvider()));
+                                sshj.auth(userPassCache.user, new AuthKeyboardInteractive(new SSHJInteractiveResponseProvider(guiHandle)));
                                 return; // All right
-                                
                             } catch (Exception e) {
                                 LOG.debug("Error authenticating", e);
                             }
@@ -447,7 +468,7 @@ public class TauonSSHClient {
                         
                         case "password":
                             try {
-                                this.authPassword(index);
+                                this.authPassword(index, userPassCache.user, isUserRemembered, rememberUser.get());
                                 return; // All right
                             } catch (OperationCancelledException e) {
                                 disconnect();
@@ -468,56 +489,25 @@ public class TauonSSHClient {
             
         }
         
-        private String promptUser(int index){
+        private char[] promptPassword(String user, int index, AtomicBoolean rememberPassword, boolean isRetrying){
             
             UserPassCache userPassCache;
             
-            if(cache.size() > index){
-                userPassCache = cache.get(index);
-            }else{
-                while(cache.size() <= index)
-                    cache.add(new UserPassCache());
-                userPassCache = cache.get(index);
-            }
+            while (cache.size() <= index)
+                cache.add(new UserPassCache());
             
-            if(userPassCache.user == null || userPassCache.user.isBlank()) {
-                
-                if(hopEntry.getUser() != null && !hopEntry.getUser().isBlank()){
-                    userPassCache.user = hopEntry.getUser();
-                }else{
-                    AtomicBoolean remember = new AtomicBoolean();
-                    String user = guiHandle.promptUser(hopEntry, remember);
-                    if(remember.get())
-                        userPassCache.user = user;
-                    return user;
-                }
-            }
+            userPassCache = cache.get(index);
             
-            return userPassCache.user;
-            
-        }
-        
-        private char[] promptPassword(String user, int index){
-            
-            UserPassCache userPassCache;
-            
-            if(cache.size() > index){
-                userPassCache = cache.get(index);
-            }else{
-                while(cache.size() <= index)
-                    cache.add(new UserPassCache());
-                userPassCache = cache.get(index);
-            }
+            if(isRetrying)
+                userPassCache.password = null;
             
             if(userPassCache.password == null || userPassCache.password.length == 0) {
                 
                 if(hopEntry.getPassword() != null && !hopEntry.getPassword().isBlank()){
                     userPassCache.password = hopEntry.getPassword().toCharArray();
                 }else {
-                    AtomicBoolean remember = new AtomicBoolean();
-                    char[] password = guiHandle.promptPassword(hopEntry, user, remember);
-                    if (remember.get())
-                        userPassCache.password = password;
+                    char[] password = guiHandle.promptPassword(hopEntry, user, rememberPassword, isRetrying);
+                    userPassCache.password = password;
                     return password;
                 }
             }
@@ -526,22 +516,12 @@ public class TauonSSHClient {
             
         }
         
-        private boolean getAuthMethods(List<String> allowedMethodsIfNotAuthenticated, int index)
+        private boolean getAuthMethods(List<String> allowedMethodsIfNotAuthenticated, String user, AtomicBoolean remember)
                 throws OperationCancelledException {
             System.out.println("Trying to get allowed authentication methods...");
             try {
-                
-                String user = promptUser(index);
-                
-                if (user == null || user.isEmpty()) {
-                    throw new OperationCancelledException();
-                }
-                
                 sshj.auth(user, new AuthNone());
-                
                 return true;
-            } catch (OperationCancelledException e) {
-                throw e;
             } catch (Exception e) {
                 allowedMethodsIfNotAuthenticated.addAll(sshj.getUserAuth().getAllowedMethods());
                 LOG.debug("List of allowed authentications: " + allowedMethodsIfNotAuthenticated);
@@ -549,7 +529,7 @@ public class TauonSSHClient {
             return false;
         }
         
-        private void authPublicKey(int index) throws Exception {
+        private void authPublicKey(int index, String user) throws Exception {
             KeyProvider provider = null;
             if (info.getPrivateKeyFile() != null && !info.getPrivateKeyFile().isEmpty()) {
                 File keyFile = new File(info.getPrivateKeyFile());
@@ -564,31 +544,40 @@ public class TauonSSHClient {
                 throw new Exception("No suitable key providers");
             }
             
-            sshj.authPublickey(promptUser(index), provider);
+            sshj.authPublickey(user, provider);
         }
         
-        private void authPassword(int index) throws Exception {
-            String user = promptUser(index);
+        private void authPassword(int index, String user, boolean isUserRemembered, boolean haveToRememberUser) throws Exception {
             
-            if (user == null || user.isEmpty()) {
-                throw new OperationCancelledException();
-            }
+            AtomicBoolean rememberPassword = isUserRemembered || haveToRememberUser ? new AtomicBoolean() : null;
             
             // keep on trying with password
+            boolean isRetrying = false;
             while (true) {
                 
-                char[] password = promptPassword(user, index);
+                char[] password = promptPassword(user, index, rememberPassword, isRetrying);
                 
                 if (password == null || password.length == 0) {
                     throw new OperationCancelledException();
                 }
                 
+                isRetrying = true;
+                
                 try {
+                    String svalue = String.valueOf(password);
                     sshj.authPassword(user, password); // provide
                     // password
                     // updater
                     // PasswordUpdateProvider
                     // net.schmizz.sshj.userauth.password.PasswordUpdateProvider
+                    if (haveToRememberUser || rememberPassword != null && rememberPassword.get()) {
+                        if(haveToRememberUser)
+                            info.setUser(user);
+                        if(rememberPassword != null && rememberPassword.get())
+                            info.setPassword(svalue);
+                        guiHandle.saveInfo(info);
+                    }
+                    
                     return;
                 } catch (Exception e) {
                     LOG.debug("Error authenticating", e);

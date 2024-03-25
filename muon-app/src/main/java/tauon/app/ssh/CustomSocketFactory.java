@@ -41,7 +41,7 @@ public class CustomSocketFactory extends SocketFactory {
         this.proxyType = proxyType;
     }
 
-    public static final int getResponseCode(String statusLine) {
+    public static int getResponseCode(String statusLine) {
         String[] arr = statusLine.split(" ");
         if (arr.length < 2)
             return 400;
@@ -69,16 +69,23 @@ public class CustomSocketFactory extends SocketFactory {
     @Override
     public Socket createSocket(InetAddress address, int port,
                                InetAddress localAddress, int localPort) throws IOException {
+        
         Socket socket = this.createSocket();
-        if (localAddress != null) {
-            socket.bind(new InetSocketAddress(localAddress, localPort));
-        }
-        if (address != null) {
-            socket.connect(new InetSocketAddress(address, port));
-        }
-
-        if (this.proxyType == Proxy.Type.HTTP && proxyUser != null) {
-            connectToProxy(socket);
+        try {
+            if (localAddress != null) {
+                socket.bind(new InetSocketAddress(localAddress, localPort));
+            }
+            if (address != null) {
+                socket.connect(new InetSocketAddress(address, port));
+            }
+            
+            if (this.proxyType == Proxy.Type.HTTP && proxyUser != null) {
+                connectToProxy(socket);
+            }
+            
+        }catch (IOException e){
+            socket.close();
+            throw e;
         }
 
         return socket;
@@ -91,7 +98,7 @@ public class CustomSocketFactory extends SocketFactory {
             proxy = new Proxy(Proxy.Type.SOCKS,
                     new InetSocketAddress(proxyHost, proxyPort));
         } else if (this.proxyType == Proxy.Type.HTTP) {
-            if (proxyUser == null || proxyUser.length() < 1) {
+            if (proxyUser == null || proxyUser.isBlank()) {
                 proxy = new Proxy(Proxy.Type.HTTP,
                         new InetSocketAddress(proxyHost, proxyPort));
             }
@@ -105,38 +112,33 @@ public class CustomSocketFactory extends SocketFactory {
         OutputStream out = socket.getOutputStream();
         StringBuilder requestHeaders = new StringBuilder();
         requestHeaders
-                .append("HTTP " + proxyHost + ":" + proxyPort + " HTTP/1.1\r\n")
-                .append("Host: " + proxyHost + ":" + proxyPort + "\r\n");
+                .append("HTTP ").append(proxyHost).append(":").append(proxyPort).append(" HTTP/1.1\r\n")
+                .append("Host: ").append(proxyHost).append(":").append(proxyPort).append("\r\n");
         String proxyAuth = getBasicAuthStr();
         if (proxyAuth != null) {
-            requestHeaders
-                    .append("Proxy-Authorization: basic " + proxyAuth + "\r\n");
+            requestHeaders.append("Proxy-Authorization: basic ").append(proxyAuth).append("\r\n");
         }
         requestHeaders.append("\r\n");
         out.write(requestHeaders.toString().getBytes(StandardCharsets.UTF_8));
         out.flush();
 
         String statusLine = readLine(in);
-        if (statusLine == null) {
-            socket.close();
-            throw new IOException("Proxy sent blank response");
-        }
 
         int responseCode = getResponseCode(statusLine);
-        if (responseCode < 200 && responseCode >= 300) {
+        if (responseCode < 200 || responseCode >= 300) {
             socket.close();
             throw new IOException("Invalid response code: " + responseCode);
         }
 
         while (true) {
             String line = readLine(in);
-            if (line.length() < 1)
+            if (line.isBlank())
                 break;
         }
     }
 
     private String getBasicAuthStr() {
-        if (proxyUser != null && proxyUser.length() > 0) {
+        if (proxyUser != null && !proxyUser.isEmpty()) {
             return (Base64.getEncoder().encodeToString(
                     (proxyUser + ":" + (proxyPass == null ? "" : proxyPass))
                             .getBytes(StandardCharsets.UTF_8)));
