@@ -1,6 +1,6 @@
 package tauon.app.ui.dialogs.sessions;
 
-import tauon.app.settings.SessionService;
+import tauon.app.services.SessionService;
 import tauon.app.exceptions.OperationCancelledException;
 
 import javax.swing.*;

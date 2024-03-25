@@ -1,6 +1,5 @@
 package tauon.app.ui.containers.session.pages.files;
 
-import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ssh.TauonRemoteSessionInstance;
@@ -16,7 +15,7 @@ import tauon.app.ui.containers.session.pages.files.local.LocalFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.ssh.SshFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.transfer.FileTransfer;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferData;
-import util.Constants;
+import tauon.app.util.misc.Constants;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import javax.swing.*;

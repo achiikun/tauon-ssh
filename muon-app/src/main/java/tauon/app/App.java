@@ -8,10 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.InitializationException;
 import tauon.app.services.ConfigFilesService;
-import tauon.app.services.LanguageService;
 import tauon.app.services.SettingsService;
-import tauon.app.settings.Settings;
-import tauon.app.settings.SnippetManager;
+import tauon.app.services.SnippetManager;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
 import tauon.app.ui.containers.session.SessionContentPanel;
@@ -20,8 +18,7 @@ import tauon.app.ui.laf.AppSkin;
 import tauon.app.ui.laf.AppSkinDark;
 import tauon.app.ui.laf.AppSkinLight;
 import tauon.app.util.externaleditor.ExternalEditorHandler;
-import util.Constants;
-import util.PlatformUtils;
+import tauon.app.util.misc.PlatformUtils;
 
 import javax.swing.*;
 import java.io.File;
@@ -35,7 +32,7 @@ import java.util.concurrent.Executors;
 import static org.apache.commons.io.FileUtils.copyDirectory;
 import static tauon.app.services.LanguageService.getBundle;
 import static tauon.app.services.SettingsService.getSettings;
-import static util.Constants.*;
+import static tauon.app.util.misc.Constants.*;
 
 /**
  * Hello world!

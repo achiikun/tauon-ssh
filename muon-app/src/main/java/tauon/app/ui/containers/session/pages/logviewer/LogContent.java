@@ -12,7 +12,7 @@ import tauon.app.ui.components.misc.TextGutter;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import org.tukaani.xz.XZInputStream;
 import tauon.app.ui.components.misc.FontAwesomeContants;
-import util.LayoutUtilities;
+import tauon.app.util.misc.LayoutUtilities;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;

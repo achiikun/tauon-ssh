@@ -23,7 +23,7 @@ import tauon.app.App;
 import tauon.app.settings.SessionInfo;
 import tauon.app.settings.HopEntry;
 import tauon.app.util.ssh.SshUtil;
-import util.ExceptionUtils;
+import tauon.app.util.misc.ExceptionUtils;
 
 import java.io.File;
 import java.io.IOException;

@@ -8,7 +8,7 @@ import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
-import util.OptionPaneUtils;
+import tauon.app.util.misc.OptionPaneUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

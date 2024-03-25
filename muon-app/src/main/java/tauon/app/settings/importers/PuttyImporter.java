@@ -3,7 +3,7 @@ package tauon.app.settings.importers;
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
 import tauon.app.settings.SessionInfo;
-import util.RegUtil;
+import tauon.app.util.misc.RegUtil;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.HashMap;

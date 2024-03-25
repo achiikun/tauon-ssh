@@ -7,7 +7,7 @@ import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import util.Win32DragHandler;
+import tauon.app.util.misc.Win32DragHandler;
 
 import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;

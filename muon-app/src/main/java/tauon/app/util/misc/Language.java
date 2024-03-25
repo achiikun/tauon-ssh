@@ -1,4 +1,4 @@
-package util;
+package tauon.app.util.misc;
 
 public enum Language {
     ENGLISH("en", "English"),

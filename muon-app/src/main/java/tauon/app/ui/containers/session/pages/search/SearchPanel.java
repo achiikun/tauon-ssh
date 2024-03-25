@@ -9,8 +9,8 @@ import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
-import util.PathUtils;
-import util.ScriptLoader;
+import tauon.app.util.misc.PathUtils;
+import tauon.app.util.misc.ScriptLoader;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;

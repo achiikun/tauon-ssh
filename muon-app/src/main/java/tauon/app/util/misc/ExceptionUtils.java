@@ -1,4 +1,4 @@
-package util;
+package tauon.app.util.misc;
 
 public class ExceptionUtils {
     

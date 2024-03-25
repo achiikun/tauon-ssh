@@ -3,7 +3,7 @@ package tauon.app.ui.containers.session.pages.files.view;
 import tauon.app.App;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.containers.session.pages.files.AddressBarComboBoxEditor;
-import util.LayoutUtilities;
+import tauon.app.util.misc.LayoutUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

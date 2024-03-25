@@ -7,7 +7,7 @@ import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.utilpage.UtilPageItemView;
-import util.ScriptLoader;
+import tauon.app.util.misc.ScriptLoader;
 
 import javax.swing.*;
 import java.awt.*;

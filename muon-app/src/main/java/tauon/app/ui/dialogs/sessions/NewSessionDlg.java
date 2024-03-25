@@ -6,14 +6,14 @@ import tauon.app.services.ConfigFilesService;
 import tauon.app.settings.NamedItem;
 import tauon.app.settings.SessionFolder;
 import tauon.app.settings.SessionInfo;
-import tauon.app.settings.SessionService;
+import tauon.app.services.SessionService;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ui.components.misc.AutoScrollingJTree;
 import tauon.app.ui.components.misc.NativeFileChooser;
 import tauon.app.ui.components.misc.SkinnedSplitPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.utils.AlertDialogUtils;
-import util.FormatUtils;
+import tauon.app.util.misc.FormatUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

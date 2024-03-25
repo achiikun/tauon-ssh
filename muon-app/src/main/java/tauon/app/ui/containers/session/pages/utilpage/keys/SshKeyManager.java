@@ -12,7 +12,7 @@ import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
 import net.schmizz.sshj.sftp.Response;
 import net.schmizz.sshj.sftp.SFTPException;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import java.io.*;

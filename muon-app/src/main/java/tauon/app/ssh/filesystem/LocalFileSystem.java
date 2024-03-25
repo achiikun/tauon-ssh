@@ -1,8 +1,7 @@
 package tauon.app.ssh.filesystem;
 
-import tauon.app.ssh.filesystem.*;
 import org.jetbrains.annotations.NotNull;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import java.io.*;
 import java.nio.file.Files;

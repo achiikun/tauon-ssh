@@ -2,7 +2,7 @@ package tauon.app.ui.containers.session.pages.files.view;
 
 import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
-import util.FileIconUtil;
+import tauon.app.util.misc.FileIconUtil;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import javax.swing.*;

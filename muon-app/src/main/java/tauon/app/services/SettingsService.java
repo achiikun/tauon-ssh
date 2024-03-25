@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import tauon.app.settings.Settings;
-import util.Constants;
+import tauon.app.util.misc.Constants;
 
 public class SettingsService {
     

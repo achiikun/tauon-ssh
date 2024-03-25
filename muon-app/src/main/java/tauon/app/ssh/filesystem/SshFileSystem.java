@@ -5,7 +5,7 @@ import net.schmizz.sshj.sftp.FileMode.Type;
 import net.schmizz.sshj.xfer.FilePermission;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ssh.TauonSSHClient;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import java.io.*;
 import java.nio.file.AccessDeniedException;

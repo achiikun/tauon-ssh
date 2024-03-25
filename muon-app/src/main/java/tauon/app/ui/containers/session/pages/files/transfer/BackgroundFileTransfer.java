@@ -5,7 +5,7 @@ import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ui.containers.main.FileTransferProgress;
 import tauon.app.ui.containers.session.SessionContentPanel;
-import util.Constants;
+import tauon.app.util.misc.Constants;
 
 public class BackgroundFileTransfer extends FileTransfer {
     

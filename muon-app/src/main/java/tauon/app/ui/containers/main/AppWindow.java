@@ -14,7 +14,7 @@ import tauon.app.settings.SessionInfo;
 import tauon.app.ui.containers.session.pages.files.transfer.BackgroundFileTransfer;
 import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
-import muon.app.updater.UpdateChecker;
+import tauon.app.updater.UpdateChecker;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import javax.imageio.ImageIO;
@@ -32,7 +32,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static tauon.app.services.LanguageService.getBundle;
-import static util.Constants.*;
+import static tauon.app.util.misc.Constants.*;
 
 /**
  * @author subhro

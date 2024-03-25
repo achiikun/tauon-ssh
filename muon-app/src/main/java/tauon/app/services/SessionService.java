@@ -1,15 +1,16 @@
-package tauon.app.settings;
+package tauon.app.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.services.ConfigFilesService;
-import tauon.app.services.SettingsService;
 import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.settings.NamedItem;
+import tauon.app.settings.SessionFolder;
+import tauon.app.settings.SessionInfo;
 import tauon.app.ui.dialogs.sessions.SavedSessionTree;
-import util.Constants;
+import tauon.app.util.misc.Constants;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;

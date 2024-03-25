@@ -10,7 +10,7 @@ import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import java.util.LinkedHashSet;

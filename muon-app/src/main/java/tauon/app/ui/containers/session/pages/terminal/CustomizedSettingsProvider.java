@@ -7,11 +7,10 @@ import com.jediterm.terminal.TerminalColor;
 import com.jediterm.terminal.TextStyle;
 import com.jediterm.terminal.emulator.ColorPalette;
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider;
-import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.Settings;
 import tauon.app.settings.SessionInfo;
-import util.FontUtils;
+import tauon.app.util.misc.FontUtils;
 
 import javax.swing.*;
 import java.awt.*;

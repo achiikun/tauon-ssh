@@ -1,12 +1,12 @@
 package tauon.app.services;
 
 import tauon.app.settings.Settings;
-import util.Language;
+import tauon.app.util.misc.Language;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import static util.Constants.PATH_MESSAGES_FILE;
+import static tauon.app.util.misc.Constants.PATH_MESSAGES_FILE;
 
 public class LanguageService {
     private static ResourceBundle bundle;

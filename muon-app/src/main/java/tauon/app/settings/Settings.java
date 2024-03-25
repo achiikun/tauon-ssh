@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import tauon.app.App;
 import tauon.app.ui.laf.theme.DarkTerminalTheme;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
-import util.CollectionHelper;
-import util.Constants;
-import util.Language;
+import tauon.app.util.misc.CollectionHelper;
+import tauon.app.util.misc.Constants;
+import tauon.app.util.misc.Language;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;

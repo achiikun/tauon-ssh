@@ -10,9 +10,9 @@ import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
 import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.util.externaleditor.FileChangeWatcher.FileModificationInfo;
-import util.OptionPaneUtils;
-import util.PlatformUtils;
-import util.TimeUtils;
+import tauon.app.util.misc.OptionPaneUtils;
+import tauon.app.util.misc.PlatformUtils;
+import tauon.app.util.misc.TimeUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

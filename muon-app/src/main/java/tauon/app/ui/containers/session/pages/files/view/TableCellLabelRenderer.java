@@ -3,8 +3,8 @@ package tauon.app.ui.containers.session.pages.files.view;
 import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
-import util.FileIconUtil;
-import util.FormatUtils;
+import tauon.app.util.misc.FileIconUtil;
+import tauon.app.util.misc.FormatUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

@@ -8,7 +8,7 @@ import com.sun.jna.platform.win32.WinReg;
 import tauon.app.settings.NamedItem;
 import tauon.app.settings.SessionFolder;
 import tauon.app.settings.SessionInfo;
-import util.RegUtil;
+import tauon.app.util.misc.RegUtil;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.net.URLDecoder;

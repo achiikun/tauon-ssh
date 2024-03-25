@@ -3,13 +3,12 @@
  */
 package tauon.app.ui.containers.session.pages.processview;
 
-import tauon.app.App;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.processview.ProcessListPanel.CommandMode;
 import tauon.app.ui.components.misc.FontAwesomeContants;
-import util.ScriptLoader;
+import tauon.app.util.misc.ScriptLoader;
 import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;

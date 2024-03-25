@@ -1,7 +1,7 @@
 /**
  *
  */
-package tauon.app.settings;
+package tauon.app.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static util.Constants.SNIPPETS_FILE;
-import static util.Constants.CONFIG_DIR;
+import static tauon.app.util.misc.Constants.SNIPPETS_FILE;
+import static tauon.app.util.misc.Constants.CONFIG_DIR;
 
 /**
  * @author subhro

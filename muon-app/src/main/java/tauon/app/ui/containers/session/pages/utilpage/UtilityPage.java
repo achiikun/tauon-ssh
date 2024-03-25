@@ -14,7 +14,7 @@ import tauon.app.ui.containers.session.pages.utilpage.services.ServicePanel;
 import tauon.app.ui.containers.session.pages.utilpage.sysinfo.SysInfoPanel;
 import tauon.app.ui.containers.session.pages.utilpage.sysload.SysLoadPage;
 import tauon.app.ui.components.misc.FontAwesomeContants;
-import util.LayoutUtilities;
+import tauon.app.util.misc.LayoutUtilities;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;

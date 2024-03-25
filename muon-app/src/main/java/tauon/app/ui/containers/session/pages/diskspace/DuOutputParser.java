@@ -1,6 +1,6 @@
 package tauon.app.ui.containers.session.pages.diskspace;
 
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import java.util.List;
 import java.util.regex.Matcher;

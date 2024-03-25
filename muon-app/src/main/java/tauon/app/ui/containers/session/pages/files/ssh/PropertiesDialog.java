@@ -4,7 +4,7 @@ import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import util.FormatUtils;
+import tauon.app.util.misc.FormatUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

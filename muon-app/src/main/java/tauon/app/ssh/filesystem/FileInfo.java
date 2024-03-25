@@ -1,6 +1,6 @@
 package tauon.app.ssh.filesystem;
 
-import util.TimeUtils;
+import tauon.app.util.misc.TimeUtils;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

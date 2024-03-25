@@ -13,8 +13,8 @@ import tauon.app.ui.containers.session.pages.files.view.AddressBar;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferHandler;
 import tauon.app.ssh.filesystem.SshFileSystem;
-import util.Constants;
-import util.PathUtils;
+import tauon.app.util.misc.Constants;
+import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

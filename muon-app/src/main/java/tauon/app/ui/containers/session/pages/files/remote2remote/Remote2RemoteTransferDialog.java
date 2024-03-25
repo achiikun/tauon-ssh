@@ -27,9 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static tauon.app.services.LanguageService.getBundle;
-import static tauon.app.services.LanguageService.getBundle;
-import static util.Constants.TRANSFER_HOSTS;
-import static util.Constants.CONFIG_DIR;
+import static tauon.app.util.misc.Constants.TRANSFER_HOSTS;
+import static tauon.app.util.misc.Constants.CONFIG_DIR;
 
 public class Remote2RemoteTransferDialog extends JDialog {
     private final DefaultListModel<RemoteServerEntry> remoteHostModel;

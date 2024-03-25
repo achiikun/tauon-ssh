@@ -4,11 +4,11 @@ import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
-import muon.app.ui.components.session.BookmarkManager;
+import tauon.app.services.BookmarkManager;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.view.FolderView;
-import util.PathUtils;
-import util.PlatformUtils;
+import tauon.app.util.misc.PathUtils;
+import tauon.app.util.misc.PlatformUtils;
 
 import javax.swing.*;
 import java.awt.*;

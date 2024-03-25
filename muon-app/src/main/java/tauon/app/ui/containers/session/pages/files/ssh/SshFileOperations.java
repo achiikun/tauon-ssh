@@ -1,13 +1,12 @@
 package tauon.app.ui.containers.session.pages.files.ssh;
 
-import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.components.misc.SkinnedTextField;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;

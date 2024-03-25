@@ -1,7 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.ssh;
 
 import tauon.app.ssh.TauonRemoteSessionInstance;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import java.util.LinkedHashMap;

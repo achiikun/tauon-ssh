@@ -4,7 +4,7 @@
 package tauon.app.ui.components.misc;
 
 import tauon.app.App;
-import util.FontUtils;
+import tauon.app.util.misc.FontUtils;
 
 import javax.swing.*;
 import java.awt.*;

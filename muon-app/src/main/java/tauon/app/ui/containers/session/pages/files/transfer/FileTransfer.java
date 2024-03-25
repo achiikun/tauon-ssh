@@ -1,15 +1,14 @@
 package tauon.app.ui.containers.session.pages.files.transfer;
 
-import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.SSHRemoteFileInputStream;
 import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
 import tauon.app.ssh.filesystem.*;
 import tauon.app.ui.containers.main.FileTransferProgress;
-import util.Constants;
-import util.Constants.ConflictAction;
-import util.PathUtils;
+import tauon.app.util.misc.Constants;
+import tauon.app.util.misc.Constants.ConflictAction;
+import tauon.app.util.misc.PathUtils;
 import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;

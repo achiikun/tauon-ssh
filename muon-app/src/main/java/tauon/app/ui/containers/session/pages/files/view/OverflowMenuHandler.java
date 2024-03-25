@@ -1,12 +1,11 @@
 package tauon.app.ui.containers.session.pages.files.view;
 
-import muon.app.ui.components.session.BookmarkManager;
-import tauon.app.App;
+import tauon.app.services.BookmarkManager;
 import tauon.app.services.SettingsService;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.local.LocalFileBrowserView;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

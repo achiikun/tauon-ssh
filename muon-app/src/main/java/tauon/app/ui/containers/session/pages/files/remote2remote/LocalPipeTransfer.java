@@ -1,14 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.remote2remote;
 
-import tauon.app.App;
-import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.FileInfo;
-import tauon.app.ui.dialogs.sessions.NewSessionDlg;
-import tauon.app.settings.SessionInfo;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import util.Constants;
-
-import javax.swing.*;
 
 public class LocalPipeTransfer {
     public void transferFiles(FileBrowser fileBrowser, String currentDirectory, FileInfo[] selectedFiles) {

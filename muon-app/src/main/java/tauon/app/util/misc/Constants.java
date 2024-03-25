@@ -1,7 +1,7 @@
-package util;
+package tauon.app.util.misc;
 
 import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
-import muon.app.updater.VersionEntry;
+import tauon.app.updater.VersionEntry;
 
 import java.io.File;
 

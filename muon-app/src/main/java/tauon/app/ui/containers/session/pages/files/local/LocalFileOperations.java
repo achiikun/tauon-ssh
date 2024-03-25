@@ -2,7 +2,7 @@ package tauon.app.ui.containers.session.pages.files.local;
 
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.LocalFileSystem;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import java.io.File;

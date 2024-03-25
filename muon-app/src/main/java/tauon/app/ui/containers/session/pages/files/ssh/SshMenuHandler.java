@@ -6,7 +6,7 @@ import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.ui.components.misc.NativeFileChooser;
-import muon.app.ui.components.session.BookmarkManager;
+import tauon.app.services.BookmarkManager;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.remote2remote.LocalPipeTransfer;
 import tauon.app.ui.containers.session.pages.files.remote2remote.Remote2RemoteTransferDialog;
@@ -15,7 +15,7 @@ import tauon.app.ui.containers.session.pages.files.view.DndTransferHandler;
 import tauon.app.ui.containers.session.pages.files.view.FolderView;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import java.awt.*;

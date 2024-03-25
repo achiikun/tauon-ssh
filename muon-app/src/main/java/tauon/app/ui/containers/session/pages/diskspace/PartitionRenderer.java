@@ -1,6 +1,6 @@
 package tauon.app.ui.containers.session.pages.diskspace;
 
-import util.FormatUtils;
+import tauon.app.util.misc.FormatUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

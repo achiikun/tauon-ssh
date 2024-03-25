@@ -6,7 +6,7 @@ package tauon.app.ui.containers.session.pages.logviewer;
 import tauon.app.App;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
-import util.CollectionHelper;
+import tauon.app.util.misc.CollectionHelper;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;

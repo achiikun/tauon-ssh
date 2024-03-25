@@ -1,6 +1,5 @@
 package tauon.app.ui.containers.session.pages.files.local;
 
-import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
@@ -10,7 +9,7 @@ import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.view.AddressBar;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferHandler;
-import util.PathUtils;
+import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

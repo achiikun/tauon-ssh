@@ -2,17 +2,16 @@ package tauon.app.ui.dialogs.sessions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.App;
 import tauon.app.exceptions.AlreadyFailedException;
 import tauon.app.settings.SessionFolder;
 import tauon.app.settings.SessionInfo;
-import tauon.app.settings.SessionService;
+import tauon.app.services.SessionService;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ui.components.misc.NativeFileChooser;
 import tauon.app.settings.importers.SSHConfigImporter;
 import tauon.app.ui.utils.AlertDialogUtils;
-import util.Constants;
-import util.FormatUtils;
+import tauon.app.util.misc.Constants;
+import tauon.app.util.misc.FormatUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,7 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static tauon.app.services.LanguageService.getBundle;
-import static util.Constants.CONFIG_DIR;
+import static tauon.app.util.misc.Constants.CONFIG_DIR;
 
 public class SessionExportImport {
     
