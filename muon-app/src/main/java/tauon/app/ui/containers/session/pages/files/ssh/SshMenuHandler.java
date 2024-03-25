@@ -707,12 +707,12 @@ public class SshMenuHandler {
         FileInfo[] arr = folderView.getSelectedFiles();
 
         if (arr.length > 0) {
-            BookmarkManager.addEntry(fileBrowser.getInfo().getId(),
+            BookmarkManager.getInstance().addEntry(fileBrowser.getInfo().getId(),
                     Arrays.asList(arr).stream()
                             .filter(a -> a.getType() == FileType.DirLink || a.getType() == FileType.Directory)
                             .map(a -> a.getPath()).collect(Collectors.toList()));
         } else if (arr.length == 0) {
-            BookmarkManager.addEntry(fileBrowser.getInfo().getId(), fileBrowserView.getCurrentDirectory());
+            BookmarkManager.getInstance().addEntry(fileBrowser.getInfo().getId(), fileBrowserView.getCurrentDirectory());
         }
 
         this.fileBrowserView.getOverflowMenuHandler().loadFavourites();

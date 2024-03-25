@@ -9,7 +9,7 @@ package tauon.app.ui.components.misc;
  */
 public interface FontAwesomeContants {
     String FA_CUBE = "\uf1b2", FA_FOLDER = "\uf07b", FA_PENCIL_SQUARE_O = "\uf044", FA_BARS = "\uf0c9",
-            FA_TERMINAL = "\uf120", FA_HDD_O = "\uf0a0", FA_SEARCH = "\uf002", FA_BOLT = "\uf0e7",
+            FA_TERMINAL = "\uf120", FA_HDD_O = "\uf0a0", FA_SEARCH = "\uf002", FA_BOLT = "\uf0e7", FA_DESKTOP = "\uf108",
             FA_STICKY_NOTE_O = "\uf24a", FA_FOLDER_O = "\uf114", FA_SLIDERS = "\uf1de", FA_FOLDER_OPEN_O = "\uf115",
             FA_LAPTOP = "\uf109", FA_TELEVISION = "\uf26c", FA_PLUS_SQUARE = "\uf0fe", FA_WINDOW_CLOSE = "\uf2d3",
             FA_COG = "\uf013", FA_ELLIPSIS_V = "\uf142", FA_BOOKMARK = "\uf02e", FA_STEP_FORWARD = "\uf051",

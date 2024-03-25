@@ -51,8 +51,6 @@ public class App {
             .contains("linux");
     public static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
     
-    
-    public static final SnippetManager SNIPPET_MANAGER = new SnippetManager();
     public static GraphicalHostKeyVerifier hostKeyVerifier;
 
     public static AppSkin skin;
@@ -60,7 +58,6 @@ public class App {
 //    private static Settings settings;
     private static ExternalEditorHandler externalEditorHandler;
     private static AppWindow mw;
-    private static Map<String, List<String>> pinnedLogs = new HashMap<>();
 
     static {
         System.setProperty("java.net.useSystemProxies", "true");
@@ -175,39 +172,6 @@ public class App {
 
     public static SessionContentPanel getSessionContainer(int activeSessionId) {
         return mw.getSessionListPanel().getSessionContainer(activeSessionId);
-    }
-
-    /**
-     * @return the pinnedLogs
-     */
-    public static Map<String, List<String>> getPinnedLogs() {
-        return pinnedLogs;
-    }
-
-    public static synchronized void loadPinnedLogs() {
-        File file = new File(CONFIG_DIR, PINNED_LOGS);
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        if (file.exists()) {
-            try {
-                pinnedLogs = objectMapper.readValue(file, new TypeReference<>() {
-                });
-                return;
-            } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-            }
-        }
-        pinnedLogs = new HashMap<>();
-    }
-
-    public static synchronized void savePinnedLogs() {
-        File file = new File(CONFIG_DIR, PINNED_LOGS);
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            objectMapper.writeValue(file, pinnedLogs);
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
     }
 
     public static synchronized void openSettings(SettingsPageName page) {

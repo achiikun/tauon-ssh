@@ -1,6 +1,7 @@
 package tauon.app.ui.containers.session.pages.terminal.snippets;
 
 import tauon.app.App;
+import tauon.app.services.SnippetManager;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
@@ -89,9 +90,9 @@ public class SnippetPanel extends JPanel {
                             "Please enter name and command");
                     return;
                 }
-                App.SNIPPET_MANAGER.getSnippetItems().add(new SnippetItem(
+                SnippetManager.getInstance().getSnippetItems().add(new SnippetItem(
                         txtName.getText(), txtCommand.getText()));
-                App.SNIPPET_MANAGER.saveSnippets();
+                SnippetManager.getInstance().saveSnippets();
             }
             callback2.accept(null);
         });
@@ -126,7 +127,7 @@ public class SnippetPanel extends JPanel {
                 }
                 snippetItem.setCommand(txtCommand.getText());
                 snippetItem.setName(txtName.getText());
-                App.SNIPPET_MANAGER.saveSnippets();
+                SnippetManager.getInstance().saveSnippets();
             }
             callback2.accept(null);
         });
@@ -139,8 +140,8 @@ public class SnippetPanel extends JPanel {
             }
 
             SnippetItem snippetItem = listModel.get(index);
-            App.SNIPPET_MANAGER.getSnippetItems().remove(snippetItem);
-            App.SNIPPET_MANAGER.saveSnippets();
+            SnippetManager.getInstance().getSnippetItems().remove(snippetItem);
+            SnippetManager.getInstance().saveSnippets();
             loadSnippets();
             callback2.accept(null);
         });
@@ -196,7 +197,7 @@ public class SnippetPanel extends JPanel {
 
     public void loadSnippets() {
         this.snippetList.clear();
-        this.snippetList.addAll(App.SNIPPET_MANAGER.getSnippetItems());
+        this.snippetList.addAll(SnippetManager.getInstance().getSnippetItems());
         System.out.println("Snippet size: " + snippetList.size());
         filter();
     }

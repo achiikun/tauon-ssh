@@ -4,6 +4,7 @@
 package tauon.app.ui.containers.session.pages.logviewer;
 
 import tauon.app.App;
+import tauon.app.services.PinnedLogsManager;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.util.misc.CollectionHelper;
@@ -42,10 +43,7 @@ public class StartPage extends JPanel {
         this.sessionId = sessionId;
         List<String> pinnedLogs = CollectionHelper
                 .arrayList("/var/log/gpu-manager.log", "/var/log/syslog");
-        App.loadPinnedLogs();
-        if (App.getPinnedLogs().containsKey(sessionId)) {
-            pinnedLogs = App.getPinnedLogs().get(sessionId);
-        }
+        pinnedLogs.addAll(PinnedLogsManager.getInstance().getPinnedLogs(sessionId));
 
         this.finalPinnedLogs = pinnedLogs;
 
@@ -64,8 +62,8 @@ public class StartPage extends JPanel {
             if (logPath != null) {
                 finalPinnedLogs.add(logPath);
                 pinnedLogsModel.addElement(logPath);
-                App.getPinnedLogs().put(sessionId, finalPinnedLogs);
-                App.savePinnedLogs();
+                PinnedLogsManager.getInstance().getAll().put(sessionId, finalPinnedLogs);
+                PinnedLogsManager.getInstance().save();
             }
         });
         btnDelLog.addActionListener(e -> {
@@ -132,7 +130,7 @@ public class StartPage extends JPanel {
                         txt},
                 "Input", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE, null, null,
-                null) == JOptionPane.OK_OPTION && txt.getText().length() > 0) {
+                null) == JOptionPane.OK_OPTION && !txt.getText().isEmpty()) {
             return txt.getText();
         }
         return null;
@@ -141,8 +139,8 @@ public class StartPage extends JPanel {
     public void pinLog(String logPath) {
         pinnedLogsModel.addElement(logPath);
         finalPinnedLogs.add(logPath);
-        App.getPinnedLogs().put(sessionId, finalPinnedLogs);
-        App.savePinnedLogs();
+        PinnedLogsManager.getInstance().getAll().put(sessionId, finalPinnedLogs);
+        PinnedLogsManager.getInstance().save();
     }
 
     static class PinnedLogsRenderer extends JLabel

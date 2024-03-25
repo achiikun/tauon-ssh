@@ -88,7 +88,7 @@ public class OverflowMenuHandler {
     public void loadFavourites() {
         this.favouriteLocations.removeAll();
         String id = fileBrowserView instanceof LocalFileBrowserView ? null : fileBrowser.getInfo().getId();
-        for (String path : BookmarkManager.getBookmarks(id)) {
+        for (String path : BookmarkManager.getInstance().getBookmarks(id)) {
             JMenuItem item = new JMenuItem(PathUtils.getFileName(path));
             item.setName(path);
             this.favouriteLocations.add(item);

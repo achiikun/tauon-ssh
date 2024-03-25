@@ -254,12 +254,12 @@ public class LocalMenuHandler {
         FileInfo[] arr = folderView.getSelectedFiles();
 
         if (arr.length > 0) {
-            BookmarkManager.addEntry(null,
+            BookmarkManager.getInstance().addEntry(null,
                     Arrays.asList(arr).stream()
                             .filter(a -> a.getType() == FileType.DirLink || a.getType() == FileType.Directory)
                             .map(a -> a.getPath()).collect(Collectors.toList()));
         } else if (arr.length == 0) {
-            BookmarkManager.addEntry(null, fileBrowserView.getCurrentDirectory());
+            BookmarkManager.getInstance().addEntry(null, fileBrowserView.getCurrentDirectory());
         }
 
         this.fileBrowserView.getOverflowMenuHandler().loadFavourites();
@@ -292,7 +292,7 @@ public class LocalMenuHandler {
 
         mBookmark.addActionListener(e -> {
             String path = popupMenu.getName();
-            BookmarkManager.addEntry(null, path);
+            BookmarkManager.getInstance().addEntry(null, path);
         });
         return popupMenu;
     }
