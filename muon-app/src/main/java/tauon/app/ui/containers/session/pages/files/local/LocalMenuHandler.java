@@ -1,6 +1,5 @@
 package tauon.app.ui.containers.session.pages.files.local;
 
-import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
@@ -18,7 +17,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static tauon.app.services.LanguageService.getBundle;
@@ -61,7 +59,7 @@ public class LocalMenuHandler {
         });
 
         mOpenInFileExplorer = new JMenuItem(
-                App.IS_WINDOWS ? "Open in Windows Explorer" : (App.IS_MAC ? "Open in Finder" : "Open in File Browser"));
+                PlatformUtils.IS_WINDOWS ? "Open in Windows Explorer" : (PlatformUtils.IS_MAC ? "Open in Finder" : "Open in File Browser"));
         mOpenInFileExplorer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

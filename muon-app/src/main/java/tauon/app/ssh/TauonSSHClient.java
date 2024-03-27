@@ -20,9 +20,10 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.AuthNone;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
-import tauon.app.App;
 import tauon.app.settings.SessionInfo;
 import tauon.app.settings.HopEntry;
+import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
+import tauon.app.util.misc.PlatformUtils;
 import tauon.app.util.ssh.SshUtil;
 import tauon.app.util.misc.ExceptionUtils;
 
@@ -64,16 +65,15 @@ public class TauonSSHClient {
     private SSHConnectedHop sshConnectedHop;
     private SFTPClient sftp;
     
+    private GraphicalHostKeyVerifier hostKeyVerifier;
+    
     private final List<UserPassCache> cache = new ArrayList<>();
     private final List<PortForwardingState> portForwardingStates = new ArrayList<>();
     
     public TauonSSHClient(
-            SessionInfo info,
-            GuiHandle<TauonSSHClient> guiHandle,
-            PasswordFinder passwordFinder,
-            ExecutorService executor,
-            boolean openPortForwarding
+            SessionInfo info, GuiHandle<TauonSSHClient> guiHandle, PasswordFinder passwordFinder, ExecutorService executor, boolean openPortForwarding, GraphicalHostKeyVerifier hostKeyVerifier
     ) {
+        this.hostKeyVerifier = hostKeyVerifier;
         this.info = info;
         this.guiHandle = guiHandle;
         this.passwordFinder = passwordFinder;
@@ -340,7 +340,7 @@ public class TauonSSHClient {
                 
                 if(info.isXForwardingEnabled()){
                     
-                    if (App.IS_LINUX) {
+                    if (PlatformUtils.IS_LINUX) {
                         sshj.registerX11Forwarder(new tauon.app.ssh.SocketForwardingConnectListener(
                                 SshUtil.socketAddress("/tmp/.X11-unix/X0")
                         ));
@@ -359,7 +359,7 @@ public class TauonSSHClient {
                 this.sshj.setTimeout(SettingsService.getSettings().getConnectionTimeout() * 1000);
                 if (info.getJumpHosts().isEmpty() || index >= info.getJumpHosts().size()) {
                     this.setupProxyAndSocketFactory();
-                    this.sshj.addHostKeyVerifier(App.hostKeyVerifier);
+                    this.sshj.addHostKeyVerifier(hostKeyVerifier);
                     this.sshj.connect(hopEntry.getHost(), hopEntry.getPort());
                 } else {
                     
@@ -367,7 +367,7 @@ public class TauonSSHClient {
                         LOG.debug("Tunneling through...");
                         tunnelThrough(index);
                         LOG.debug("adding host key verifier");
-                        this.sshj.addHostKeyVerifier(App.hostKeyVerifier);
+                        this.sshj.addHostKeyVerifier(hostKeyVerifier);
                         LOG.debug("Host key verifier added");
                         if (info.getJumpType() == SessionInfo.JumpType.TcpForwarding) {
                             LOG.debug("tcp forwarding...");

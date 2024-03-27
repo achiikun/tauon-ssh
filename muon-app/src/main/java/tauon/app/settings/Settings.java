@@ -1,12 +1,12 @@
 package tauon.app.settings;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
-import tauon.app.App;
 import tauon.app.ui.laf.theme.DarkTerminalTheme;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
 import tauon.app.util.misc.CollectionHelper;
 import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.Language;
+import tauon.app.util.misc.PlatformUtils;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -72,19 +72,19 @@ public class Settings {
     private Map<String, Integer> keyCodeMap = new CollectionHelper.OrderedDict<String, Integer>()
             .putItem(COPY_KEY, KeyEvent.VK_C)
             .putItem(PASTE_KEY, KeyEvent.VK_V)
-            .putItem(CLEAR_BUFFER, App.IS_MAC ? KeyEvent.VK_K : KeyEvent.VK_L)
+            .putItem(CLEAR_BUFFER, PlatformUtils.IS_MAC ? KeyEvent.VK_K : KeyEvent.VK_L)
             .putItem(FIND_KEY, KeyEvent.VK_F)
             .putItem(TYPE_SUDO_PASSWORD, KeyEvent.VK_SPACE);
 
     private Map<String, Integer> keyModifierMap = new CollectionHelper.Dict<String, Integer>()
             .putItem(COPY_KEY,
-                    App.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)
+                    PlatformUtils.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)
             .putItem(PASTE_KEY,
-                    App.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)
-            .putItem(CLEAR_BUFFER, App.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK)
-            .putItem(FIND_KEY, App.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK)
+                    PlatformUtils.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)
+            .putItem(CLEAR_BUFFER, PlatformUtils.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK)
+            .putItem(FIND_KEY, PlatformUtils.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK)
             .putItem(TYPE_SUDO_PASSWORD,
-                    App.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
+                    PlatformUtils.IS_MAC ? KeyEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
 
     private boolean dualPaneMode = true;
     private boolean listViewEnabled = false;

@@ -104,7 +104,8 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
                 info,
                 this,
                 new MyPasswordFinder(),
-                true);
+                true,
+                appWindow.hostKeyVerifier);
         
         Box contentTabs = Box.createHorizontalBox();
         contentTabs.setBorder(new MatteBorder(0, 0, 1, 0, App.skin.getDefaultBorderColor()));
@@ -361,7 +362,10 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
 
     public synchronized TauonRemoteSessionInstance createBackgroundSession() {
         if (this.cachedSessions.isEmpty()) {
-            return new TauonRemoteSessionInstance(info, this, new MyPasswordFinder(), false);
+            return new TauonRemoteSessionInstance(
+                    info, this, new MyPasswordFinder(), false,
+                    appWindow.hostKeyVerifier
+            );
         }
         return this.cachedSessions.pop();
     }

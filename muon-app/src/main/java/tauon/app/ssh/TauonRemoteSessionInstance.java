@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.SessionClosedException;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ssh.filesystem.SshFileSystem;
+import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class TauonRemoteSessionInstance {
     
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     
-    public TauonRemoteSessionInstance(SessionInfo info, GuiHandle<TauonRemoteSessionInstance> guiHandle, PasswordFinder passwordFinder, boolean openPortForwarding) {
+    public TauonRemoteSessionInstance(SessionInfo info, GuiHandle<TauonRemoteSessionInstance> guiHandle, PasswordFinder passwordFinder, boolean openPortForwarding, GraphicalHostKeyVerifier hostKeyVerifier) {
         
         GuiHandle.Delegate<TauonSSHClient> guiHandleDelegate = new GuiHandle.Delegate<>(guiHandle) {
             @Override
@@ -48,7 +49,7 @@ public class TauonRemoteSessionInstance {
             }
         };
         
-        this.ssh = new TauonSSHClient(info, guiHandleDelegate, passwordFinder, executorService, openPortForwarding);
+        this.ssh = new TauonSSHClient(info, guiHandleDelegate, passwordFinder, executorService, openPortForwarding, hostKeyVerifier);
         this.sshFs = new SshFileSystem(this);
     }
     

@@ -16,6 +16,7 @@ import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.util.misc.PathUtils;
+import tauon.app.util.misc.PlatformUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -104,7 +105,7 @@ public class SshMenuHandler {
         mOpen.setAccelerator(ksOpen);
 
 
-        if (App.IS_WINDOWS) {
+        if (PlatformUtils.IS_WINDOWS) {
             mOpenWithMenu = new JMenuItem(getBundle().getString("open_with"));
             mOpenWithMenu.addActionListener(e -> {
                 FileInfo fileInfo = folderView.getSelectedFiles()[0];
@@ -431,7 +432,7 @@ public class SshMenuHandler {
                 popup.add(mOpen);
                 count++;
 
-                if (App.IS_WINDOWS) {
+                if (PlatformUtils.IS_WINDOWS) {
                     popup.add(mOpenWithMenu);
                     count++;
                 }
@@ -927,7 +928,8 @@ public class SshMenuHandler {
     }
 
     public void openEditorConfig() {
-        App.openSettings(SettingsPageName.EDITOR);
+        fileBrowserView.getFileBrowser().getHolder().getAppWindow()
+                .openSettings(SettingsPageName.EDITOR);
     }
 
     private void sendFilesViaLocal() {

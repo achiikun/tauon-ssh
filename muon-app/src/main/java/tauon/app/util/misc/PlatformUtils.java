@@ -11,7 +11,6 @@ import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinReg;
 import com.sun.jna.platform.win32.WinReg.HKEY;
 import com.sun.jna.win32.StdCallLibrary;
-import tauon.app.App;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
 
 import java.awt.*;
@@ -28,13 +27,20 @@ import static tauon.app.util.misc.Constants.HELP_URL;
  * @author subhro
  */
 public class PlatformUtils {
+    
+    public static final boolean IS_MAC = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
+            .startsWith("mac");
+    public static final boolean IS_WINDOWS = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
+            .contains("windows");
+    public static final boolean IS_LINUX = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
+            .contains("linux");
+    
     public static void openWithDefaultApp(File file, boolean openWith) throws IOException {
-        String os = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
-        if (os.contains("mac")) {
+        if (IS_MAC) {
             openMac(file);
-        } else if (os.contains("linux")) {
+        } else if (IS_LINUX) {
             openLinux(file, false);
-        } else if (os.contains("windows")) {
+        } else if (IS_WINDOWS) {
             openWin(file, openWith);
         } else {
             throw new IOException("Unsupported OS: '" + System.getProperty("os.name", "") + "'");
@@ -175,10 +181,9 @@ public class PlatformUtils {
                 throw new FileNotFoundException();
             }
             
-            String os = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
-            if (os.contains("mac")) {
+            if (IS_MAC) {
                 openMac(new File(folder));
-            } else if (os.contains("linux")) {
+            } else if (IS_LINUX) {
                 // Let's run gdbus
                 if(linuxExistCommand("gdbus")) {
                     ProcessBuilder builder = new ProcessBuilder();
@@ -194,7 +199,7 @@ public class PlatformUtils {
                 } else {
                     openFolder2(folder);
                 }
-            } else if (os.contains("windows")) {
+            } else if (IS_WINDOWS) {
                 ProcessBuilder builder = new ProcessBuilder();
                 builder.command(Arrays.asList("explorer", "/select,", f.getAbsolutePath()));
                 builder.start();
@@ -225,12 +230,11 @@ public class PlatformUtils {
     }
     
     private static void openFolder2(String folder) throws IOException{
-        String os = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
-        if (os.contains("mac")) {
+        if (IS_MAC) {
             openMac(new File(folder));
-        } else if (os.contains("linux")) {
+        } else if (IS_LINUX) {
             openLinux(new File(folder), true);
-        } else if (os.contains("windows")) {
+        } else if (IS_WINDOWS) {
             try {
                 ProcessBuilder builder = new ProcessBuilder();
                 builder.command(Arrays.asList("explorer", folder));
@@ -245,7 +249,7 @@ public class PlatformUtils {
 
     public static List<EditorEntry> getKnownEditors() {
         List<EditorEntry> list = new ArrayList<EditorEntry>();
-        if (App.IS_WINDOWS) {
+        if (IS_WINDOWS) {
             try {
                 String vscode = detectVSCode(false);
                 if (vscode != null) {
@@ -287,7 +291,7 @@ public class PlatformUtils {
                 }
             }
 
-        } else if (App.IS_MAC) {
+        } else if (IS_MAC) {
             Map<String, String> knownEditorMap = new CollectionHelper.Dict<String, String>().putItem(
                     "Visual Studio Code", "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code");
             for (String key : knownEditorMap.keySet()) {
@@ -337,10 +341,9 @@ public class PlatformUtils {
             try {
                 Desktop.getDesktop().browse(new URI(HELP_URL));
             } catch (Exception ex) {
-                String os = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
-                if (os.contains("mac")) {
+                if (IS_MAC) {
                     openMac(url);
-                } else if (os.contains("linux")) {
+                } else if (IS_LINUX) {
                     openLinux(url, false);
                 }
             }

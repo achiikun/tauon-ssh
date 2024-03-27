@@ -7,8 +7,7 @@ import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
-import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
+import tauon.app.util.misc.PlatformUtils;
 import tauon.app.util.misc.Win32DragHandler;
 
 import javax.swing.*;
@@ -58,7 +57,7 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
     @Override
     public void exportAsDrag(JComponent comp, InputEvent e, int action) {
         if (fileBrowserView.getFileSystem().isRemote()) {
-            if (App.IS_WINDOWS) {
+            if (PlatformUtils.IS_WINDOWS) {
                 try {
                     this.tempDir = Files.createTempDirectory(App.APP_INSTANCE_ID).toFile();
                     System.out.println("New monitor");
@@ -262,7 +261,7 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
         }
 
         if (DATA_FLAVOR_FILE_LIST.equals(flavor)) {
-            if (App.IS_WINDOWS && tempDir != null) {
+            if (PlatformUtils.IS_WINDOWS && tempDir != null) {
                 return Arrays.asList(tempDir);
             }
         }

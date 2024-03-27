@@ -1,18 +1,13 @@
 package tauon.app;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.InitializationException;
 import tauon.app.services.ConfigFilesService;
 import tauon.app.services.SettingsService;
-import tauon.app.services.SnippetManager;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
-import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.ui.laf.AppSkin;
 import tauon.app.ui.laf.AppSkinDark;
@@ -25,14 +20,13 @@ import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
-import java.util.*;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.apache.commons.io.FileUtils.copyDirectory;
 import static tauon.app.services.LanguageService.getBundle;
 import static tauon.app.services.SettingsService.getSettings;
-import static tauon.app.util.misc.Constants.*;
+import static tauon.app.util.misc.Constants.CONFIG_DIR;
 
 /**
  * Hello world!
@@ -43,21 +37,13 @@ public class App {
 
     public static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
     
-    public static final boolean IS_MAC = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
-            .startsWith("mac");
-    public static final boolean IS_WINDOWS = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
-            .contains("windows");
-    public static final boolean IS_LINUX = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH)
-            .contains("linux");
     public static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
     
-    public static GraphicalHostKeyVerifier hostKeyVerifier;
-
     public static AppSkin skin;
     
 //    private static Settings settings;
     private static ExternalEditorHandler externalEditorHandler;
-    private static AppWindow mw;
+//    private static AppWindow mw;
 
     static {
         System.setProperty("java.net.useSystemProxies", "true");
@@ -114,9 +100,9 @@ public class App {
         
         if (getSettings().getEditors().isEmpty()) {
             LOG.info("Searching for known editors...");
-            SettingsService.getInstance().setAndSave(settings -> {
-                settings.setEditors(PlatformUtils.getKnownEditors());
-            });
+            SettingsService.getInstance().setAndSave(
+                    settings -> settings.setEditors(PlatformUtils.getKnownEditors())
+            );
             LOG.info("Searching for known editors...done");
         }
         
@@ -136,17 +122,9 @@ public class App {
             }
         });
         
-        
-        mw = new AppWindow();
+        AppWindow mw = new AppWindow();
         externalEditorHandler = new ExternalEditorHandler(mw);
         SwingUtilities.invokeLater(() -> mw.setVisible(true));
-
-        try {
-            File knownHostFile = new File(CONFIG_DIR, "known_hosts");
-            hostKeyVerifier = new GraphicalHostKeyVerifier(knownHostFile);
-        } catch (Exception e2) {
-            LOG.error(e2.getMessage(), e2);
-        }
 
         mw.createFirstSessionPanel();
     }
@@ -170,9 +148,9 @@ public class App {
         return externalEditorHandler;
     }
 
-    public static synchronized void openSettings(SettingsPageName page) {
-        mw.openSettings(page);
-    }
+//    public static synchronized void openSettings(SettingsPageName page) {
+//        mw.openSettings(page);
+//    }
 
 //    public static synchronized AppWindow getAppWindow() {
 //        return mw;

@@ -3,6 +3,8 @@
  */
 package tauon.app.ui.containers.main;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.services.SettingsService;
@@ -27,6 +29,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.UUID;
 
 import static tauon.app.services.LanguageService.getBundle;
@@ -36,6 +40,8 @@ import static tauon.app.util.misc.Constants.*;
  * @author subhro
  */
 public class AppWindow extends JFrame {
+    private static final Logger LOG = LoggerFactory.getLogger(AppWindow.class);
+    
     private final CardLayout sessionCard;
     private final JPanel cardPanel;
     private final BackgroundTransferPanel uploadPanel;
@@ -49,10 +55,12 @@ public class AppWindow extends JFrame {
     private final InputBlocker inputBlocker;
     private final FileTransferManager fileTransferManager;
     
+    public final GraphicalHostKeyVerifier hostKeyVerifier;
+    
     /**
      *
      */
-    public AppWindow() {
+    public AppWindow() throws IOException {
         super(APPLICATION_NAME);
         try {
             this.setIconImage(ImageIO.read(AppWindow.class.getResource("/muon.png")));
@@ -61,7 +69,10 @@ public class AppWindow extends JFrame {
         }
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         inputBlocker = new AppInputBlocker(this);
-
+        
+        File knownHostFile = new File(CONFIG_DIR, "known_hosts");
+        hostKeyVerifier = new GraphicalHostKeyVerifier(knownHostFile);
+        
         Insets inset = Toolkit.getDefaultToolkit().getScreenInsets(
                 GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration());
 
