@@ -254,6 +254,10 @@ public class ConfigFilesService {
         return true;
     }
     
+    public File getFile(String file) {
+        return new File(directory, file);
+    }
+    
     public interface FileConsumer {
         void consumeFile(File file) throws Exception;
     }

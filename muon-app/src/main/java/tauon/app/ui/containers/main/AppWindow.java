@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.services.ConfigFilesService;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ui.components.glasspanes.AppInputBlocker;
@@ -17,6 +18,7 @@ import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.updater.UpdateChecker;
+import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.PlatformUtils;
 
 import javax.imageio.ImageIO;
@@ -70,7 +72,8 @@ public class AppWindow extends JFrame {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         inputBlocker = new AppInputBlocker(this);
         
-        File knownHostFile = new File(CONFIG_DIR, "known_hosts");
+//        File knownHostFile = new File(CONFIG_DIR, "known_hosts");
+        File knownHostFile = ConfigFilesService.getInstance().getFile("known_hosts");
         hostKeyVerifier = new GraphicalHostKeyVerifier(knownHostFile);
         
         Insets inset = Toolkit.getDefaultToolkit().getScreenInsets(
