@@ -4,6 +4,7 @@
 package tauon.app.ui.containers.session.pages.diskspace;
 
 import tauon.app.App;
+import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.containers.session.SessionContentPanel;
@@ -193,10 +194,10 @@ public class DiskspaceAnalyzer extends Page {
         return getBundle().getString("diskspace");
     }
 
-    private void listPartitions(AtomicBoolean stopFlag) {
+    private void listPartitions(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) {
         try {
             StringBuilder output = new StringBuilder();
-            if (holder.getRemoteSessionInstance().exec("export POSIXLY_CORRECT=1;df -P -k", stopFlag, output) == 0) {
+            if (instance.exec("export POSIXLY_CORRECT=1;df -P -k", stopFlag, output) == 0) {
                 List<PartitionEntry> list = new ArrayList<>();
                 boolean first = true;
                 for (String line : output.toString().split("\n")) {
@@ -229,38 +230,45 @@ public class DiskspaceAnalyzer extends Page {
 
     private void listVolumes() {
         AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.executor.submit(() -> {
-            try {
-                holder.disableUi(stopFlag);
-                System.out.println("Listing partitions");
-                listPartitions(stopFlag);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                System.out.println("Enabling....");
-                holder.enableUi();
-            }
-        });
+        holder.submitSSHOperationStoppable(instance -> {
+            System.out.println("Listing partitions");
+            listPartitions(instance, stopFlag);
+        }, stopFlag);
+        
+        
+//        AtomicBoolean stopFlag = new AtomicBoolean(false);
+//        holder.executor.submit(() -> {
+//            try {
+//                holder.disableUi(stopFlag);
+//                System.out.println("Listing partitions");
+//                listPartitions(stopFlag);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            } finally {
+//                System.out.println("Enabling....");
+//                holder.enableUi();
+//            }
+//        });
     }
 
     private void analyze(String path) {
         System.out.println("Analyzing path: " + path);
         AtomicBoolean stopFlag = new AtomicBoolean(false);
-        DiskAnalysisTask task = new DiskAnalysisTask(path, stopFlag, res -> {
-            SwingUtilities.invokeLater(() -> {
-                if (res != null) {
-                    System.out.println("Result found");
-                    DefaultMutableTreeNode root = new DefaultMutableTreeNode(res, true);
-                    root.setAllowsChildren(true);
-                    createTree(root, res);
-                    treeModel.setRoot(root);
-                }
-            });
-            holder.enableUi();
-        }, holder.getRemoteSessionInstance());
         cardLayout.show(this, "Results");
-        holder.disableUi(stopFlag);
-        holder.executor.submit(task);
+        holder.submitSSHOperationStoppable(instance -> {
+            DiskAnalysisTask task = new DiskAnalysisTask(path, stopFlag, res -> {
+                SwingUtilities.invokeLater(() -> {
+                    if (res != null) {
+                        System.out.println("Result found");
+                        DefaultMutableTreeNode root = new DefaultMutableTreeNode(res, true);
+                        root.setAllowsChildren(true);
+                        createTree(root, res);
+                        treeModel.setRoot(root);
+                    }
+                });
+            }, instance);
+            task.run();
+        }, stopFlag);
     }
 
     private void createTree(DefaultMutableTreeNode treeNode, DiskUsageEntry entry) {

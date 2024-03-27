@@ -286,20 +286,23 @@ public class ServicePanel extends UtilPageItemView {
         this.setReloadServiceActionListener(e -> performServiceAction(5));
         this.setRestartServiceActionListener(e -> performServiceAction(6));
 
-        btnRefresh.addActionListener(e ->
-                holder.executor.submit(() -> {
-                    AtomicBoolean stopFlag = new AtomicBoolean(false);
-                    holder.disableUi(stopFlag);
-                    updateView(stopFlag);
-                    holder.enableUi();
-                }));
-
-        holder.executor.submit(() -> {
+        btnRefresh.addActionListener(e -> {
             AtomicBoolean stopFlag = new AtomicBoolean(false);
-            holder.disableUi(stopFlag);
-            updateView(stopFlag);
-            holder.enableUi();
+            holder.submitSSHOperationStoppable(instance -> {
+                updateView(instance, stopFlag);
+            }, stopFlag);
         });
+//                holder.executor.submit(() -> {
+//                    holder.disableUi(stopFlag);
+//                    holder.enableUi();
+//                }));
+
+//        holder.executor.submit(() -> {
+            AtomicBoolean stopFlag = new AtomicBoolean(false);
+            holder.submitSSHOperationStoppable(instance -> {
+                updateView(instance, stopFlag);
+            }, stopFlag);
+//        });
     }
 
     @Override
@@ -339,49 +342,47 @@ public class ServicePanel extends UtilPageItemView {
 
         AtomicBoolean stopFlag = new AtomicBoolean(false);
 
-        holder.disableUi(stopFlag);
+//        holder.disableUi(stopFlag);
 
         boolean elevated = this.getUseSuperUser();
         if (cmd != null) {
-            holder.executor.submit(() -> {
-                try {
+            holder.submitSSHOperationStoppable(instance -> {
+//                try {
                     if (elevated) {
-                        try {
-                            if (this.runCommandWithSudo(
-                                    holder.getRemoteSessionInstance(), stopFlag,
+//                        try {
+                            if (this.runCommandWithSudo(instance, stopFlag,
                                     cmd, holder.getInfo().getPassword())) {
-                                updateView(stopFlag);
+                                updateView(instance, stopFlag);
                                 return;
                             }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
+//                        } catch (Exception ex) {
+//                            ex.printStackTrace();
+//                        }
                         if (!holder.isSessionClosed()) {
                             JOptionPane.showMessageDialog(null,
                                     getBundle().getString("operation_failed"));
                         }
                     } else {
-                        try {
-                            if (this.runCommand(
-                                    holder.getRemoteSessionInstance(), stopFlag,
+//                        try {
+                            if (this.runCommand(instance, stopFlag,
                                     cmd)) {
-                                updateView(stopFlag);
+                                updateView(instance, stopFlag);
                                 return;
                             }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
+//                        } catch (Exception ex) {
+//                            ex.printStackTrace();
+//                        }
                         if (!holder.isSessionClosed()) {
                             JOptionPane.showMessageDialog(null,
                                     getBundle().getString("operation_failed"));
                         }
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    holder.enableUi();
-                }
-            });
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    holder.enableUi();
+//                }
+            }, stopFlag);
         }
     }
 
@@ -396,18 +397,19 @@ public class ServicePanel extends UtilPageItemView {
         return client.exec(command, new AtomicBoolean(false), output) == 0;
     }
 
-    private void updateView(AtomicBoolean stopFlag) {
-        try {
+    private void updateView(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws Exception {
+//        try {
             StringBuilder output = new StringBuilder();
-            int ret = holder.getRemoteSessionInstance().exec(SYSTEMD_COMMAND,
+            int ret = instance.exec(SYSTEMD_COMMAND,
                     stopFlag, output);
             if (ret == 0) {
                 List<ServiceEntry> list = ServicePanel
                         .parseServiceEntries(output);
+                // TODO test invoke later
                 SwingUtilities.invokeAndWait(() -> setServiceData(list));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 }

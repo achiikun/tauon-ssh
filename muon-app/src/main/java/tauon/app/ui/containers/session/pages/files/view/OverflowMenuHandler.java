@@ -5,6 +5,7 @@ import tauon.app.services.SettingsService;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.local.LocalFileBrowserView;
+import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;

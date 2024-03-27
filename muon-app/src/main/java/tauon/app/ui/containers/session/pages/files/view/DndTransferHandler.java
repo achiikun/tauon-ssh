@@ -1,12 +1,14 @@
 package tauon.app.ui.containers.session.pages.files.view;
 
+import org.jetbrains.annotations.NotNull;
 import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
-import tauon.app.settings.SessionInfo;
+import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
+import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.util.misc.Win32DragHandler;
 
 import javax.swing.*;
@@ -21,31 +23,41 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class DndTransferHandler extends TransferHandler implements Transferable {
+    
     public static final DataFlavor DATA_FLAVOR_DATA_FILE = new DataFlavor(DndTransferData.class, "data-file");
     public static final DataFlavor DATA_FLAVOR_FILE_LIST = DataFlavor.javaFileListFlavor;
-    private final FolderView folderView;
-    private final SessionInfo info;
+    
+//    private final FolderView folderView;
+//    private final SessionContentPanel sessionOwner;
     private final AbstractFileBrowserView fileBrowserView;
+//    private final DndTransferData.DndSourceType sourceType;
+    
     private DndTransferData transferData;
-    private final DndTransferData.DndSourceType sourceType;
+    
     private Win32DragHandler win32DragHandler;
     private File tempDir;
-    private final FileBrowser fileBrowser;
+//    private final FileBrowser fileBrowser;
 
-    public DndTransferHandler(FolderView folderView, SessionInfo info, AbstractFileBrowserView fileBrowserView,
-                              DndTransferData.DndSourceType sourceType, FileBrowser fileBrowser) {
-        this.folderView = folderView;
-        this.fileBrowser = fileBrowser;
-        this.info = info;
-        this.fileBrowserView = fileBrowserView;
-        this.sourceType = sourceType;
+    public DndTransferHandler(
+//            FolderView folderView,
+//            SessionContentPanel sessionOwner,
+            @NotNull AbstractFileBrowserView destinationFileBrowser
+//            DndTransferData.DndSourceType sourceType,
+//            FileBrowser fileBrowser
+    ) {
+//        this.folderView = folderView;
+//        this.fileBrowser = fileBrowser;
+//        this.sessionOwner = sessionOwner;
+        this.fileBrowserView = destinationFileBrowser;
+//        this.sourceType = sourceType;
     }
 
     @Override
     public void exportAsDrag(JComponent comp, InputEvent e, int action) {
-        if (info != null) {
+        if (fileBrowserView.getFileSystem().isRemote()) {
             if (App.IS_WINDOWS) {
                 try {
                     this.tempDir = Files.createTempDirectory(App.APP_INSTANCE_ID).toFile();
@@ -53,7 +65,8 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
                     this.win32DragHandler = new Win32DragHandler();
                     this.win32DragHandler.listenForDrop(tempDir.getName(), file -> {
                         System.err.println("Dropped on " + file.getParent());
-                        this.fileBrowser.handleLocalDrop(transferData, info, new LocalFileSystem(), file.getParent());
+                        this.fileBrowserView.getFileBrowser()
+                                .handleLocalDrop(transferData, new LocalFileSystem(), file.getParent());
                     });
                 } catch (IOException e1) {
                     e1.printStackTrace();
@@ -61,8 +74,8 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
             }
         }
 
-        DndTransferData data = new DndTransferData(info == null ? 0 : info.hashCode(), folderView.getSelectedFiles(),
-                this.fileBrowserView.getCurrentDirectory(), this.fileBrowserView.hashCode(), sourceType);
+        DndTransferData data = new DndTransferData(fileBrowserView, fileBrowserView.getSelectedFiles(), null);
+//                this.fileBrowserView.getCurrentDirectory(), this.fileBrowserView, sourceType);
         System.out.println("Exporting drag " + data + " hashcode: " + data.hashCode());
         this.transferData = data;
         super.exportAsDrag(comp, e, action);
@@ -76,7 +89,7 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
         for (DataFlavor f : support.getDataFlavors()) {
             System.out.println("Data flavor: " + f);
             if (f.isFlavorJavaFileListType()) {
-                isJavaFileList = this.info != null;
+                isJavaFileList = this.fileBrowserView.getFileSystem().isRemote();
             }
             if (DATA_FLAVOR_DATA_FILE.equals(f)) {
                 isDataFile = true;
@@ -87,8 +100,10 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
             System.out.println("Dropped java file list: " + isJavaFileList);
             if (isDataFile) {
                 if (support.isDataFlavorSupported(DATA_FLAVOR_DATA_FILE)) {
-                    return (support.getTransferable()
-                            .getTransferData(DATA_FLAVOR_DATA_FILE) instanceof DndTransferData);
+                    return (
+                            support.getTransferable()
+                            .getTransferData(DATA_FLAVOR_DATA_FILE) instanceof DndTransferData
+                    );
                 }
             } else if (isJavaFileList) {
                 return true;
@@ -127,7 +142,7 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
         for (DataFlavor f : info.getDataFlavors()) {
             System.out.println("Data flavor: " + f);
             if (f.isFlavorJavaFileListType()) {
-                isJavaFileList = this.info != null;
+                isJavaFileList = this.fileBrowserView.getFileSystem().isRemote();
             }
             if (DATA_FLAVOR_DATA_FILE.equals(f)) {
                 isDataFile = true;
@@ -139,6 +154,47 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
         if (isDataFile) {
             try {
                 DndTransferData transferData = (DndTransferData) t.getTransferData(DATA_FLAVOR_DATA_FILE);
+                
+                UUID sourceSessionId = transferData.getSourceFileBrowserSessionId();
+                UUID sourceId = transferData.getSourceFileBrowserId();
+                
+                if(sourceSessionId != null){
+                    
+                    SessionContentPanel sessionContentPanel = fileBrowserView.getFileBrowser().getHolder().getAppWindow()
+                            .findSessionById(sourceSessionId);
+                    
+                    if(sessionContentPanel == null || sourceId == null)
+                        return false;
+                    
+                    AbstractFileBrowserView view = sessionContentPanel.getFileBrowser().findViewById(sourceId);
+                    if(view == null)
+                        return false;
+                    
+                    transferData.setSource(view);
+                    
+                }
+                
+                
+                UUID destinationSessionId = transferData.getDestinationFileBrowserSessionId();
+                UUID destinationId = transferData.getDestinationFileBrowserId();
+                
+                if(destinationSessionId != null){
+                    
+                    SessionContentPanel sessionContentPanel = fileBrowserView.getFileBrowser().getHolder().getAppWindow()
+                            .findSessionById(destinationSessionId);
+                    
+                    if(sessionContentPanel == null || destinationId == null)
+                        return false;
+                    
+                    AbstractFileBrowserView view = sessionContentPanel.getFileBrowser().findViewById(destinationId);
+                    if(view == null)
+                        return false;
+                    
+                    transferData.setDestination(view);
+                    
+                }
+                
+                
                 return this.fileBrowserView.handleDrop(transferData);
             } catch (UnsupportedFlavorException e) {
                 e.printStackTrace();
@@ -173,8 +229,7 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
                         infoArr[c++] = finfo;
                     }
 
-                    DndTransferData data = new DndTransferData(0, infoArr, this.fileBrowserView.getCurrentDirectory(),
-                            this.fileBrowserView.hashCode(), DndTransferData.DndSourceType.LOCAL);
+                    DndTransferData data = new DndTransferData(null, infoArr, this.fileBrowserView);
                     System.out.println("Exporting drag " + data + " hashcode: " + data.hashCode());
                     return this.fileBrowserView.handleDrop(data);
                 }
@@ -193,7 +248,7 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
 
     @Override
     public boolean isDataFlavorSupported(DataFlavor flavor) {
-        if (this.info != null) {
+        if (this.fileBrowserView.getFileSystem().isRemote()) {
             return DATA_FLAVOR_DATA_FILE.equals(flavor) || DATA_FLAVOR_FILE_LIST.equals(flavor);
         } else {
             return DATA_FLAVOR_DATA_FILE.equals(flavor);
@@ -201,7 +256,7 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
     }
 
     @Override
-    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+    public @NotNull Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (DATA_FLAVOR_DATA_FILE.equals(flavor)) {
             return this.transferData;
         }
@@ -211,7 +266,8 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
                 return Arrays.asList(tempDir);
             }
         }
-        return null;
+        
+        throw new UnsupportedFlavorException(flavor);
     }
 
     @Override

@@ -1,8 +1,7 @@
-package tauon.app.ui.containers.session.pages.files.view;
+package tauon.app.ui.containers.session.pages.files.view.addressbar;
 
 import tauon.app.App;
 import tauon.app.ui.components.misc.SkinnedTextField;
-import tauon.app.ui.containers.session.pages.files.AddressBarComboBoxEditor;
 import tauon.app.util.misc.LayoutUtilities;
 
 import javax.swing.*;

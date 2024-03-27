@@ -170,10 +170,6 @@ public class App {
         return externalEditorHandler;
     }
 
-    public static SessionContentPanel getSessionContainer(int activeSessionId) {
-        return mw.getSessionListPanel().getSessionContainer(activeSessionId);
-    }
-
     public static synchronized void openSettings(SettingsPageName page) {
         mw.openSettings(page);
     }

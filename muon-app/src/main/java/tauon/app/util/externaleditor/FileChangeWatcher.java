@@ -1,6 +1,7 @@
 package tauon.app.util.externaleditor;
 
 import tauon.app.ssh.filesystem.FileInfo;
+import tauon.app.ui.containers.session.SessionContentPanel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class FileChangeWatcher {
     }
 
     public void addForMonitoring(FileInfo fileInfo, String localFile,
-                                 int activeSessionId) {
+                                 SessionContentPanel activeSessionId) {
         FileModificationInfo item = new FileModificationInfo();
         item.remoteFile = fileInfo;
         item.localFile = new File(localFile);
@@ -79,7 +80,7 @@ public class FileChangeWatcher {
     public static class FileModificationInfo {
         public FileInfo remoteFile;
         public File localFile;
-        public int activeSessionId;
+        public SessionContentPanel activeSessionId;
         public long lastModified;
 
         @Override

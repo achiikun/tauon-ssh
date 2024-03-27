@@ -6,16 +6,15 @@ package tauon.app.ui.containers.main;
 import tauon.app.App;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.services.SettingsService;
+import tauon.app.settings.SessionInfo;
 import tauon.app.ui.components.glasspanes.AppInputBlocker;
 import tauon.app.ui.components.glasspanes.InputBlocker;
-import tauon.app.ui.dialogs.sessions.NewSessionDlg;
+import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.settings.SessionInfo;
-import tauon.app.ui.containers.session.pages.files.transfer.BackgroundFileTransfer;
+import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.updater.UpdateChecker;
-import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.util.misc.PlatformUtils;
 
 import javax.imageio.ImageIO;
@@ -28,10 +27,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.AffineTransform;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.UUID;
 
 import static tauon.app.services.LanguageService.getBundle;
 import static tauon.app.util.misc.Constants.*;
@@ -51,6 +47,8 @@ public class AppWindow extends JFrame {
     private JLabel lblUpdate, lblUpdateText;
     
     private final InputBlocker inputBlocker;
+    private final FileTransferManager fileTransferManager;
+    
     /**
      *
      */
@@ -101,6 +99,8 @@ public class AppWindow extends JFrame {
                 SwingUtilities.invokeLater(() ->
                         lblDownloadCount.setText(count + "")));
 
+        this.fileTransferManager = new FileTransferManager(this, uploadPanel, downloadPanel);
+        
         new Thread(() -> {
             if (UpdateChecker.isNewUpdateAvailable()) {
                 lblUpdate.setText(FontAwesomeContants.FA_DOWNLOAD);
@@ -184,6 +184,8 @@ public class AppWindow extends JFrame {
      */
     public void removeSession(SessionContentPanel sessionContentPanel) {
         cardPanel.remove(sessionContentPanel);
+        uploadPanel.removePendingTransfers(sessionContentPanel);
+        downloadPanel.removePendingTransfers(sessionContentPanel);
         revalidate();
         repaint();
     }
@@ -320,14 +322,6 @@ public class AppWindow extends JFrame {
         PlatformUtils.openWeb(UPDATE_URL2);
     }
 
-    public FileTransferProgress addUpload(BackgroundFileTransfer transfer) {
-        return this.uploadPanel.addNewBackgroundTransfer(transfer);
-    }
-
-    public FileTransferProgress addDownload(BackgroundFileTransfer transfer) {
-        return this.downloadPanel.addNewBackgroundTransfer(transfer);
-    }
-
     private void showPopup(Component panel, Component invoker) {
         popup.removeAll();
         popup.add(panel);
@@ -337,11 +331,6 @@ public class AppWindow extends JFrame {
                 -popup.getPreferredSize().height);
     }
 
-    public void removePendingTransfers(int sessionId) {
-        this.uploadPanel.removePendingTransfers(sessionId);
-        this.downloadPanel.removePendingTransfers(sessionId);
-    }
-
     public void openSettings(SettingsPageName page) {
         SettingsDialog settingsDialog = new SettingsDialog(this);
         settingsDialog.showDialog(this, page);
@@ -349,5 +338,13 @@ public class AppWindow extends JFrame {
     
     public InputBlocker getInputBlocker() {
         return inputBlocker;
+    }
+    
+    public FileTransferManager getFileTransferManager() {
+        return fileTransferManager;
+    }
+    
+    public SessionContentPanel findSessionById(UUID uuid) {
+        return sessionListPanel.findSessionById(uuid);
     }
 }

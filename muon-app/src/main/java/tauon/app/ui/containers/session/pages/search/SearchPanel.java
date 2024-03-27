@@ -4,6 +4,7 @@
 package tauon.app.ui.containers.session.pages.search;
 
 import tauon.app.App;
+import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.page.Page;
@@ -166,26 +167,31 @@ public class SearchPanel extends Page {
 
         StringBuilder scriptBuffer = new StringBuilder();
 
-        if (txtName.getText().length() > 0 && radFileName.isSelected()) {
-            scriptBuffer.append("export NAME='" + txtName.getText() + "'\n");
+        if (!txtName.getText().isEmpty() && radFileName.isSelected()) {
+            scriptBuffer.append("export NAME='").append(txtName.getText()).append("'\n");
         }
 
-        scriptBuffer.append("export LOCATION=\"" + folder + "\"\n");
-        scriptBuffer.append("export CRITERIA='" + criteriaBuffer + "'\n");
+        scriptBuffer.append("export LOCATION=\"").append(folder).append("\"\n");
+        scriptBuffer.append("export CRITERIA='").append(criteriaBuffer).append("'\n");
         if (radFileContents.isSelected()) {
             scriptBuffer.append("export CONTENT=1\n");
-            scriptBuffer.append("export PATTERN='" + txtName.getText() + "'\n");
+            scriptBuffer.append("export PATTERN='").append(txtName.getText()).append("'\n");
             if (chkIncludeCompressed.isSelected()) {
                 scriptBuffer.append("export UNCOMPRESS=1\n");
             }
         }
 
         AtomicBoolean stopFlag = new AtomicBoolean(false);
-        this.holder.disableUi(stopFlag);
-        holder.executor.submit(() -> findAsync(scriptBuffer, stopFlag));
+//        this.holder.disableUi(stopFlag);
+//        holder.executor.submit(() -> findAsync(scriptBuffer, stopFlag));
+        holder.submitSSHOperationStoppable(instance -> {
+            System.out.println("Listing partitions");
+            findAsync(instance, scriptBuffer, stopFlag);
+        }, stopFlag);
+        
     }
 
-    private void findAsync(StringBuilder scriptBuffer, AtomicBoolean stopFlag) {
+    private void findAsync(TauonRemoteSessionInstance instance, StringBuilder scriptBuffer, AtomicBoolean stopFlag) {
         SwingUtilities.invokeLater(() -> {
             model.clear();
             lblStat.setText(getBundle().getString("searching"));
@@ -207,9 +213,9 @@ public class SearchPanel extends Page {
 
             StringBuilder output = new StringBuilder();
 
-            if (holder.getRemoteSessionInstance().exec(findCmd, stopFlag,
+            if (instance.exec(findCmd, stopFlag,
                     output) != 0) {
-                System.out.println("Error in search");
+                throw new RuntimeException();
             }
 
             System.out.println("search output\n" + output);
@@ -236,7 +242,6 @@ public class SearchPanel extends Page {
                 lblStat.setText(getBundle().getString("idle"));
                 lblCount.setText(
                         String.format("%d items", model.getRowCount()));
-                this.holder.enableUi();
             });
         }
     }

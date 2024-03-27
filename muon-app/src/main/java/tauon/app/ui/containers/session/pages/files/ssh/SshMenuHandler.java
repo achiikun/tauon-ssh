@@ -12,7 +12,7 @@ import tauon.app.ui.containers.session.pages.files.remote2remote.LocalPipeTransf
 import tauon.app.ui.containers.session.pages.files.remote2remote.Remote2RemoteTransferDialog;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferHandler;
-import tauon.app.ui.containers.session.pages.files.view.FolderView;
+import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.util.misc.PathUtils;
@@ -89,7 +89,7 @@ public class SshMenuHandler {
                 FileInfo fileInfo = folderView.getSelectedFiles()[0];
                 try {
                     App.getExternalEditorHandler().openRemoteFile(fileInfo, fileBrowser.getSSHFileSystem(),
-                            fileBrowser.getActiveSessionId(), false, null);
+                            fileBrowser.getHolder(), false, null);
                 } catch (IOException e1) {
                     // TODO handle exception
                     e1.printStackTrace();
@@ -111,7 +111,7 @@ public class SshMenuHandler {
                 try {
                     System.out.println("Called open with");
                     App.getExternalEditorHandler().openRemoteFile(fileInfo, fileBrowser.getSSHFileSystem(),
-                            fileBrowser.getActiveSessionId(), true, null);
+                            fileBrowser.getHolder(), true, null);
                 } catch (IOException e1) {
                     // TODO handle exception
                     e1.printStackTrace();
@@ -365,8 +365,7 @@ public class SshMenuHandler {
 
     private void copyToClipboard(boolean cut) {
         FileInfo[] selectedFiles = folderView.getSelectedFiles();
-        DndTransferData transferData = new DndTransferData(fileBrowser.getInfo().hashCode(), selectedFiles,
-                fileBrowserView.getCurrentDirectory(), fileBrowserView.hashCode(), DndTransferData.DndSourceType.SSH);
+        DndTransferData transferData = new DndTransferData(fileBrowserView, selectedFiles, null);
         transferData.setTransferAction(cut ? DndTransferData.TransferAction.Cut : DndTransferData.TransferAction.Copy);
 
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
@@ -548,20 +547,28 @@ public class SshMenuHandler {
     }
 
     private void renameAsync(String oldName, String newName, String baseFolder) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
-            try {
-                if (fileOperations.rename(oldName, newName, fileBrowserView.getFileSystem(),
-                        fileBrowserView.getSshClient(), fileBrowser.getInfo().getPassword())) {
-                    fileBrowserView.render(baseFolder);
-                } else {
-                    fileBrowser.enableUi();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                fileBrowser.enableUi();
+        
+        fileBrowser.getHolder().submitSSHOperation(instance -> {
+            if (fileOperations.rename(oldName, newName, fileBrowserView.getFileSystem(),
+                    instance, fileBrowser.getInfo().getPassword())) {
+                fileBrowserView.render(baseFolder);
             }
         });
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            try {
+//                if (fileOperations.rename(oldName, newName, fileBrowserView.getFileSystem(),
+//                        fileBrowserView.getSshClient(), fileBrowser.getInfo().getPassword())) {
+//                    fileBrowserView.render(baseFolder);
+//                } else {
+//                    fileBrowser.enableUi();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                fileBrowser.enableUi();
+//            }
+//        });
     }
 
     private void delete(FileInfo[] targetList, String baseFolder) {
@@ -571,73 +578,104 @@ public class SshMenuHandler {
         }
         if (!delete)
             return;
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
-            try {
-                if (fileOperations.delete(targetList, fileBrowserView.getFileSystem(),
-                        fileBrowserView.getSshClient(), fileBrowser.getInfo().getPassword())) {
-                    fileBrowserView.render(baseFolder);
-                } else {
-                    fileBrowser.enableUi();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                fileBrowser.enableUi();
+        
+        fileBrowser.getHolder().submitSSHOperation(instance -> {
+            if (fileOperations.delete(targetList, fileBrowserView.getFileSystem(),
+                    instance, fileBrowser.getInfo().getPassword())) {
+                fileBrowserView.render(baseFolder);
             }
-
         });
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            try {
+//                if (fileOperations.delete(targetList, fileBrowserView.getFileSystem(),
+//                        fileBrowserView.getSshClient(), fileBrowser.getInfo().getPassword())) {
+//                    fileBrowserView.render(baseFolder);
+//                } else {
+//                    fileBrowser.enableUi();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                fileBrowser.enableUi();
+//            }
+//
+//        });
     }
 
     public void newFile(String baseFolder, FileInfo[] files) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
-            try {
-                if (fileOperations.newFile(files, fileBrowserView.getFileSystem(), baseFolder,
-                        fileBrowserView.getSshClient(), fileBrowser.getInfo().getPassword())) {
-                    fileBrowserView.render(baseFolder);
-                } else {
-                    fileBrowser.enableUi();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                fileBrowser.enableUi();
+        
+        fileBrowser.getHolder().submitSSHOperation(instance -> {
+            if (fileOperations.newFile(files, fileBrowserView.getFileSystem(), baseFolder,
+                    instance, fileBrowser.getInfo().getPassword())) {
+                fileBrowserView.render(baseFolder);
             }
-
         });
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            try {
+//                if (fileOperations.newFile(files, fileBrowserView.getFileSystem(), baseFolder,
+//                        fileBrowserView.getSshClient(), fileBrowser.getInfo().getPassword())) {
+//                    fileBrowserView.render(baseFolder);
+//                } else {
+//                    fileBrowser.enableUi();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                fileBrowser.enableUi();
+//            }
+//
+//        });
     }
 
     public void newFolder(String baseFolder, FileInfo[] files) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
-            try {
-                if (fileOperations.newFolder(files, baseFolder, fileBrowserView.getFileSystem(),
-                        fileBrowserView.getSshClient(), fileBrowser.getInfo().getPassword())) {
-                    fileBrowserView.render(baseFolder);
-                } else {
-                    fileBrowser.enableUi();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                fileBrowser.enableUi();
+        
+        fileBrowser.getHolder().submitSSHOperation(instance -> {
+            if (fileOperations.newFolder(files, baseFolder, fileBrowserView.getFileSystem(),
+                    instance, fileBrowser.getInfo().getPassword())) {
+                fileBrowserView.render(baseFolder);
             }
-
         });
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            try {
+//                if (fileOperations.newFolder(files, baseFolder, fileBrowserView.getFileSystem(),
+//                        fileBrowserView.getSshClient(), fileBrowser.getInfo().getPassword())) {
+//                    fileBrowserView.render(baseFolder);
+//                } else {
+//                    fileBrowser.enableUi();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                fileBrowser.enableUi();
+//            }
+//
+//        });
     }
 
     public void createLink(String baseFolder, FileInfo[] files) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
-            try {
-                if (fileOperations.createLink(files, fileBrowserView.getFileSystem(), fileBrowserView.getSshClient())) {
-                    fileBrowserView.render(baseFolder);
-                } else {
-                    fileBrowser.enableUi();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                fileBrowser.enableUi();
+        
+        fileBrowser.getHolder().submitSSHOperation(instance -> {
+            if (fileOperations.createLink(files, fileBrowserView.getFileSystem(), instance)) {
+                fileBrowserView.render(baseFolder);
             }
         });
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            try {
+//                if (fileOperations.createLink(files, fileBrowserView.getFileSystem(), fileBrowserView.getSshClient())) {
+//                    fileBrowserView.render(baseFolder);
+//                } else {
+//                    fileBrowser.enableUi();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                fileBrowser.enableUi();
+//            }
+//        });
     }
 
     private void handlePaste() {
@@ -672,35 +710,51 @@ public class SshMenuHandler {
     }
 
     public void copy(List<FileInfo> files, String targetFolder) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
-            try {
-                if (fileOperations.copyTo(fileBrowserView.getSshClient(), files, targetFolder,
-                        fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
-                    fileBrowserView.render(targetFolder);
-                } else {
-                    fileBrowser.enableUi();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+        
+        fileBrowser.getHolder().submitSSHOperation(instance -> {
+            if (fileOperations.copyTo(instance, files, targetFolder,
+                    fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
+                fileBrowserView.render(targetFolder);
             }
         });
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            try {
+//                if (fileOperations.copyTo(fileBrowserView.getSshClient(), files, targetFolder,
+//                        fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
+//                    fileBrowserView.render(targetFolder);
+//                } else {
+//                    fileBrowser.enableUi();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
     }
 
     public void move(List<FileInfo> files, String targetFolder) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
-            try {
-                if (fileOperations.moveTo(fileBrowserView.getSshClient(), files, targetFolder,
-                        fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
-                    fileBrowserView.render(targetFolder);
-                } else {
-                    fileBrowser.enableUi();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+        
+        fileBrowser.getHolder().submitSSHOperation(instance -> {
+            if (fileOperations.moveTo(instance, files, targetFolder,
+                    fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
+                fileBrowserView.render(targetFolder);
             }
         });
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            try {
+//                if (fileOperations.moveTo(fileBrowserView.getSshClient(), files, targetFolder,
+//                        fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
+//                    fileBrowserView.render(targetFolder);
+//                } else {
+//                    fileBrowser.enableUi();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
     }
 
     private void addToFavourites() {
@@ -757,51 +811,79 @@ public class SshMenuHandler {
     }
 
     private void openRunInBackground(String folder, String file) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
-            try {
-                if (fileOperations.runScriptInBackground(fileBrowserView.getSshClient(),
-                        "cd \"" + folder + "\"; nohup \"" + file + "\" &", new AtomicBoolean())) {
-                }
-                fileBrowser.enableUi();
-            } catch (Exception e) {
-                e.printStackTrace();
+        
+        fileBrowser.getHolder().submitSSHOperation(instance -> {
+            if (fileOperations.runScriptInBackground(instance,
+                    "cd \"" + folder + "\"; nohup \"" + file + "\" &", new AtomicBoolean())) {
             }
         });
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            try {
+//                if (fileOperations.runScriptInBackground(fileBrowserView.getSshClient(),
+//                        "cd \"" + folder + "\"; nohup \"" + file + "\" &", new AtomicBoolean())) {
+//                }
+//                fileBrowser.enableUi();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
     }
 
     private void extractArchive(String archive, String folder, String currentFolder) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            AtomicBoolean stopFlag = new AtomicBoolean(false);
-            fileBrowser.disableUi(stopFlag);
-            try {
-                if (!archiveOperation.extractArchive(fileBrowserView.getSshClient(), archive, folder, stopFlag)) {
-                    if (!fileBrowser.isSessionClosed()) {
-                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
-                    }
+        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        fileBrowser.getHolder().submitSSHOperationStoppable(instance -> {
+            if (!archiveOperation.extractArchive(instance, archive, folder, stopFlag)) {
+                if (!fileBrowser.isSessionClosed()) {
+                    JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
                 }
-                fileBrowserView.render(currentFolder);
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        });
+            fileBrowserView.render(currentFolder);
+        }, stopFlag);
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            AtomicBoolean stopFlag = new AtomicBoolean(false);
+//            fileBrowser.disableUi(stopFlag);
+//            try {
+//                if (!archiveOperation.extractArchive(fileBrowserView.getSshClient(), archive, folder, stopFlag)) {
+//                    if (!fileBrowser.isSessionClosed()) {
+//                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+//                    }
+//                }
+//                fileBrowserView.render(currentFolder);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
     }
 
     private void createArchive(List<String> files, String folder, String currentFolder) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            AtomicBoolean stopFlag = new AtomicBoolean(false);
-            fileBrowser.disableUi(stopFlag);
-            try {
-                if (!archiveOperation.createArchive(fileBrowserView.getSshClient(), files, folder, stopFlag)) {
-                    if (!fileBrowser.isSessionClosed()) {
-                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
-                    }
+        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        fileBrowser.getHolder().submitSSHOperationStoppable(instance -> {
+            if (!archiveOperation.createArchive(instance, files, folder, stopFlag)) {
+                if (!fileBrowser.isSessionClosed()) {
+                    JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
                 }
-                fileBrowserView.render(currentFolder);
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        });
+            fileBrowserView.render(currentFolder);
+        }, stopFlag);
+        
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            AtomicBoolean stopFlag = new AtomicBoolean(false);
+//            fileBrowser.disableUi(stopFlag);
+//            try {
+//                if (!archiveOperation.createArchive(fileBrowserView.getSshClient(), files, folder, stopFlag)) {
+//                    if (!fileBrowser.isSessionClosed()) {
+//                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+//                    }
+//                }
+//                fileBrowserView.render(currentFolder);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
     }
 
     private void downloadFiles(FileInfo[] files, String currentDirectory) {
@@ -824,8 +906,11 @@ public class SshMenuHandler {
                         list.add(fileInfo);
                     }
                 }
-                DndTransferData uploadData = new DndTransferData(0, list.toArray(new FileInfo[0]), files[0].getParent(),
-                        0, DndTransferData.DndSourceType.LOCAL);
+                DndTransferData uploadData = new DndTransferData(
+                        null,
+                        list.toArray(new FileInfo[0]),
+                        fileBrowserView
+                );
                 fileBrowserView.handleDrop(uploadData);
             }
         }
@@ -835,7 +920,7 @@ public class SshMenuHandler {
         FileInfo fileInfo = folderView.getSelectedFiles()[0];
         try {
             App.getExternalEditorHandler().openRemoteFile(fileInfo, fileBrowser.getSSHFileSystem(),
-                    fileBrowser.getActiveSessionId(), false, path);
+                    fileBrowser.getHolder(), false, path);
         } catch (IOException e1) {
             e1.printStackTrace();
         }

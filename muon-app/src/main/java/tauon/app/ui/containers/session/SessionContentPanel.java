@@ -3,40 +3,40 @@
  */
 package tauon.app.ui.containers.session;
 
-import tauon.app.exceptions.OperationCancelledException;
-import tauon.app.services.SessionService;
-import tauon.app.services.SettingsService;
-import tauon.app.ui.containers.session.pages.diskspace.DiskspaceAnalyzer;
 import net.schmizz.sshj.connection.channel.direct.Session;
-import tauon.app.ssh.filesystem.SshFileSystem;
-import tauon.app.ui.components.misc.SkinnedTextField;
-import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import tauon.app.ui.containers.session.pages.files.transfer.BackgroundFileTransfer;
-import tauon.app.ui.containers.session.pages.logviewer.LogViewer;
-import tauon.app.ui.containers.session.pages.processview.ProcessViewer;
-import tauon.app.ui.containers.session.pages.search.SearchPanel;
-import tauon.app.ui.containers.session.pages.terminal.TerminalHolder;
-import tauon.app.ui.containers.session.pages.utilpage.UtilityPage;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.exceptions.AlreadyFailedException;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.SessionClosedException;
+import tauon.app.services.SessionService;
+import tauon.app.services.SettingsService;
+import tauon.app.settings.HopEntry;
 import tauon.app.settings.PortForwardingRule;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ssh.GuiHandle;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.FileInfo;
-import tauon.app.ssh.filesystem.FileSystem;
-import tauon.app.ssh.filesystem.LocalFileSystem;
+import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.components.glasspanes.ProgressGlasspane;
 import tauon.app.ui.components.glasspanes.SessionInputBlocker;
+import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.misc.TabbedPage;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.PageHolder;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.containers.main.FileTransferProgress;
-import tauon.app.settings.HopEntry;
+import tauon.app.ui.containers.session.pages.diskspace.DiskspaceAnalyzer;
+import tauon.app.ui.containers.session.pages.files.FileBrowser;
+import tauon.app.ui.containers.session.pages.logviewer.LogViewer;
+import tauon.app.ui.containers.session.pages.processview.ProcessViewer;
+import tauon.app.ui.containers.session.pages.search.SearchPanel;
+import tauon.app.ui.containers.session.pages.terminal.TerminalHolder;
+import tauon.app.ui.containers.session.pages.utilpage.UtilityPage;
 import tauon.app.ui.dialogs.sessions.PasswordPromptHelper;
-import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.LayoutUtilities;
 
 import javax.swing.*;
@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -59,10 +60,13 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle<TauonRemoteSessionInstance> {
+    private static final Logger LOG = LoggerFactory.getLogger(SessionContentPanel.class);
+    
     public final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final SessionInfo info;
     private final AppWindow appWindow;
     
+    private final UUID uuid = UUID.randomUUID();
     
     private final CardLayout cardLayout;
     private final JPanel cardPanel;
@@ -84,9 +88,8 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     private final AtomicBoolean closed = new AtomicBoolean(false);
     
     private final Deque<TauonRemoteSessionInstance> cachedSessions = new LinkedList<>();
-    private TauonRemoteSessionInstance remoteSessionInstance;
+    private final TauonRemoteSessionInstance remoteSessionInstance;
     
-    private ThreadPoolExecutor backgroundTransferPool;
     
     /**
      *
@@ -106,7 +109,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         Box contentTabs = Box.createHorizontalBox();
         contentTabs.setBorder(new MatteBorder(0, 0, 1, 0, App.skin.getDefaultBorderColor()));
 
-        fileBrowser = new FileBrowser(info, this, null, this.hashCode());
+        fileBrowser = new FileBrowser(info, this);
         logViewer = new LogViewer(this);
         terminalHolder = new TerminalHolder(info, this);
         diskspaceAnalyzer = new DiskspaceAnalyzer(this);
@@ -154,44 +157,67 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         showPage(this.pages[0].getId());
 
     }
-
-    public void reconnect() {
+    
+    public AppWindow getAppWindow() {
+        return appWindow;
+    }
+    
+    public void ensureConnected() throws OperationCancelledException, SessionClosedException, InterruptedException {
+        
+        if(!remoteSessionInstance.isConnected()){
+        
+            while(!remoteSessionInstance.connect()){
+                // Ask user
+                
+                // TODO i18n
+                if (JOptionPane.showConfirmDialog(null,
+                        "Unable to connect to server " + this.fileBrowser.getInfo().getName() + " at "
+                                + this.fileBrowser.getInfo().getHost()
+//                                    + (e.getMessage() != null ? "\n\nReason: " + e.getMessage() : "\n")
+                                + "\n\nDo you want to retry?") != JOptionPane.YES_OPTION) {
+                    
+                    throw new OperationCancelledException();
+                }
+                
+            }
+        
+        }
         
         // If the main remote session is reconnected (the cached sessions must be also, because the failure
         // has been produced in the connection itself)
-        try {
-            this.remoteSessionInstance.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            this.cachedSessions.forEach((r) -> {
-                try {
-                    r.close();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e); // TODO
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (Exception e2) {
-            e2.printStackTrace();
-        }
-        cachedSessions.clear();
-        
-        try {
-            this.remoteSessionInstance.close();
-        } catch (InterruptedException | IOException e) {
-            throw new RuntimeException(e);
-        }
-        
-        this.remoteSessionInstance = new TauonRemoteSessionInstance(info, this, new MyPasswordFinder(), true);
-        
-        try {
-            this.remoteSessionInstance.connect();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            this.remoteSessionInstance.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            this.cachedSessions.forEach((r) -> {
+//                try {
+//                    r.close();
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e); // TODO
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            });
+//        } catch (Exception e2) {
+//            e2.printStackTrace();
+//        }
+//        cachedSessions.clear();
+//
+//        try {
+//            this.remoteSessionInstance.close();
+//        } catch (InterruptedException | IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        this.remoteSessionInstance = new TauonRemoteSessionInstance(info, this, new MyPasswordFinder(), true);
+//
+//        try {
+//            this.remoteSessionInstance.connect();
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
         
     }
 
@@ -204,6 +230,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
             }
             item.setSelected(false);
         }
+        assert selectedPage != null : "Page Id not existing.";
         selectedPage.setSelected(true);
         this.cardLayout.show(this.cardPanel, pageId);
         this.revalidate();
@@ -221,59 +248,45 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     /**
      * @return the remoteSessionInstance
      */
-    public TauonRemoteSessionInstance getRemoteSessionInstance() {
-        return remoteSessionInstance;
-    }
+//    public TauonRemoteSessionInstance getRemoteSessionInstance() {
+//        return remoteSessionInstance;
+//    }
 
-    public void disableUi() {
+    private void disableUi() {
         SwingUtilities.invokeLater(() -> {
             this.sessionInputBlocker.startAnimation(null);
             this.rootPane.setGlassPane(this.sessionInputBlocker);
-            System.out.println("Showing disable panel");
             this.sessionInputBlocker.setVisible(true);
         });
     }
-
-    public void disableUi(AtomicBoolean stopFlag) {
+    
+    private void disableUi(AtomicBoolean stopFlag) {
         SwingUtilities.invokeLater(() -> {
             this.sessionInputBlocker.startAnimation(stopFlag);
             this.rootPane.setGlassPane(this.sessionInputBlocker);
-            System.out.println("Showing disable panel");
             this.sessionInputBlocker.setVisible(true);
         });
     }
-
-    public void enableUi() {
+    
+    private void enableUi() {
         SwingUtilities.invokeLater(() -> {
             this.sessionInputBlocker.stopAnimation();
-            System.out.println("Hiding disable panel");
             this.sessionInputBlocker.setVisible(false);
         });
     }
-
-    public void startFileTransferModal(Consumer<Boolean> stopCallback) {
-        progressPanel.setStopCallback(stopCallback);
-        progressPanel.clear();
-        this.rootPane.setGlassPane(this.progressPanel);
-        progressPanel.setVisible(true);
+    
+    public FileBrowser getFileBrowser() {
+        return fileBrowser;
+    }
+    
+    public FileTransferProgress startFileTransferModal(Consumer<Boolean> stopCallback) {
+        rootPane.setGlassPane(this.progressPanel);
+        FileTransferProgress h = progressPanel.show(stopCallback);
         this.revalidate();
         this.repaint();
+        return h;
     }
-
-    public void setTransferProgress(int progress) {
-        progressPanel.setProgress(progress);
-    }
-
-    public void endFileTransfer() {
-        progressPanel.setVisible(false);
-        this.revalidate();
-        this.repaint();
-    }
-
-    public int getActiveSessionId() {
-        return this.hashCode();
-    }
-
+    
     public void downloadFileToLocal(FileInfo remoteFile, Consumer<File> callback) {
 
     }
@@ -294,6 +307,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     public Session openSession() throws Exception {
+        ensureConnected();
         return remoteSessionInstance.openSession();
     }
     
@@ -311,100 +325,38 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         try {
             this.terminalHolder.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("Error while closing Terminal", e);
         }
         
-        if (this.backgroundTransferPool != null) {
-            this.backgroundTransferPool.shutdownNow();
-            
-            try {
-                this.backgroundTransferPool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
-        }
+        this.fileBrowser.close();
         
         try {
             this.remoteSessionInstance.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("Error while closing the main session instance");
         }
         try {
             this.cachedSessions.forEach(c -> {
                 try {
                     c.close();
                 } catch (InterruptedException | IOException e) {
-                    throw new RuntimeException(e); // TODO
+                    LOG.error("Error while closing a cached session instance");
                 }
             });
         } catch (Exception e2) {
-            e2.printStackTrace();
+            LOG.error("Error while closing the cached session instances");
         }
         
         this.executor.shutdownNow();
         
         try {
-            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+            if(!this.executor.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS)){
+                LOG.error("The background executor was not fully shutdown");
+            }
         } catch (InterruptedException e1) {
-            e1.printStackTrace();
+            LOG.error("Error while closing the background executor pool", e1);
         }
         
-        appWindow.removePendingTransfers(this.getActiveSessionId());
-        
-    }
-
-    public void uploadInBackground(FileInfo[] localFiles, String targetRemoteDirectory, Constants.ConflictAction confiAction) {
-        TauonRemoteSessionInstance instance = createBackgroundSession();
-        FileSystem sourceFs = new LocalFileSystem();
-        FileSystem targetFs = instance.getSshFs();
-        BackgroundFileTransfer transfer = new BackgroundFileTransfer(sourceFs, targetFs, localFiles, targetRemoteDirectory, null,
-                confiAction, instance, this);
-        FileTransferProgress p = appWindow.addUpload(transfer);
-        getBackgroundTransferPool().submit(() -> {
-            try {
-                transfer.run(p);
-            } catch (Exception e) {
-                e.printStackTrace();
-                p.error(e.getMessage(), transfer);
-            }finally {
-                returnToSessionCache(instance);
-            }
-        });
-    }
-
-    public void downloadInBackground(FileInfo[] remoteFiles, String targetLocalDirectory, Constants.ConflictAction confiAction) {
-        FileSystem targetFs = new LocalFileSystem();
-        TauonRemoteSessionInstance instance = createBackgroundSession();
-        SshFileSystem sourceFs = instance.getSshFs();
-        BackgroundFileTransfer transfer = new BackgroundFileTransfer(sourceFs, targetFs, remoteFiles, targetLocalDirectory, null,
-                confiAction, instance, this);
-        FileTransferProgress p = appWindow.addDownload(transfer);
-        getBackgroundTransferPool().submit(() -> {
-            try {
-                transfer.run(p);
-            } catch (Exception e) {
-                e.printStackTrace();
-                p.error(e.getMessage(), transfer);
-            }finally {
-                returnToSessionCache(instance);
-            }
-        });
-    }
-
-    public synchronized ThreadPoolExecutor getBackgroundTransferPool() {
-        if (this.backgroundTransferPool == null) {
-            this.backgroundTransferPool = new ThreadPoolExecutor(
-                    SettingsService.getSettings().getBackgroundTransferQueueSize(),
-                    SettingsService.getSettings().getBackgroundTransferQueueSize(), 0, TimeUnit.NANOSECONDS,
-                    new LinkedBlockingQueue<>());
-        } else {
-            if (this.backgroundTransferPool.getMaximumPoolSize() != SettingsService.getSettings()
-                    .getBackgroundTransferQueueSize()) {
-                this.backgroundTransferPool
-                        .setMaximumPoolSize(SettingsService.getSettings().getBackgroundTransferQueueSize());
-            }
-        }
-        return this.backgroundTransferPool;
     }
 
     public synchronized TauonRemoteSessionInstance createBackgroundSession() {
@@ -474,15 +426,10 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     @Override
-    public BlockHandle blockUi(TauonRemoteSessionInstance client, UserCancellable userCancellable) {
+    public BlockHandle blockUi(TauonRemoteSessionInstance client, UserCancelHandle userCancelHandle) {
         if(client == this.remoteSessionInstance) {
-            BlockHandle block = new BlockHandle() {
-                @Override
-                public void unblock() {
-                    appWindow.getInputBlocker().unblockInput();
-                }
-            };
-            appWindow.getInputBlocker().blockInput(() -> userCancellable.userCancelled(block));
+            BlockHandle block = () -> appWindow.getInputBlocker().unblockInput();
+            appWindow.getInputBlocker().blockInput(() -> userCancelHandle.userCancelled(block));
             return block;
         }
         return () -> {}; // No block
@@ -505,6 +452,86 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         }
         
         return null;
+    }
+    
+    public UUID getUUID() {
+        return uuid;
+    }
+    
+    public void runSSHOperation(SSHOperator consumer) throws Exception {
+        ensureConnected();
+        try {
+            consumer.operate(remoteSessionInstance);
+        }catch (OperationCancelledException | AlreadyFailedException ignored){
+        
+        }
+    }
+    
+    public <R> R runSSHOperation(SSHOperatorRet<R> consumer, R defaultIfFailedOrCancelled) throws Exception {
+        
+        ensureConnected();
+        try {
+            return consumer.operate(remoteSessionInstance);
+        }catch (OperationCancelledException | AlreadyFailedException ignored){
+            return defaultIfFailedOrCancelled;
+        }
+    }
+    
+    public void submitSSHOperation(SSHOperator consumer) {
+        executor.submit(() -> {
+            try {
+                ensureConnected();
+                disableUi();
+                try {
+                    consumer.operate(remoteSessionInstance);
+                } catch (OperationCancelledException | AlreadyFailedException ignored) {
+
+                } catch (Exception e) {
+                    LOG.error("Operation failed", e);
+                } finally {
+                    enableUi();
+                }
+            } catch (Exception e) {
+                LOG.error("Connection failed", e);
+            }
+        });
+    }
+    
+    public void submitSSHOperationStoppable(SSHOperator consumer, AtomicBoolean stopFlag) {
+        executor.submit(() -> {
+            try {
+                ensureConnected();
+                disableUi(stopFlag);
+                try {
+                    consumer.operate(remoteSessionInstance);
+                } catch (OperationCancelledException | AlreadyFailedException ignored) {
+                
+                } catch (Exception e) {
+                    LOG.error("Operation failed", e);
+                } finally {
+                    enableUi();
+                }
+            } catch (Exception e) {
+                LOG.error("Connection failed", e);
+            }
+        });
+    }
+    
+    public void submitLocalOperation(LocalOperator consumer) {
+        executor.submit(() -> {
+            disableUi();
+            try {
+                consumer.operate();
+            } catch (Exception e) {
+                LOG.error("Operation failed", e);
+            } finally {
+                enableUi();
+            }
+        });
+    }
+    
+    public SshFileSystem getSshFs() {
+        return remoteSessionInstance.getSshFs();
     }
     
     private class MyPasswordFinder implements PasswordFinder{
@@ -588,5 +615,17 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         } catch (OperationCancelledException ignored) {
         
         }
+    }
+    
+    public interface SSHOperator {
+        void operate(TauonRemoteSessionInstance instance) throws Exception;
+    }
+    
+    public interface SSHOperatorRet<R> {
+        R operate(TauonRemoteSessionInstance instance) throws Exception;
+    }
+    
+    public interface LocalOperator {
+        void operate() throws Exception;
     }
 }

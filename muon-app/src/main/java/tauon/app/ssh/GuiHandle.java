@@ -13,7 +13,7 @@ public interface GuiHandle<C> {
     
     void reportPortForwardingFailed(PortForwardingRule portForwardingState, IOException e);
     
-    BlockHandle blockUi(C client, UserCancellable userCancellable);
+    BlockHandle blockUi(C client, UserCancelHandle userCancelHandle);
     
     String promptUser(HopEntry info, AtomicBoolean remember);
     
@@ -29,7 +29,7 @@ public interface GuiHandle<C> {
         void unblock();
     }
     
-    interface UserCancellable {
+    interface UserCancelHandle {
         void userCancelled(BlockHandle blockHandle);
     }
     

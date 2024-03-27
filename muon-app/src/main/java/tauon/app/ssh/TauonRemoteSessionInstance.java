@@ -5,9 +5,11 @@ package tauon.app.ssh;
 
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
+import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ssh.filesystem.SshFileSystem;
 
@@ -17,7 +19,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -40,24 +41,23 @@ public class TauonRemoteSessionInstance {
     
     public TauonRemoteSessionInstance(SessionInfo info, GuiHandle<TauonRemoteSessionInstance> guiHandle, PasswordFinder passwordFinder, boolean openPortForwarding) {
         
-        GuiHandle.Delegate<TauonSSHClient> guiHandleDelagate = new GuiHandle.Delegate<>(guiHandle) {
+        GuiHandle.Delegate<TauonSSHClient> guiHandleDelegate = new GuiHandle.Delegate<>(guiHandle) {
             @Override
-            public BlockHandle blockUi(TauonSSHClient client, UserCancellable userCancellable) {
+            public BlockHandle blockUi(TauonSSHClient client, UserCancelHandle userCancellable) {
                 return guiHandle.blockUi(TauonRemoteSessionInstance.this, userCancellable);
             }
         };
         
-        this.ssh = new TauonSSHClient(info, guiHandleDelagate, passwordFinder, executorService, openPortForwarding);
-        this.sshFs = new SshFileSystem(this.ssh);
+        this.ssh = new TauonSSHClient(info, guiHandleDelegate, passwordFinder, executorService, openPortForwarding);
+        this.sshFs = new SshFileSystem(this);
     }
     
-    public void connect() throws InterruptedException {
+    public boolean connect() throws InterruptedException, SessionClosedException {
         
         if(closed.get())
-            return;
+            throw new SessionClosedException();
         
-        ssh.connect();
-        
+        return ssh.connect();
     }
     
     public int exec(String command, Function<Command, Integer> callback, boolean pty) throws Exception {
@@ -98,7 +98,7 @@ public class TauonRemoteSessionInstance {
 
     public int execBin(String command, AtomicBoolean stopFlag, OutputStream bout, OutputStream berr) throws Exception {
 
-        if (stopFlag.get()) {
+        if (stopFlag.get()) { // TODO create a more efficient way to stop a process
             return -1;
         }
         
@@ -121,7 +121,7 @@ public class TauonRemoteSessionInstance {
                     if (in.available() > 0) {
                         int m = in.available();
                         while (m > 0) {
-                            int x = in.read(b, 0, m > b.length ? b.length : m);
+                            int x = in.read(b, 0, Math.min(m, b.length));
                             if (x == -1) {
                                 break;
                             }
@@ -185,7 +185,7 @@ public class TauonRemoteSessionInstance {
         return sshFs;
 
     }
-
+    
     public boolean isSessionClosed() {
         return closed.get();
     }
@@ -194,4 +194,11 @@ public class TauonRemoteSessionInstance {
         return ssh.openSession();
     }
     
+    public SFTPClient getSftpClient() throws IOException {
+        return ssh.getSftpClient();
+    }
+    
+    public boolean isConnected() {
+        return ssh.isConnected();
+    }
 }

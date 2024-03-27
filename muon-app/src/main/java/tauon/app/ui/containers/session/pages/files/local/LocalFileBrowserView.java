@@ -6,9 +6,10 @@ import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import tauon.app.ui.containers.session.pages.files.view.AddressBar;
+import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferHandler;
+import tauon.app.ui.containers.session.pages.logviewer.LogContent;
 import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
@@ -16,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -30,8 +32,7 @@ public class LocalFileBrowserView extends AbstractFileBrowserView {
         super(orientation, fileBrowser);
         this.menuHandler = new LocalMenuHandler(fileBrowser, this);
         this.menuHandler.initMenuHandler(this.folderView);
-        this.transferHandler = new DndTransferHandler(this.folderView, null, this, DndTransferData.DndSourceType.LOCAL,
-                this.fileBrowser);
+        this.transferHandler = new DndTransferHandler(this);
         this.folderView.setTransferHandler(transferHandler);
         this.folderView.setFolderViewTransferHandler(transferHandler);
         this.addressPopup = menuHandler.createAddressPopup();
@@ -104,26 +105,41 @@ public class LocalFileBrowserView extends AbstractFileBrowserView {
     @Override
     public void render(String path) {
         this.path = path;
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
-            try {
-                if (this.path == null) {
-                    this.path = fs.getHome();
-                }
-                List<FileInfo> list = fs.list(this.path);
-                SwingUtilities.invokeLater(() -> {
-                    addressBar.setText(this.path);
-                    folderView.setItems(list);
-                    int tc = list.size();
-                    String text = String.format("Total %d remote file(s)", tc);
-                    fileBrowser.updateRemoteStatus(text);
-                    tabTitle.getCallback().accept(PathUtils.getFileName(this.path));
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
+        fileBrowser.getHolder().submitLocalOperation(() -> {
+            if (this.path == null) {
+                this.path = fs.getHome();
             }
-            fileBrowser.enableUi();
+            List<FileInfo> list = fs.list(this.path);
+            SwingUtilities.invokeLater(() -> {
+                addressBar.setText(this.path);
+                folderView.setItems(list);
+                int tc = list.size();
+                String text = String.format("Total %d remote file(s)", tc);
+                fileBrowser.updateRemoteStatus(text);
+                tabTitle.getCallback().accept(PathUtils.getFileName(this.path));
+            });
         });
+        
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            try {
+//                if (this.path == null) {
+//                    this.path = fs.getHome();
+//                }
+//                List<FileInfo> list = fs.list(this.path);
+//                SwingUtilities.invokeLater(() -> {
+//                    addressBar.setText(this.path);
+//                    folderView.setItems(list);
+//                    int tc = list.size();
+//                    String text = String.format("Total %d remote file(s)", tc);
+//                    fileBrowser.updateRemoteStatus(text);
+//                    tabTitle.getCallback().accept(PathUtils.getFileName(this.path));
+//                });
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            fileBrowser.enableUi();
+//        });
     }
 
     @Override
@@ -155,14 +171,14 @@ public class LocalFileBrowserView extends AbstractFileBrowserView {
     }
 
     public boolean handleDrop(DndTransferData transferData) {
-        System.out.println("### " + transferData.getSource() + " " + this.hashCode());
-        if (transferData.getSource() == this.hashCode()) {
-            return false;
+        System.out.println("### " + transferData.getDestination() + " " + this.hashCode());
+        if (transferData.getDestination() == this) {
+            return false; // TODO handle move files inside same browser
         }
-        return this.fileBrowser.handleLocalDrop(transferData, fileBrowser.getInfo(), this.fs, this.path);
+        return this.fileBrowser.handleLocalDrop(transferData, this.fs, this.path);
     }
 
-    public FileSystem getFileSystem() throws Exception {
+    public FileSystem getFileSystem() {
         return new LocalFileSystem();
     }
 }

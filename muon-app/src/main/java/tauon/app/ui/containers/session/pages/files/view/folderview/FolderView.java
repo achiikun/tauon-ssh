@@ -1,10 +1,12 @@
-package tauon.app.ui.containers.session.pages.files.view;
+package tauon.app.ui.containers.session.pages.files.view.folderview;
 
 import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
+import tauon.app.ui.containers.session.pages.files.view.DndTransferHandler;
+import tauon.app.ui.containers.session.pages.files.view.TableCellLabelRenderer;
 
 import javax.swing.*;
 import javax.swing.RowSorter.SortKey;

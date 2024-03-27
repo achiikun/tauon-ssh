@@ -36,15 +36,14 @@ public class SysLoadPage extends UtilPageItemView {
      *
      */
     private void fetchSystemLoad() {
-        holder.executor.submit(() -> {
+        holder.submitSSHOperation(instance -> {
             try {
                 if (holder.isSessionClosed()) {
                     SwingUtilities.invokeAndWait(() -> timer.stop());
                     return;
                 }
                 System.out.println("Getting system metrics");
-                this.metrics
-                        .updateMetrics(this.holder.getRemoteSessionInstance());
+                this.metrics.updateMetrics(instance);
                 if ("Linux".equals(this.metrics.getOs())) {
                     SwingUtilities.invokeAndWait(() -> {
                         // update ui stat

@@ -15,6 +15,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.UUID;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -106,6 +107,7 @@ public class SessionListPanel extends JPanel {
         sessionListModel.insertElementAt(panel, 0);
 
         sessionList.setSelectedIndex(0);
+        
     }
 
     public void selectSession(int index) {
@@ -133,16 +135,15 @@ public class SessionListPanel extends JPanel {
             }
         }
     }
-
-    public SessionContentPanel getSessionContainer(int activeSessionId) {
-        for (int i = 0; i < sessionListModel.size(); i++) {
-            SessionContentPanel scp = sessionListModel.get(i);
-            if (scp.getActiveSessionId() == activeSessionId)
-                return scp;
+    
+    public SessionContentPanel findSessionById(UUID uuid) {
+        for(int i = 0; i < sessionListModel.getSize(); i++){
+            if(sessionListModel.get(i).getUUID().equals(uuid))
+                return sessionListModel.get(i);
         }
         return null;
     }
-
+    
     public static final class SessionListRenderer implements ListCellRenderer<SessionContentPanel> {
 
         private final JPanel panel;

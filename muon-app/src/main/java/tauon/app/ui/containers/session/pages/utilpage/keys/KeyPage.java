@@ -39,86 +39,83 @@ public class KeyPage extends UtilPageItemView {
         keyHolder = new SshKeyHolder();
         tabs = new TabbedPanel();
         remoteKeyPanel = new RemoteKeyPanel(holder.getInfo(), a -> {
-            holder.disableUi();
-            holder.executor.submit(() -> {
-                try {
-                    SshKeyManager.generateKeys(keyHolder,
-                            holder.getRemoteSessionInstance(), false);
+//            holder.disableUi();
+            holder.submitSSHOperation(instance -> {
+//                try {
+                    SshKeyManager.generateKeys(keyHolder, instance, false);
                     SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    holder.enableUi();
-                }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    holder.enableUi();
+//                }
             });
         }, a -> {
-            holder.disableUi();
-            holder.executor.submit(() -> {
-                try {
-                    keyHolder = SshKeyManager.getKeyDetails(holder);
+//            holder.disableUi();
+            holder.submitSSHOperation(instance -> {
+//                try {
+                    keyHolder = SshKeyManager.getKeyDetails(holder, instance);
                     SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    holder.enableUi();
-                }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    holder.enableUi();
+//                }
             });
         }, a -> {
-            holder.disableUi();
-            holder.executor.submit(() -> {
-                try {
-                    SshKeyManager.saveAuthorizedKeysFile(a,
-                            holder.getRemoteSessionInstance().getSshFs());
-                    keyHolder = SshKeyManager.getKeyDetails(holder);
+//            holder.disableUi();
+            holder.submitSSHOperation(instance -> {
+//                try {
+                    SshKeyManager.saveAuthorizedKeysFile(a, instance.getSshFs());
+                    keyHolder = SshKeyManager.getKeyDetails(holder, instance);
                     SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    holder.enableUi();
-                }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    holder.enableUi();
+//                }
             });
         });
         localKeyPanel = new LocalKeyPanel(holder.getInfo(), a -> {
-            holder.disableUi();
-            holder.executor.submit(() -> {
-                try {
-                    SshKeyManager.generateKeys(keyHolder,
-                            holder.getRemoteSessionInstance(), true);
+//            holder.disableUi();
+            holder.submitSSHOperation(instance -> {
+//                try {
+                    SshKeyManager.generateKeys(keyHolder, instance, true);
                     SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    holder.enableUi();
-                }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    holder.enableUi();
+//                }
             });
         }, a -> {
-            holder.disableUi();
-            holder.executor.submit(() -> {
-                try {
-                    keyHolder = SshKeyManager.getKeyDetails(holder);
+//            holder.disableUi();
+            holder.submitSSHOperation(instance -> {
+//                try {
+                    keyHolder = SshKeyManager.getKeyDetails(holder, instance);
                     SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    holder.enableUi();
-                }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    holder.enableUi();
+//                }
             });
         });
         tabs.addTab(getBundle().getString("server"), remoteKeyPanel);
         tabs.addTab(getBundle().getString("local_computer"), localKeyPanel);
         this.add(tabs);
 
-        holder.executor.submit(() -> {
-            holder.disableUi();
-            try {
-                keyHolder = SshKeyManager.getKeyDetails(holder);
+        holder.submitSSHOperation(instance -> {
+//            holder.disableUi();
+//            try {
+                keyHolder = SshKeyManager.getKeyDetails(holder, instance);
                 SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-            } catch (Exception err) {
-                err.printStackTrace();
-            } finally {
-                holder.enableUi();
-            }
+//            } catch (Exception err) {
+//                err.printStackTrace();
+//            } finally {
+//                holder.enableUi();
+//            }
         });
     }
 

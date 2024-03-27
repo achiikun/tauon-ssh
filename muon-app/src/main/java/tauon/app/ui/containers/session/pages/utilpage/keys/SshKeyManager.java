@@ -27,10 +27,10 @@ public class SshKeyManager {
     
     private static final Logger LOG = LoggerFactory.getLogger(SshKeyManager.class);
     
-    public static SshKeyHolder getKeyDetails(SessionContentPanel content) throws Exception {
+    public static SshKeyHolder getKeyDetails(SessionContentPanel content, TauonRemoteSessionInstance instance) throws Exception {
         SshKeyHolder holder = new SshKeyHolder();
         loadLocalKey(getPubKeyPath(content.getInfo()), holder);
-        loadRemoteKeys(holder, content.getRemoteSessionInstance().getSshFs());
+        loadRemoteKeys(holder, instance.getSshFs());
         return holder;
     }
 

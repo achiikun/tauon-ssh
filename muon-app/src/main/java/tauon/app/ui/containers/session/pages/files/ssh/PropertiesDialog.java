@@ -396,11 +396,11 @@ public class PropertiesDialog extends JDialog {
             command.append("\"" + fileInfo.getPath() + "\" ");
         }
         System.out.println("Command to execute: " + command);
-        fileBrowser.getHolder().executor.submit(() -> {
+        fileBrowser.getHolder().submitSSHOperationStoppable(instance -> {
             try {
                 long total = 0;
                 StringBuilder output = new StringBuilder();
-                boolean ret = fileBrowser.getSessionInstance().exec(
+                boolean ret = instance.exec(
                         command.toString(), stopFlag, output,
                         new StringBuilder()) == 0;
                 if (stopFlag.get()) {
@@ -425,7 +425,7 @@ public class PropertiesDialog extends JDialog {
                 e.printStackTrace();
             }
             biConsumer.accept(-1L, false);
-        });
+        }, stopFlag);
     }
 
     public void calcFreeSpace(FileInfo[] files,
@@ -435,10 +435,10 @@ public class PropertiesDialog extends JDialog {
                 "export POSIXLY_CORRECT=1; export BLOCKSIZE=1024; df -P -k \""
                         + files[0].getPath() + "\"");
         System.out.println("Command to execute: " + command);
-        fileBrowser.getHolder().executor.submit(() -> {
+        fileBrowser.getHolder().submitSSHOperationStoppable(instance -> {
             try {
                 StringBuilder output = new StringBuilder();
-                boolean ret = fileBrowser.getSessionInstance().exec(
+                boolean ret = instance.exec(
                         command.toString(), stopFlag, output,
                         new StringBuilder()) == 0;
                 System.out.println(output);
@@ -479,7 +479,7 @@ public class PropertiesDialog extends JDialog {
                 e.printStackTrace();
             }
             biConsumer.accept(null, false);
-        });
+        }, stopFlag);
     }
 
     private void chmodAsync(int perm, FileInfo[] paths) {

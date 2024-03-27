@@ -1,10 +1,13 @@
 package tauon.app.ui.containers.session.pages.files;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
+import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.components.closabletabs.ClosableTabbedPanel;
 import tauon.app.ui.components.misc.SkinnedSplitPane;
@@ -20,32 +23,36 @@ import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static tauon.app.services.LanguageService.getBundle;
 
 public class FileBrowser extends Page {
+    private static final Logger LOG = LoggerFactory.getLogger(SessionContentPanel.class);
+    
     private final JSplitPane horizontalSplitter;
     private final ClosableTabbedPanel leftTabs;
     private final ClosableTabbedPanel rightTabs;
     private final SessionContentPanel holder;
     private final SessionInfo info;
     private final Map<String, List<FileInfo>> sshDirCache = new HashMap<>();
-    private final int activeSessionId;
     private final AtomicBoolean init = new AtomicBoolean(false);
     private final JPopupMenu popup;
-    private final List<AbstractFileBrowserView> viewList = new ArrayList<>();
+    private final Map<UUID, AbstractFileBrowserView> viewList = new HashMap<>();
     private FileTransfer ongoingFileTransfer;
     private boolean leftPopup = false;
     private JLabel lblStat1;
     private Box statusBox;
+    
+    private ThreadPoolExecutor backgroundTransferPool;
 
-    public FileBrowser(SessionInfo info, SessionContentPanel holder, JRootPane rootPane, int activeSessionId) {
-        this.activeSessionId = activeSessionId;
+    public FileBrowser(SessionInfo info, SessionContentPanel holder) {
+
         this.info = info;
         this.holder = holder;
 
@@ -115,17 +122,17 @@ public class FileBrowser extends Page {
         this.repaint();
     }
 
-    public void disableUi() {
-        holder.disableUi();
-    }
-
-    public void disableUi(AtomicBoolean stopFlag) {
-        holder.disableUi(stopFlag);
-    }
-
-    public void enableUi() {
-        holder.enableUi();
-    }
+//    public void disableUi() {
+//        holder.disableUi();
+//    }
+//
+//    public void disableUi(AtomicBoolean stopFlag) {
+//        holder.disableUi(stopFlag);
+//    }
+//
+//    public void enableUi() {
+//        holder.enableUi();
+//    }
 
     public void openSshFileBrowserView(String path, AbstractFileBrowserView.PanelOrientation orientation) {
         SshFileBrowserView tab = new SshFileBrowserView(this, path, orientation);
@@ -147,68 +154,82 @@ public class FileBrowser extends Page {
     }
 
     public SshFileSystem getSSHFileSystem() {
-        return this.getSessionInstance().getSshFs();
+        return this.getHolder().getSshFs();
     }
 
-    public TauonRemoteSessionInstance getSessionInstance() {
-        return this.holder.getRemoteSessionInstance();
-    }
+//    public TauonRemoteSessionInstance getSessionInstance() {
+//        return this.holder.getRemoteSessionInstance();
+//    }
 
     public SessionInfo getInfo() {
         return info;
-    }
-
-    public boolean isCloseRequested() {
-        return this.holder.isSessionClosed();
     }
 
     public Map<String, List<FileInfo>> getSSHDirectoryCache() {
         return this.sshDirCache;
     }
 
-    public void newFileTransfer(FileSystem sourceFs, FileSystem targetFs, FileInfo[] files, String targetFolder,
-                                int dragsource, Constants.ConflictAction defaultConflictAction, TauonRemoteSessionInstance instance) {
+    public void newFileTransfer(FileSystem sourceFs, FileSystem targetFs, FileInfo[] files, String targetFolder) {
         System.out.println("Initiating new file transfer...");
-        this.ongoingFileTransfer = new FileTransfer(sourceFs, targetFs, files, targetFolder, defaultConflictAction, instance);
+//        this.ongoingFileTransfer =
         
-        holder.startFileTransferModal(e -> this.ongoingFileTransfer.close());
-        holder.executor.submit(() -> this.ongoingFileTransfer.run(new FileTransferProgress() {
-            
-            @Override
-            public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount,
-                                 FileTransfer fileTransfer) {
-                SwingUtilities.invokeLater(() -> {
-                    if (totalBytes == 0) {
-                        holder.setTransferProgress(0);
-                    } else {
-                        holder.setTransferProgress((int) ((processedBytes * 100) / totalBytes));
+        holder.getAppWindow().getFileTransferManager().startFileTransfer(
+                new FileTransfer(sourceFs, targetFs, files, targetFolder, SettingsService.getSettings().getConflictAction(), holder),
+                false,
+                new FileTransferProgress.Adapter(){
+
+                    @Override
+                    public void error(String cause, FileTransfer fileTransfer) {
+                        if (!holder.isSessionClosed()) {
+                            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                        }
                     }
-                });
-            }
-            
-            @Override
-            public void init(long totalSize, long files, FileTransfer fileTransfer) {
-            }
-            
-            @Override
-            public void error(String cause, FileTransfer fileTransfer) {
-                SwingUtilities.invokeLater(() -> {
-                    holder.endFileTransfer();
-                    if (!holder.isSessionClosed()) {
-                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+        
+                    @Override
+                    public void done(FileTransfer fileTransfer) {
+                        reloadView();
                     }
-                });
-            }
-            
-            @Override
-            public void done(FileTransfer fileTransfer) {
-                System.out.println("Done");
-                SwingUtilities.invokeLater(() -> {
-                    holder.endFileTransfer();
-                    reloadView();
-                });
-            }
-        }));
+                }
+        );
+        
+//        holder.startFileTransferModal(e -> this.ongoingFileTransfer.close());
+//        holder.executor.submit(() -> this.ongoingFileTransfer.run(new FileTransferProgress() {
+//
+//            @Override
+//            public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount,
+//                                 FileTransfer fileTransfer) {
+//                SwingUtilities.invokeLater(() -> {
+//                    if (totalBytes == 0) {
+//                        holder.setTransferProgress(0);
+//                    } else {
+//                        holder.setTransferProgress((int) ((processedBytes * 100) / totalBytes));
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void init(long totalSize, long files, FileTransfer fileTransfer) {
+//            }
+//
+//            @Override
+//            public void error(String cause, FileTransfer fileTransfer) {
+//                SwingUtilities.invokeLater(() -> {
+//                    holder.endFileTransfer();
+//                    if (!holder.isSessionClosed()) {
+//                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void done(FileTransfer fileTransfer) {
+//                System.out.println("Done");
+//                SwingUtilities.invokeLater(() -> {
+//                    holder.endFileTransfer();
+//                    reloadView();
+//                });
+//            }
+//        }));
     }
 
     private void reloadView() {
@@ -223,14 +244,7 @@ public class FileBrowser extends Page {
             ((AbstractFileBrowserView) c).reload();
         }
     }
-
-    /**
-     * @return the activeSessionId
-     */
-    public int getActiveSessionId() {
-        return activeSessionId;
-    }
-
+    
     @Override
     public void onLoad() {
         if (init.get()) {
@@ -270,13 +284,7 @@ public class FileBrowser extends Page {
         return this.holder.isSessionClosed();
     }
 
-    public boolean selectTransferModeAndConflictAction(ResponseHolder holder) throws Exception {
-        holder.transferMode = SettingsService.getSettings().getFileTransferMode();
-        holder.conflictAction = SettingsService.getSettings().getConflictAction();
-        return true;
-    }
-
-    public boolean handleLocalDrop(DndTransferData transferData, SessionInfo info, FileSystem currentFileSystem,
+    public boolean handleLocalDrop(DndTransferData transferData, FileSystem currentFileSystem,
                                    String currentPath) {
         // TODO i18n
         if (SettingsService.getSettings().isConfirmBeforeMoveOrCopy()
@@ -286,22 +294,17 @@ public class FileBrowser extends Page {
 
         try {
 
-            ResponseHolder holder = new ResponseHolder();
-
-            if (!selectTransferModeAndConflictAction(holder)) {
-                return false;
-            }
-
             System.out.println("Dropped: " + transferData);
-            int sessionHashCode = transferData.getInfo();
-            if (sessionHashCode == 0) {
-                System.out.println("Session hash code: " + sessionHashCode);
+            AbstractFileBrowserView source = transferData.getSource();
+            if (source == null) {
+                // Comes from local
+                System.out.println("Session hash code: " + source);
                 return true;
             }
 
-            if (info != null && info.hashCode() == sessionHashCode) {
-                if (holder.transferMode == Constants.TransferMode.BACKGROUND) {
-                    this.getHolder().downloadInBackground(transferData.getFiles(), currentPath, holder.conflictAction);
+            if (source.getFileBrowser() == this) {
+                if (SettingsService.getSettings().getFileTransferMode() == Constants.TransferMode.BACKGROUND) {
+                    downloadInBackground(transferData.getFiles(), currentPath);
                     return true;
                 }
                 FileSystem sourceFs = this.getSSHFileSystem();
@@ -309,8 +312,7 @@ public class FileBrowser extends Page {
                     return false;
                 }
                 FileSystem targetFs = currentFileSystem;
-                this.newFileTransfer(sourceFs, targetFs, transferData.getFiles(), currentPath, this.hashCode(),
-                        holder.conflictAction, this.getSessionInstance());
+                this.newFileTransfer(sourceFs, targetFs, transferData.getFiles(), currentPath);
             }
             return true;
         } catch (Exception e) {
@@ -318,9 +320,59 @@ public class FileBrowser extends Page {
             return false;
         }
     }
+    
+    public void downloadInBackground(FileInfo[] remoteFiles, String targetLocalDirectory) {
+        FileSystem targetFs = new LocalFileSystem();
+        TauonRemoteSessionInstance instance = getHolder().createBackgroundSession();
+        SshFileSystem sourceFs = instance.getSshFs();
+        
+        FileTransfer transfer = new FileTransfer(sourceFs, targetFs, remoteFiles, targetLocalDirectory,
+                SettingsService.getSettings().getConflictAction(),
+                getHolder());
+        getHolder().getAppWindow().getFileTransferManager().startFileTransfer(
+                transfer,
+                true,
+                new FileTransferProgress.Adapter(){
+                    @Override
+                    public void done(FileTransfer fileTransfer) {
+                        getHolder().returnToSessionCache(instance);
+                    }
+                    
+                    @Override
+                    public void error(String cause, FileTransfer fileTransfer) {
+                        getHolder().returnToSessionCache(instance);
+                    }
+                }
+        );
+    }
+    
+    public void uploadInBackground(FileInfo[] localFiles, String targetRemoteDirectory) {
+        TauonRemoteSessionInstance instance = getHolder().createBackgroundSession();
+        FileSystem sourceFs = new LocalFileSystem();
+        FileSystem targetFs = instance.getSshFs();
+        FileTransfer transfer = new FileTransfer(sourceFs, targetFs, localFiles, targetRemoteDirectory,
+                SettingsService.getSettings().getConflictAction(),
+                getHolder());
+        getHolder().getAppWindow().getFileTransferManager().startFileTransfer(
+                transfer,
+                true,
+                new FileTransferProgress.Adapter(){
+                    @Override
+                    public void done(FileTransfer fileTransfer) {
+                        getHolder().returnToSessionCache(instance);
+                    }
+                    
+                    @Override
+                    public void error(String cause, FileTransfer fileTransfer) {
+                        getHolder().returnToSessionCache(instance);
+                    }
+                }
+        );
+        
+    }
 
     public void refreshViewMode() {
-        for (AbstractFileBrowserView view : this.viewList) {
+        for (AbstractFileBrowserView view : this.viewList.values()) {
             view.refreshViewMode();
         }
         this.revalidate();
@@ -328,18 +380,58 @@ public class FileBrowser extends Page {
     }
 
     public void registerForViewNotification(AbstractFileBrowserView view) {
-        this.viewList.add(view);
+        this.viewList.put(view.getUUID(), view);
     }
 
     public void unRegisterForViewNotification(AbstractFileBrowserView view) {
-        this.viewList.remove(view);
+        this.viewList.remove(view.getUUID());
     }
 
     public void updateRemoteStatus(String text) {
     }
-
-    public static class ResponseHolder {
-        public Constants.TransferMode transferMode;
-        public Constants.ConflictAction conflictAction;
+    
+    public void notifyTransferDone(FileTransfer fileTransfer) {
+        reloadView();
     }
+    
+    public synchronized ThreadPoolExecutor getBackgroundTransferPool() {
+        if (this.backgroundTransferPool == null) {
+            this.backgroundTransferPool = new ThreadPoolExecutor(
+                    SettingsService.getSettings().getBackgroundTransferQueueSize(),
+                    SettingsService.getSettings().getBackgroundTransferQueueSize(), 0, TimeUnit.NANOSECONDS,
+                    new LinkedBlockingQueue<>());
+        } else {
+            if (this.backgroundTransferPool.getMaximumPoolSize() != SettingsService.getSettings()
+                    .getBackgroundTransferQueueSize()) {
+                this.backgroundTransferPool
+                        .setMaximumPoolSize(SettingsService.getSettings().getBackgroundTransferQueueSize());
+            }
+        }
+        return this.backgroundTransferPool;
+    }
+    
+    public void close() {
+        
+        if (this.backgroundTransferPool != null) {
+            this.backgroundTransferPool.shutdownNow();
+            
+            try {
+                if(!this.backgroundTransferPool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS)){
+                    LOG.error("the background transfer pool was not fully shutdown");
+                }
+            } catch (InterruptedException e1) {
+                LOG.error("Error while closing the background transfer pool", e1);
+            }
+        }
+        
+    }
+    
+    public AbstractFileBrowserView findViewById(UUID uuid) {
+        return viewList.get(uuid);
+    }
+    
+//    public static class ResponseHolder {
+//        public Constants.TransferMode transferMode;
+//        public Constants.ConflictAction conflictAction;
+//    }
 }

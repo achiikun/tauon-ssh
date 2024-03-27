@@ -5,6 +5,7 @@ package tauon.app.ui.containers.session.pages.logviewer;
 
 import tauon.app.App;
 import tauon.app.services.SettingsService;
+import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.closabletabs.ClosableTabContent;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
@@ -188,18 +189,24 @@ public class LogContent extends JPanel implements ClosableTabContent {
             @Override
             public void search(String text) {
                 AtomicBoolean stopFlag = new AtomicBoolean(false);
-                holder.disableUi(stopFlag);
-                holder.executor.execute(() -> {
-                    try {
-                        RandomAccessFile searchIndex = LogContent.this.search(text, stopFlag);
-                        long len = searchIndex.length();
-                        SwingUtilities.invokeLater(() -> logSearchPanel.setResults(searchIndex, len));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        holder.enableUi();
-                    }
-                });
+                holder.submitSSHOperationStoppable(instance -> {
+                    RandomAccessFile searchIndex = LogContent.this.search(instance, text, stopFlag);
+                    long len = searchIndex.length();
+                    SwingUtilities.invokeLater(() -> logSearchPanel.setResults(searchIndex, len));
+                }, stopFlag);
+                
+//                holder.disableUi(stopFlag);
+//                holder.executor.execute(() -> {
+//                    try {
+//                        RandomAccessFile searchIndex = LogContent.this.search(text, stopFlag);
+//                        long len = searchIndex.length();
+//                        SwingUtilities.invokeLater(() -> logSearchPanel.setResults(searchIndex, len));
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    } finally {
+//                        holder.enableUi();
+//                    }
+//                });
             }
             
             @Override
@@ -234,47 +241,51 @@ public class LogContent extends JPanel implements ClosableTabContent {
     
     private void initPages() {
         AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.disableUi(stopFlag);
-        holder.executor.execute(() -> {
-            try {
-                if ((indexFile(true, stopFlag)) || (indexFile(false, stopFlag))) {
-                    this.totalLines = this.raf.length() / 16;
-                    System.out.println("Total lines: " + this.totalLines);
-                    if (this.totalLines > 0) {
-                        this.pageCount = (long) Math.ceil((double) totalLines / LINE_PER_PAGE);
-                        System.out.println("Number of pages: " + this.pageCount);
-                        if (this.currentPage > this.pageCount) {
-                            this.currentPage = this.pageCount;
-                        }
-                        String pageText = getPageText(this.currentPage, stopFlag);
-                        SwingUtilities.invokeLater(() -> {
-                            
-                            this.lblTotalPage.setText(String.format("/ %d ", this.pageCount));
-                            this.lblCurrentPage.setText((this.currentPage + 1) + "");
-                            
-                            LayoutUtilities.equalizeSize(this.lblTotalPage, this.lblCurrentPage);
-                            
-                            this.textArea.setText(pageText);
-                            if (pageText.length() > 0) {
-                                this.textArea.setCaretPosition(0);
-                            }
-                            
-                            gutter.setLineStart(1);
-                            
-                            this.revalidate();
-                            this.repaint();
-                        });
+        holder.submitSSHOperationStoppable(instance -> {
+            if ((indexFile(instance, true, stopFlag)) || (indexFile(instance, false, stopFlag))) {
+                this.totalLines = this.raf.length() / 16;
+                System.out.println("Total lines: " + this.totalLines);
+                if (this.totalLines > 0) {
+                    this.pageCount = (long) Math.ceil((double) totalLines / LINE_PER_PAGE);
+                    System.out.println("Number of pages: " + this.pageCount);
+                    if (this.currentPage > this.pageCount) {
+                        this.currentPage = this.pageCount;
                     }
+                    String pageText = getPageText(instance, this.currentPage, stopFlag);
+                    SwingUtilities.invokeLater(() -> {
+                        
+                        this.lblTotalPage.setText(String.format("/ %d ", this.pageCount));
+                        this.lblCurrentPage.setText((this.currentPage + 1) + "");
+                        
+                        LayoutUtilities.equalizeSize(this.lblTotalPage, this.lblCurrentPage);
+                        
+                        this.textArea.setText(pageText);
+                        if (pageText.length() > 0) {
+                            this.textArea.setCaretPosition(0);
+                        }
+                        
+                        gutter.setLineStart(1);
+                        
+                        this.revalidate();
+                        this.repaint();
+                    });
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                holder.enableUi();
             }
-        });
+        }, stopFlag);
+        
+//        holder.disableUi(stopFlag);
+//        holder.executor.execute(() -> {
+//            try {
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            } finally {
+//                holder.enableUi();
+//            }
+//        });
     }
     
-    private String getPageText(long page, AtomicBoolean stopFlag) throws Exception {
+    private String getPageText(TauonRemoteSessionInstance instance, long page, AtomicBoolean stopFlag) throws Exception {
         long lineStart = page * LINE_PER_PAGE;
         long lineEnd = lineStart + LINE_PER_PAGE - 1;
         
@@ -323,13 +334,13 @@ public class LogContent extends JPanel implements ClosableTabContent {
         System.out.println("Command: " + command);
         StringBuilder output = new StringBuilder();
         
-        if (holder.getRemoteSessionInstance().exec(command.toString(), stopFlag, output) == 0) {
+        if (instance.exec(command.toString(), stopFlag, output) == 0) {
             return output.toString();
         }
         return null;
     }
     
-    private boolean indexFile(boolean xz, AtomicBoolean stopFlag) {
+    private boolean indexFile(TauonRemoteSessionInstance instance, boolean xz, AtomicBoolean stopFlag) {
         try {
             File tempFile = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
             System.out.println("Temp file: " + tempFile);
@@ -337,7 +348,7 @@ public class LogContent extends JPanel implements ClosableTabContent {
                 String command = "LANG=C awk '{len=length($0); print len; }' \"" + remoteFile + "\" | " + (xz ? "xz" : "gzip") + " |cat";
                 System.out.println("Command: " + command);
                 
-                if (holder.getRemoteSessionInstance().execBin(command, stopFlag, outputStream, null) == 0) {
+                if (instance.execBin(command, stopFlag, outputStream, null) == 0) {
                     
                     try (InputStream inputStream = new FileInputStream(tempFile); InputStream gzIn = xz ? new XZInputStream(inputStream) : new GZIPInputStream(inputStream)) {
                         this.indexFile = createIndexFile(gzIn);
@@ -405,29 +416,32 @@ public class LogContent extends JPanel implements ClosableTabContent {
     
     public void loadPage(int line) {
         AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.disableUi(stopFlag);
-        holder.executor.execute(() -> {
-            try {
-                String pageText = getPageText(this.currentPage, stopFlag);
-                SwingUtilities.invokeLater(() -> {
-                    this.textArea.setText(pageText);
-                    if (pageText.length() > 0) {
-                        this.textArea.setCaretPosition(0);
-                    }
-                    this.lblCurrentPage.setText((this.currentPage + 1) + "");
-                    LayoutUtilities.equalizeSize(this.lblTotalPage, this.lblCurrentPage);
-                    if (line < textArea.getLineCount() && line != -1) {
-                        highlightLine(line);
-                    }
-                    long lineStart = this.currentPage * LINE_PER_PAGE;
-                    gutter.setLineStart(lineStart + 1);
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                holder.enableUi();
-            }
-        });
+        holder.submitSSHOperationStoppable(instance -> {
+            String pageText = getPageText(instance, this.currentPage, stopFlag);
+            SwingUtilities.invokeLater(() -> {
+                this.textArea.setText(pageText);
+                if (pageText.length() > 0) {
+                    this.textArea.setCaretPosition(0);
+                }
+                this.lblCurrentPage.setText((this.currentPage + 1) + "");
+                LayoutUtilities.equalizeSize(this.lblTotalPage, this.lblCurrentPage);
+                if (line < textArea.getLineCount() && line != -1) {
+                    highlightLine(line);
+                }
+                long lineStart = this.currentPage * LINE_PER_PAGE;
+                gutter.setLineStart(lineStart + 1);
+            });
+        }, stopFlag);
+//        holder.disableUi(stopFlag);
+//        holder.executor.execute(() -> {
+//            try {
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            } finally {
+//                holder.enableUi();
+//            }
+//        });
     }
     
     @Override
@@ -447,7 +461,7 @@ public class LogContent extends JPanel implements ClosableTabContent {
         return true;
     }
     
-    private RandomAccessFile search(String text, AtomicBoolean stopFlag) throws Exception {
+    private RandomAccessFile search(TauonRemoteSessionInstance instance, String text, AtomicBoolean stopFlag) throws Exception {
         byte[] longBytes = new byte[8];
         File tempFile = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
         StringBuilder command = new StringBuilder();
@@ -456,7 +470,7 @@ public class LogContent extends JPanel implements ClosableTabContent {
         try (OutputStream outputStream = new FileOutputStream(tempFile)) {
             
             File searchIndexes = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
-            if (holder.getRemoteSessionInstance().execBin(command.toString(), stopFlag, outputStream, null) == 0) {
+            if (instance.execBin(command.toString(), stopFlag, outputStream, null) == 0) {
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(tempFile))); OutputStream out = new FileOutputStream(searchIndexes); BufferedOutputStream bout = new BufferedOutputStream(out)) {
                     while (true) {
                         String line = br.readLine();

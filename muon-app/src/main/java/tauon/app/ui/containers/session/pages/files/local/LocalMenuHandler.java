@@ -6,7 +6,7 @@ import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.services.BookmarkManager;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import tauon.app.ui.containers.session.pages.files.view.FolderView;
+import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.util.misc.PathUtils;
 import tauon.app.util.misc.PlatformUtils;
 
@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static tauon.app.services.LanguageService.getBundle;
@@ -202,52 +203,79 @@ public class LocalMenuHandler {
     }
 
     private void renameAsync(String oldName, String newName, String baseFolder) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
+        fileBrowser.getHolder().submitLocalOperation(() -> {
             if (fileOperations.rename(oldName, newName)) {
                 fileBrowserView.render(baseFolder);
-            } else {
-                fileBrowser.enableUi();
             }
         });
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            if (fileOperations.rename(oldName, newName)) {
+//                fileBrowserView.render(baseFolder);
+//            } else {
+//                fileBrowser.enableUi();
+//            }
+//        });
     }
 
     private void delete(FileInfo[] selectedFiles) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
+        fileBrowser.getHolder().submitLocalOperation(() -> {
             for (FileInfo f : selectedFiles) {
                 try {
                     new LocalFileSystem().delete(f);
                 } catch (Exception e) {
+                    // TODO
                     e.printStackTrace();
                 }
             }
-            fileBrowser.enableUi();
         });
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            for (FileInfo f : selectedFiles) {
+//                try {
+//                    new LocalFileSystem().delete(f);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            fileBrowser.enableUi();
+//        });
     }
 
     private void newFile() {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
+        fileBrowser.getHolder().submitLocalOperation(() -> {
             String baseFolder = fileBrowserView.getCurrentDirectory();
             if (fileOperations.newFile(baseFolder)) {
                 fileBrowserView.render(baseFolder);
-            } else {
-                fileBrowser.enableUi();
             }
         });
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            String baseFolder = fileBrowserView.getCurrentDirectory();
+//            if (fileOperations.newFile(baseFolder)) {
+//                fileBrowserView.render(baseFolder);
+//            } else {
+//                fileBrowser.enableUi();
+//            }
+//        });
     }
 
     private void newFolder(String currentDirectory) {
-        fileBrowser.getHolder().executor.submit(() -> {
-            fileBrowser.disableUi();
+        fileBrowser.getHolder().submitLocalOperation(() -> {
             String baseFolder = currentDirectory;
             if (fileOperations.newFolder(baseFolder)) {
                 fileBrowserView.render(baseFolder);
-            } else {
-                fileBrowser.enableUi();
             }
         });
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            fileBrowser.disableUi();
+//            String baseFolder = currentDirectory;
+//            if (fileOperations.newFolder(baseFolder)) {
+//                fileBrowserView.render(baseFolder);
+//            } else {
+//                fileBrowser.enableUi();
+//            }
+//        });
     }
 
     private void addToFavourites() {

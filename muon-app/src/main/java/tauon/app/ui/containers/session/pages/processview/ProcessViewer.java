@@ -70,65 +70,80 @@ public class ProcessViewer extends Page {
         return getBundle().getString("processes");
     }
 
-    private void updateProcessList(AtomicBoolean stopFlag) {
-        try {
-            List<ProcessTableEntry> list = getProcessList(holder.getRemoteSessionInstance(), stopFlag);
-            SwingUtilities.invokeLater(() -> {
-                // update ui ps
-                processListPanel.setProcessList(list);
-            });
-        } catch (Exception e1) {
-            e1.printStackTrace();
-        }
+    private void updateProcessList(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws Exception {
+        List<ProcessTableEntry> list = getProcessList(instance, stopFlag);
+        SwingUtilities.invokeLater(() -> {
+            // update ui ps
+            processListPanel.setProcessList(list);
+        });
     }
 
     private void runCommand(String cmd, CommandMode mode) {
+        
         AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.disableUi(stopFlag);
+        
+//        holder.disableUi(stopFlag);
         switch (mode) {
             case KILL_AS_USER:
-                holder.executor.execute(() -> {
-                    try {
-                        if (holder.getRemoteSessionInstance().exec(cmd, stopFlag, new StringBuilder(),
-                                new StringBuilder()) != 0) {
-                            if (!holder.isSessionClosed()) {
-                                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
-                            }
-                        } else {
-                            updateProcessList(stopFlag);
-                        }
-                    } catch (Exception e) {
-                        // TODO handle exception
-                        e.printStackTrace();
-                    }
-                    holder.enableUi();
-                });
-
-                break;
-            case KILL_AS_ROOT:
-                holder.executor.execute(() -> {
-                    if (SudoUtils.runSudo(cmd, holder.getRemoteSessionInstance(),holder.getInfo().getPassword()) != 0) {
+                holder.submitSSHOperationStoppable(instance -> {
+                    if (instance.exec(cmd, stopFlag, new StringBuilder(),
+                            new StringBuilder()) != 0) {
                         if (!holder.isSessionClosed()) {
                             JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
                         }
                     } else {
-                        updateProcessList(stopFlag);
+                        updateProcessList(instance, stopFlag);
                     }
-                    holder.enableUi();
-                });
+                }, stopFlag);
+//                holder.executor.execute(() -> {
+//                    try {
+//                        if (holder.getRemoteSessionInstance().exec(cmd, stopFlag, new StringBuilder(),
+//                                new StringBuilder()) != 0) {
+//                            if (!holder.isSessionClosed()) {
+//                                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+//                            }
+//                        } else {
+//                            updateProcessList(stopFlag);
+//                        }
+//                    } catch (Exception e) {
+//                        // TODO handle exception
+//                        e.printStackTrace();
+//                    }
+//                    holder.enableUi();
+//                });
+
+                break;
+            case KILL_AS_ROOT:
+                holder.submitSSHOperationStoppable(instance -> {
+                    if (SudoUtils.runSudo(cmd, instance, holder.getInfo().getPassword()) != 0) {
+                        if (!holder.isSessionClosed()) {
+                            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                        }
+                    } else {
+                        updateProcessList(instance, stopFlag);
+                    }
+                }, stopFlag);
+//                holder.executor.execute(() -> {
+//                    if (SudoUtils.runSudo(cmd, holder.getRemoteSessionInstance(),holder.getInfo().getPassword()) != 0) {
+//                        if (!holder.isSessionClosed()) {
+//                            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+//                        }
+//                    } else {
+//                        updateProcessList(stopFlag);
+//                    }
+//                    holder.enableUi();
+//                });
 
                 break;
             case LIST_PROCESS:
-                holder.executor.execute(() -> {
-                    updateProcessList(stopFlag);
-                    holder.enableUi();
-                });
+                holder.submitSSHOperationStoppable(instance -> {
+                    updateProcessList(instance, stopFlag);
+                }, stopFlag);
                 break;
         }
     }
 
-    public List<ProcessTableEntry> getProcessList(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag)
-            throws Exception {
+    public List<ProcessTableEntry> getProcessList(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws Exception {
         StringBuilder out = new StringBuilder();
         StringBuilder err = new StringBuilder();
         int ret = instance.exec(ScriptLoader.loadShellScript("/scripts/ps.sh"),

@@ -2,10 +2,14 @@ package tauon.app.ui.containers.session.pages.files;
 
 import tauon.app.App;
 import tauon.app.services.SettingsService;
+import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ui.components.closabletabs.ClosableTabContent;
 import tauon.app.ui.components.closabletabs.ClosableTabbedPanel.TabTitle;
 import tauon.app.ui.containers.session.pages.files.view.*;
+import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
+import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
+import tauon.app.ui.containers.session.pages.files.view.folderview.FolderViewEventListener;
 import tauon.app.util.misc.LayoutUtilities;
 import tauon.app.util.misc.PathUtils;
 
@@ -14,6 +18,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.UUID;
 
 public abstract class AbstractFileBrowserView extends JPanel implements FolderViewEventListener, ClosableTabContent {
     private final NavigationHistory history;
@@ -27,7 +32,9 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
     protected TabTitle tabTitle;
 
     protected FileBrowser fileBrowser;
-
+    
+    private final UUID uuid = UUID.randomUUID();
+    
     public AbstractFileBrowserView(PanelOrientation orientation, FileBrowser fileBrowser) {
         super(new BorderLayout());
         this.fileBrowser = fileBrowser;
@@ -216,7 +223,7 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
         return this.overflowMenuHandler;
     }
 
-    public abstract FileSystem getFileSystem() throws Exception;
+    public abstract FileSystem getFileSystem();
 
     /**
      * @return the tabTitle
@@ -234,7 +241,15 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
     public FileBrowser getFileBrowser() {
         return this.fileBrowser;
     }
-
+    
+    public FileInfo[] getSelectedFiles(){
+        return folderView.getSelectedFiles();
+    }
+    
+    public UUID getUUID() {
+        return uuid;
+    }
+    
     public enum PanelOrientation {
         LEFT, RIGHT
     }

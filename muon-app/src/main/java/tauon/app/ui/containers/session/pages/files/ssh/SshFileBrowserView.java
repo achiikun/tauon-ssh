@@ -7,9 +7,10 @@ import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import tauon.app.ui.containers.session.pages.files.view.AddressBar;
+import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.view.DndTransferHandler;
 import tauon.app.ssh.filesystem.SshFileSystem;
@@ -33,8 +34,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         super(orientation, fileBrowser);
         this.menuHandler = new SshMenuHandler(fileBrowser, this);
         this.menuHandler.initMenuHandler(this.folderView);
-        this.transferHandler = new DndTransferHandler(this.folderView, this.fileBrowser.getInfo(), this,
-                DndTransferData.DndSourceType.SSH, this.fileBrowser);
+        this.transferHandler = new DndTransferHandler(this);
         this.folderView.setTransferHandler(transferHandler);
         this.folderView.setFolderViewTransferHandler(transferHandler);
         this.addressPopup = menuHandler.createAddressPopup();
@@ -93,13 +93,13 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         return path;
     }
 
-    private void renderDirectory(final String path, final boolean fromCache) throws Exception {
+    private void renderDirectory(SshFileSystem sshFileSystem, final String path, final boolean fromCache) throws IOException {
         List<FileInfo> list = null;
         if (fromCache) {
             list = this.fileBrowser.getSSHDirectoryCache().get(trimPath(path));
         }
         if (list == null) {
-            list = this.fileBrowser.getSSHFileSystem().list(path);
+            list = sshFileSystem.list(path);
             if (list != null) {
                 this.fileBrowser.getSSHDirectoryCache().put(trimPath(path), list);
             }
@@ -122,47 +122,54 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
     public void render(String path, boolean useCache) {
         System.out.println("Rendering: " + path + " caching: " + useCache);
         this.path = path;
-        fileBrowser.getHolder().executor.submit(() -> {
-            this.fileBrowser.disableUi();
-            try {
-                while (!fileBrowser.isCloseRequested()) {
-                    System.out.println("Listing files now ...");
-                    try {
-                        if (path == null) {
-                            SshFileSystem sshfs = this.fileBrowser.getSSHFileSystem();
-                            this.path = sshfs.getHome();
-                        }
-                        renderDirectory(this.path, useCache);
-                        break;
-                    } catch (OperationCancelledException e) {
-                        e.printStackTrace();
-
-                        break;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        if (this.fileBrowser.isSessionClosed()) {
-                            return;
-                        }
-                        System.out.println("Exception caught in sftp file browser: " + e.getMessage());
-
-                        // TODO i18n
-                        if (JOptionPane.showConfirmDialog(null,
-                                "Unable to connect to server " + this.fileBrowser.getInfo().getName() + " at "
-                                        + this.fileBrowser.getInfo().getHost()
-                                        + (e.getMessage() != null ? "\n\nReason: " + e.getMessage() : "\n")
-                                        + "\n\nDo you want to retry?") == JOptionPane.YES_OPTION) {
-                            
-                            this.fileBrowser.getHolder().reconnect();
-                            
-                            continue;
-                        }
-                        break;
-                    }
-                }
-            } finally {
-                this.fileBrowser.enableUi();
+        fileBrowser.getHolder().submitSSHOperation(instance -> {
+            if (path == null) {
+                SshFileSystem sshfs = this.fileBrowser.getSSHFileSystem();
+                this.path = sshfs.getHome();
             }
+            renderDirectory(instance.getSshFs(), this.path, useCache);
         });
+//        fileBrowser.getHolder().executor.submit(() -> {
+//            this.fileBrowser.disableUi();
+//            try {
+//                while (!fileBrowser.isCloseRequested()) {
+//                    System.out.println("Listing files now ...");
+//                    try {
+//                        if (path == null) {
+//                            SshFileSystem sshfs = this.fileBrowser.getSSHFileSystem();
+//                            this.path = sshfs.getHome();
+//                        }
+//                        renderDirectory(this.path, useCache);
+//                        break;
+//                    } catch (OperationCancelledException e) {
+//                        e.printStackTrace();
+//
+//                        break;
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                        if (this.fileBrowser.isSessionClosed()) {
+//                            return;
+//                        }
+//                        System.out.println("Exception caught in sftp file browser: " + e.getMessage());
+//
+//                        // TODO i18n
+//                        if (JOptionPane.showConfirmDialog(null,
+//                                "Unable to connect to server " + this.fileBrowser.getInfo().getName() + " at "
+//                                        + this.fileBrowser.getInfo().getHost()
+//                                        + (e.getMessage() != null ? "\n\nReason: " + e.getMessage() : "\n")
+//                                        + "\n\nDo you want to retry?") == JOptionPane.YES_OPTION) {
+//
+//                            this.fileBrowser.getHolder().ensureConnected();
+//
+//                            continue;
+//                        }
+//                        break;
+//                    }
+//                }
+//            } finally {
+//                this.fileBrowser.enableUi();
+//            }
+//        });
     }
 
     @Override
@@ -176,7 +183,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         FileInfo fileInfo = folderView.getSelectedFiles()[0];
         try {
             App.getExternalEditorHandler().openRemoteFile(fileInfo, fileBrowser.getSSHFileSystem(),
-                    fileBrowser.getActiveSessionId(), false, null);
+                    fileBrowser.getHolder(), false, null);
         } catch (IOException e1) {
             // TODO handle exception
             e1.printStackTrace();
@@ -216,33 +223,28 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
             return false;
         }
         try {
-            int sessionHashCode = transferData.getInfo();
-            System.out.println("Session hash code: " + sessionHashCode);
+            AbstractFileBrowserView source = transferData.getSource();
+            SessionContentPanel sessionHashCode;
+//            System.out.println("Session hash code: " + sessionHashCode);
             FileSystem sourceFs = null;
-            if (sessionHashCode == 0 && transferData.getSourceType() == DndTransferData.DndSourceType.LOCAL) {
+            if (source == null || source.getFileSystem().isLocal()) {
                 System.out.println("Source fs is local");
                 sourceFs = new LocalFileSystem();
-            } else if (transferData.getSourceType() == DndTransferData.DndSourceType.SSH
-                    && sessionHashCode == this.fileBrowser.getInfo().hashCode()) {
+            } else {
                 System.out.println("Source fs is remote");
                 sourceFs = this.fileBrowser.getSSHFileSystem();
             }
 
             if (sourceFs instanceof LocalFileSystem) {
                 System.out.println("Dropped: " + transferData);
-                FileBrowser.ResponseHolder holder = new FileBrowser.ResponseHolder();
-                if (!this.fileBrowser.selectTransferModeAndConflictAction(holder)) {
-                    return false;
-                }
-                if (holder.transferMode == Constants.TransferMode.BACKGROUND) {
-                    this.fileBrowser.getHolder().uploadInBackground(transferData.getFiles(), this.path,
-                            holder.conflictAction);
+                if (SettingsService.getSettings().getFileTransferMode() == Constants.TransferMode.BACKGROUND) {
+                    this.fileBrowser.uploadInBackground(transferData.getFiles(), this.path);
                     return true;
                 }
                 FileSystem targetFs = this.fileBrowser.getSSHFileSystem();
-                this.fileBrowser.newFileTransfer(sourceFs, targetFs, transferData.getFiles(), this.path,
-                        this.hashCode(), holder.conflictAction, null);
-            } else if (sourceFs instanceof SshFileSystem && (sourceFs == this.fileBrowser.getSSHFileSystem())) {
+                this.fileBrowser.newFileTransfer(sourceFs, targetFs, transferData.getFiles(), this.path);
+            } else if (sourceFs == this.fileBrowser.getSSHFileSystem()) {
+                // TODO implement this
                 System.out.println("SshFs is of same instance: " + (sourceFs == this.fileBrowser.getSSHFileSystem()));
                 if (transferData.getFiles().length > 0) {
                     FileInfo fileInfo = transferData.getFiles()[0];
@@ -266,10 +268,11 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
                 } else {
                     menuHandler.move(Arrays.asList(transferData.getFiles()), getCurrentDirectory());
                 }
-            } else if (sourceFs instanceof SshFileSystem
-                    && (transferData.getSourceType() == DndTransferData.DndSourceType.SFTP)) {
             }
-            System.out.println("12345: " + (sourceFs instanceof SshFileSystem) + " " + transferData.getSourceType());
+//            else if (sourceFs instanceof SshFileSystem
+//                    && (transferData.getSourceType() == DndTransferData.DndSourceType.SFTP)) {
+//            }
+//            System.out.println("12345: " + (sourceFs instanceof SshFileSystem) + " " + transferData.getSourceType());
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -277,13 +280,13 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         }
     }
 
-    public FileSystem getFileSystem() throws Exception {
+    public FileSystem getFileSystem() {
         return this.fileBrowser.getSSHFileSystem();
     }
 
-    public TauonRemoteSessionInstance getSshClient() throws Exception {
-        return this.fileBrowser.getSessionInstance();
-    }
+//    public TauonRemoteSessionInstance getSshClient() {
+//        return this.fileBrowser.getSessionInstance();
+//    }
 
     @Override
     public TransferHandler getTransferHandler() {
@@ -295,7 +298,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
     }
 
     public String getPathText() {
-        return (this.path == null || this.path.length() < 1 ? "" : this.path);
+        return (this.path == null || this.path.isEmpty() ? "" : this.path);
     }
 
 }

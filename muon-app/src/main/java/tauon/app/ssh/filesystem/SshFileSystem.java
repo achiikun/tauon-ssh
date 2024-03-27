@@ -4,6 +4,7 @@ import net.schmizz.sshj.sftp.*;
 import net.schmizz.sshj.sftp.FileMode.Type;
 import net.schmizz.sshj.xfer.FilePermission;
 import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.TauonSSHClient;
 import tauon.app.util.misc.PathUtils;
 
@@ -17,23 +18,20 @@ public class SshFileSystem implements FileSystem {
     
     public static final String PROTO_SFTP = "sftp";
     
-    private final TauonSSHClient ssh;
+    private final TauonRemoteSessionInstance ssh;
     private String home;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public SshFileSystem(TauonSSHClient ssh) {
+    public SshFileSystem(TauonRemoteSessionInstance ssh) {
         this.ssh = ssh;
     }
 
-    private SFTPClient ensureConnected() throws Exception {
-        if (closed.get()) {
-            throw new OperationCancelledException();
-        }
+    private SFTPClient ensureConnected() throws IOException {
         return ssh.getSftpClient();
     }
 
     @Override
-    public void delete(FileInfo f) throws Exception {
+    public void delete(FileInfo f) throws IOException {
         synchronized (this.ssh) {
             SFTPClient sftp = ensureConnected();
             try {
@@ -73,9 +71,8 @@ public class SshFileSystem implements FileSystem {
     }
 
     @Override
-    public List<FileInfo> list(String path) throws Exception {
+    public List<FileInfo> list(String path) throws IOException {
         synchronized (this.ssh) {
-            SFTPClient sftp = ensureConnected();
             return listFiles(path);
         }
     }
@@ -114,13 +111,13 @@ public class SshFileSystem implements FileSystem {
 
     }
 
-    private List<FileInfo> listFiles(String path) throws Exception {
+    private List<FileInfo> listFiles(String path) throws IOException{
         synchronized (this.ssh) {
             SFTPClient sftp = ensureConnected();
             System.out.println("Listing file: " + path);
             List<FileInfo> childs = new ArrayList<>();
             try {
-                if (path == null || path.length() < 1) {
+                if (path == null || path.isEmpty()) {
                     path = this.getHome();
                 }
                 List<RemoteResourceInfoWrapper> files = ls(path);
@@ -172,7 +169,7 @@ public class SshFileSystem implements FileSystem {
     }
 
     @Override
-    public String getHome() throws Exception {
+    public String getHome() throws IOException {
         System.out.println("Getting home directory... on " + Thread.currentThread().getName());
         if (home != null) {
             return home;
@@ -253,12 +250,13 @@ public class SshFileSystem implements FileSystem {
                 if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
                     throw new AccessDeniedException(path);
                 }
-            } catch (Exception e) {
-                if (ssh.isConnected()) {
-                    throw new FileNotFoundException(e.getMessage());
-                }
-                throw new Exception(e);
             }
+//            catch (Exception e) {
+//                if (ssh.isConnected()) {
+//                    throw new FileNotFoundException(e.getMessage());
+//                }
+//                throw new Exception(e);
+//            }
         }
     }
 
@@ -272,12 +270,13 @@ public class SshFileSystem implements FileSystem {
                 if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
                     throw new AccessDeniedException(oldName);
                 }
-            } catch (Exception e) {
-                if (ssh.isConnected()) {
-                    throw new FileNotFoundException(e.getMessage());
-                }
-                throw new Exception(e);
             }
+//            catch (Exception e) {
+//                if (ssh.isConnected()) {
+//                    throw new FileNotFoundException(e.getMessage());
+//                }
+//                throw new Exception(e);
+//            }
 
         }
     }
@@ -292,12 +291,13 @@ public class SshFileSystem implements FileSystem {
                 if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
                     throw new AccessDeniedException(path);
                 }
-            } catch (Exception e) {
-                if (ssh.isConnected()) {
-                    throw new FileNotFoundException(e.getMessage());
-                }
-                throw new Exception(e);
             }
+//            catch (Exception e) {
+//                if (ssh.isConnected()) {
+//                    throw new FileNotFoundException(e.getMessage());
+//                }
+//                throw new Exception(e);
+//            }
         }
     }
 
@@ -314,10 +314,11 @@ public class SshFileSystem implements FileSystem {
                 // If stat crashes, the file does not exist
                 sftp.stat(absPath);
                 return false;
-            } catch (Exception e) {
-                if (!ssh.isConnected()) {
-                    throw e;
-                }
+            }
+            catch (Exception e) {
+//                if (!ssh.isConnected()) {
+//                    throw e;
+//                }
             }
 
             System.out.println("Folder does not exists: " + absPath);

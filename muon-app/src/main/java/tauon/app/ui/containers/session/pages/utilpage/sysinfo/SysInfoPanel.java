@@ -31,19 +31,16 @@ public class SysInfoPanel extends UtilPageItemView {
     @Override
     protected void createUI() {
         textArea = new SkinnedTextArea();
-        textArea.setFont(new Font(
-                "Noto Mono"
-                , Font.PLAIN, 14));
+        textArea.setFont(new Font("Noto Mono", Font.PLAIN, 14));
         JScrollPane scrollPane = new SkinnedScrollPane(textArea);
         this.add(scrollPane);
 
         AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.disableUi(stopFlag);
-        holder.executor.submit(() -> {
-            try {
+//        holder.disableUi(stopFlag);
+        holder.submitSSHOperationStoppable(instance -> {
+//            try {
                 StringBuilder output = new StringBuilder();
-                int ret = holder
-                        .getRemoteSessionInstance().exec(
+                int ret = instance.exec(
                                 ScriptLoader.loadShellScript(
                                         "/scripts/linux-sysinfo.sh"),
                                 stopFlag, output);
@@ -53,12 +50,12 @@ public class SysInfoPanel extends UtilPageItemView {
                         textArea.setCaretPosition(0);
                     });
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                holder.enableUi();
-            }
-        });
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            } finally {
+//                holder.enableUi();
+//            }
+        }, stopFlag);
     }
 
     @Override

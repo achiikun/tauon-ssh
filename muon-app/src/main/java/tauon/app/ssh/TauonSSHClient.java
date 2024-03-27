@@ -202,14 +202,13 @@ public class TauonSSHClient {
         
     }
     
-    public synchronized SFTPClient getSftpClient() throws IOException, InterruptedException {
+    public synchronized SFTPClient getSftpClient() throws IOException {
         if (closed.get()) {
             throw new IOException("Closed by user");
         }
         
         if(!isConnected()){
-            if(!connect())
-                throw new IOException("Could not connect");
+            throw new IOException("Not connected");
         }
         
         if(sftp == null){
@@ -227,8 +226,7 @@ public class TauonSSHClient {
         }
         
         if(!isConnected()){
-            if(!connect())
-                throw new IOException("Could not connect");
+            throw new IOException("Not connected");
         }
         
         Session session = sshConnectedHop.sshj.startSession();

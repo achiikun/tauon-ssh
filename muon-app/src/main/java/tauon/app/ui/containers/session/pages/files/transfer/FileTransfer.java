@@ -1,11 +1,11 @@
 package tauon.app.ui.containers.session.pages.files.transfer;
 
 import tauon.app.services.SettingsService;
-import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.SSHRemoteFileInputStream;
 import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
 import tauon.app.ssh.filesystem.*;
 import tauon.app.ui.containers.main.FileTransferProgress;
+import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.Constants.ConflictAction;
 import tauon.app.util.misc.PathUtils;
@@ -31,7 +31,7 @@ public class FileTransfer implements AutoCloseable {
     private final FileInfo[] files;
     private final String targetFolder;
     private final AtomicBoolean stopFlag = new AtomicBoolean(false);
-    private final TauonRemoteSessionInstance instance;
+    private final SessionContentPanel instance;
     private long totalSize;
     private long processedBytes;
     private int processedFilesCount;
@@ -39,7 +39,7 @@ public class FileTransfer implements AutoCloseable {
     private Constants.ConflictAction conflictAction = ConflictAction.PROMPT; // 0 -> overwrite, 1 -> auto rename, 2
 
     public FileTransfer(FileSystem sourceFs, FileSystem targetFs, FileInfo[] files, String targetFolder,
-                        Constants.ConflictAction defaultConflictAction, TauonRemoteSessionInstance instance) {
+                        Constants.ConflictAction defaultConflictAction, SessionContentPanel instance) {
         this.sourceFs = sourceFs;
         this.targetFs = targetFs;
         this.files = files;
@@ -128,13 +128,16 @@ public class FileTransfer implements AutoCloseable {
                                         "Permission denied, do you want to copy files from the temporary folder to destination with sudo?",
                                         getBundle().getString("insufficient_permisions"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                             String command = "sh -c  \"cd '" + tmpDir + "'; cp -r * '" + this.targetFolder + "'\"";
-
-                            System.out.println("Invoke sudo: " + command);
-                            int ret = SudoUtils.runSudo(command, instance);
-                            if (ret == 0) {
-                                callback.done(this);
-                                return;
-                            }
+                            
+                            instance.runSSHOperation(instance2 -> {
+                                System.out.println("Invoke sudo: " + command);
+                                int ret = SudoUtils.runSudo(command, instance2);
+                                if (ret == 0) {
+                                    callback.done(this);
+                                }
+                            });
+                            return;
+                            
                         }
                     }
 
@@ -305,7 +308,19 @@ public class FileTransfer implements AutoCloseable {
     public FileSystem getTargetFs() {
         return targetFs;
     }
-
+    
+    public SessionContentPanel getSession() {
+        return instance;
+    }
+    
+    public boolean isUpload() {
+        return getSourceFs().isLocal() && !getTargetFs().isLocal();
+    }
+    
+    public boolean isDownload() {
+        return !getSourceFs().isLocal() && getTargetFs().isLocal();
+    }
+    
     static class FileInfoHolder {
         FileInfo info;
         String targetPath;

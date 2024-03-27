@@ -1,4 +1,4 @@
-package tauon.app.ui.containers.session.pages.files;
+package tauon.app.ui.containers.session.pages.files.view.addressbar;
 
 import tauon.app.ui.components.misc.SkinnedTextField;
 

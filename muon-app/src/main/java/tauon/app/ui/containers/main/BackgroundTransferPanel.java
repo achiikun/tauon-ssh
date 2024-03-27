@@ -1,9 +1,9 @@
 package tauon.app.ui.containers.main;
 
-import tauon.app.ui.containers.session.pages.files.transfer.BackgroundFileTransfer;
-import tauon.app.ui.containers.session.pages.files.transfer.FileTransfer;
 import tauon.app.App;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.ui.containers.session.SessionContentPanel;
+import tauon.app.ui.containers.session.pages.files.transfer.FileTransfer;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -33,7 +33,7 @@ public class BackgroundTransferPanel extends JPanel {
         add(jsp);
     }
     
-    public FileTransferProgress addNewBackgroundTransfer(BackgroundFileTransfer transfer) {
+    public FileTransferProgress addNewBackgroundTransfer(FileTransfer transfer) {
         TransferPanelItem item = new TransferPanelItem(transfer);
         item.setAlignmentX(Box.LEFT_ALIGNMENT);
         this.verticalBox.add(item);
@@ -42,7 +42,7 @@ public class BackgroundTransferPanel extends JPanel {
         return item;
     }
     
-    public void removePendingTransfers(int sessionId) {
+    public void removePendingTransfers(SessionContentPanel sessionId) {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
                 SwingUtilities.invokeAndWait(() -> stopSession(sessionId));
@@ -54,12 +54,12 @@ public class BackgroundTransferPanel extends JPanel {
         }
     }
     
-    private void stopSession(int sessionId) {
+    private void stopSession(SessionContentPanel sessionId) {
         for (int i = 0; i < this.verticalBox.getComponentCount(); i++) {
             Component c = this.verticalBox.getComponent(i);
             if (c instanceof TransferPanelItem) {
                 TransferPanelItem tpi = (TransferPanelItem) c;
-                if (tpi.fileTransfer.getSession().getActiveSessionId() == sessionId) {
+                if (tpi.fileTransfer.getSession() == sessionId) {
                     tpi.stop();
                 }
             }
@@ -67,12 +67,12 @@ public class BackgroundTransferPanel extends JPanel {
     }
     
     class TransferPanelItem extends JPanel implements FileTransferProgress {
-        private final BackgroundFileTransfer fileTransfer;
+        private final FileTransfer fileTransfer;
         private final JProgressBar progressBar;
         private final JLabel progressLabel;
 //        private Future<?> handle;
         
-        public TransferPanelItem(BackgroundFileTransfer transfer) {
+        public TransferPanelItem(FileTransfer transfer) {
             super(new BorderLayout());
             transferCount.incrementAndGet();
             callback.accept(transferCount.get());

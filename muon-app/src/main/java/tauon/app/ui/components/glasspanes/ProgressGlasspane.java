@@ -1,5 +1,8 @@
 package tauon.app.ui.components.glasspanes;
 
+import tauon.app.ui.containers.main.FileTransferProgress;
+import tauon.app.ui.containers.session.pages.files.transfer.FileTransfer;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -9,7 +12,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
 import java.util.function.Consumer;
 
-public class ProgressGlasspane extends JPanel {
+import static tauon.app.services.LanguageService.getBundle;
+
+public class ProgressGlasspane extends JPanel implements FileTransferProgress {
     private final JProgressBar prg;
     private final JButton stop;
     private int dragSource;
@@ -65,10 +70,6 @@ public class ProgressGlasspane extends JPanel {
         prg.setValue(0);
     }
 
-    public void setProgress(int prg) {
-        this.prg.setValue(prg);
-    }
-
     public int getSource() {
         return dragSource;
     }
@@ -96,16 +97,39 @@ public class ProgressGlasspane extends JPanel {
     }
 
     /**
-     * @return the stopCallback
-     */
-    public Consumer<Boolean> getStopCallback() {
-        return stopCallback;
-    }
-
-    /**
      * @param stopCallback the stopCallback to set
      */
-    public void setStopCallback(Consumer<Boolean> stopCallback) {
+    public FileTransferProgress show(Consumer<Boolean> stopCallback) {
         this.stopCallback = stopCallback;
+        clear();
+        setVisible(true);
+        return this;
     }
+    
+    @Override
+    public void init(long totalSize, long files, FileTransfer fileTransfer) {
+    
+    }
+    
+    @Override
+    public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount, FileTransfer fileTransfer) {
+        if (totalBytes == 0) {
+            this.prg.setValue(0);
+        } else {
+            this.prg.setValue((int) ((processedBytes * 100) / totalBytes));
+        }
+    }
+    
+    @Override
+    public void error(String cause, FileTransfer fileTransfer) {
+        setVisible(false);
+    }
+    
+    @Override
+    public void done(FileTransfer fileTransfer) {
+        setVisible(false);
+        fileTransfer.getSession().revalidate();
+        fileTransfer.getSession().repaint();
+    }
+    
 }

@@ -13,6 +13,10 @@ public interface FileSystem extends AutoCloseable {
 
     boolean isLocal();
 
+    default boolean isRemote(){
+        return !isLocal();
+    }
+    
     void rename(String oldName, String newName)
             throws Exception;
 

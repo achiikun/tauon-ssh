@@ -688,7 +688,7 @@ public class Settings {
         } else if (s.equalsIgnoreCase("prompt")) {
             fileTransferMode = Constants.TransferMode.NORMAL;
         } else {
-            fileTransferMode = Constants.TransferMode.BACKGROUND;
+            fileTransferMode = Constants.TransferMode.valueOf(s);
         }
     }
 

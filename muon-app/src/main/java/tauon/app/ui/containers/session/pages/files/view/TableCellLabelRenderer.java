@@ -3,6 +3,7 @@ package tauon.app.ui.containers.session.pages.files.view;
 import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
+import tauon.app.ui.containers.session.pages.files.view.folderview.FolderViewTableModel;
 import tauon.app.util.misc.FileIconUtil;
 import tauon.app.util.misc.FormatUtils;
 

@@ -111,7 +111,12 @@ public class ExternalEditorHandler extends JDialog {
         long totalBytes = 0L;
         for (FileModificationInfo info : files) {
             System.out.println("Total size: " + totalSize + " opcying: " + info);
-            totalBytes += saveRemoteFile(info, totalSize, totalBytes);
+            try {
+                totalBytes += saveRemoteFile(info, totalSize, totalBytes);
+            } catch (Exception e) {
+                // TODO log
+                e.printStackTrace();
+            }
         }
         fileWatcher.resumeWatching();
         System.out.println("Transfer complete");
@@ -126,42 +131,69 @@ public class ExternalEditorHandler extends JDialog {
      * @param totalBytes
      * @return
      */
-    private long saveRemoteFile(FileModificationInfo info, long total, long totalBytes) {
+    private Long saveRemoteFile(FileModificationInfo info, long total, long totalBytes) throws Exception {
         System.out.println("Init transfer...1");
-        SessionContentPanel scp = App.getSessionContainer(info.activeSessionId);
+        SessionContentPanel scp = info.activeSessionId;
         if (scp == null) {
             System.out.println("No session found");
             return info.remoteFile.getSize();
         }
 
         System.out.println("Init transfer...2");
-        try (OutputStream out = scp.getRemoteSessionInstance().getSshFs().outputTransferChannel()
-                .getOutputStream(info.remoteFile.getPath()); InputStream in = new FileInputStream(info.localFile)) {
-            int cap = 8192;
-            if (out instanceof SSHRemoteFileOutputStream) {
-                cap = ((SSHRemoteFileOutputStream) out).getBufferCapacity();
-            }
-            byte[] b = new byte[cap];
-            System.out.println("Init transfer...");
-            while (!this.stopFlag.get()) {
-                int x = in.read(b);
-                if (x == -1) {
-                    break;
+        scp.runSSHOperation(instance -> {
+            long totalBytes1 = totalBytes;
+            try (
+                    OutputStream out = instance.getSshFs().outputTransferChannel()
+                            .getOutputStream(info.remoteFile.getPath());
+                    InputStream in = new FileInputStream(info.localFile)
+            ) {
+                int cap = 8192;
+                if (out instanceof SSHRemoteFileOutputStream) {
+                    cap = ((SSHRemoteFileOutputStream) out).getBufferCapacity();
                 }
-                totalBytes += x;
-                out.write(b, 0, x);
-                final int progress = (int) ((totalBytes * 100) / total);
-                SwingUtilities.invokeLater(() -> {
-                    progressBar.setValue(progress);
-                });
+                byte[] b = new byte[cap];
+                System.out.println("Init transfer...");
+                while (!this.stopFlag.get()) {
+                    int x = in.read(b);
+                    if (x == -1) {
+                        break;
+                    }
+                    totalBytes1 += x;
+                    out.write(b, 0, x);
+                    final int progress = (int) ((totalBytes1 * 100) / total);
+                    SwingUtilities.invokeLater(() -> {
+                        progressBar.setValue(progress);
+                    });
+                }
             }
-        } catch (IOException e) {
-            // TODO handle exception
-            e.printStackTrace();
-        } catch (Exception e) {
-            // TODO handle exception
-            e.printStackTrace();
-        }
+        });
+//        try (OutputStream out = scp.getRemoteSessionInstance().getSshFs().outputTransferChannel()
+//                .getOutputStream(info.remoteFile.getPath()); InputStream in = new FileInputStream(info.localFile)) {
+//            int cap = 8192;
+//            if (out instanceof SSHRemoteFileOutputStream) {
+//                cap = ((SSHRemoteFileOutputStream) out).getBufferCapacity();
+//            }
+//            byte[] b = new byte[cap];
+//            System.out.println("Init transfer...");
+//            while (!this.stopFlag.get()) {
+//                int x = in.read(b);
+//                if (x == -1) {
+//                    break;
+//                }
+//                totalBytes += x;
+//                out.write(b, 0, x);
+//                final int progress = (int) ((totalBytes * 100) / total);
+//                SwingUtilities.invokeLater(() -> {
+//                    progressBar.setValue(progress);
+//                });
+//            }
+//        } catch (IOException e) {
+//            // TODO handle exception
+//            e.printStackTrace();
+//        } catch (Exception e) {
+//            // TODO handle exception
+//            e.printStackTrace();
+//        }
         return info.remoteFile.getSize();
     }
 
@@ -176,7 +208,7 @@ public class ExternalEditorHandler extends JDialog {
      * @param app             should open with specified app
      * @throws IOException
      */
-    public void openRemoteFile(FileInfo remoteFile, SshFileSystem remoteFs, int activeSessionId, boolean openWith,
+    public void openRemoteFile(FileInfo remoteFile, SshFileSystem remoteFs, SessionContentPanel activeSessionId, boolean openWith,
                                String app) throws IOException {
         this.fileWatcher.stopWatching();
         Path tempFolderPath = Files.createTempDirectory(UUID.randomUUID().toString());

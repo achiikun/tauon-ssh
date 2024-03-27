@@ -1,4 +1,4 @@
-package tauon.app.ui.containers.session.pages.files.view;
+package tauon.app.ui.containers.session.pages.files.view.folderview;
 
 
 import tauon.app.ssh.filesystem.FileInfo;

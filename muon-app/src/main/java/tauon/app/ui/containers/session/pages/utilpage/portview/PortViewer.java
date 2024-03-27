@@ -4,6 +4,7 @@
 package tauon.app.ui.containers.session.pages.utilpage.portview;
 
 import tauon.app.App;
+import tauon.app.exceptions.AlreadyFailedException;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.containers.session.SessionContentPanel;
@@ -181,17 +182,16 @@ public class PortViewer extends UtilPageItemView {
     private void getListingSockets() {
         String cmd = LSOF_COMMAND;
         AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.disableUi(stopFlag);
+//        holder.disableUi(stopFlag);
 
         boolean elevated = this.getUseSuperUser();
-        if (cmd != null) {
-            holder.executor.submit(() -> {
-                try {
+//        if (cmd != null) {
+            holder.submitSSHOperationStoppable(instance -> {
+//                try {
                     StringBuilder output = new StringBuilder();
                     if (elevated) {
                         try {
-                            if (SudoUtils.runSudoWithOutput(cmd,
-                                    holder.getRemoteSessionInstance(), output,
+                            if (SudoUtils.runSudoWithOutput(cmd,instance, output,
                                     new StringBuilder(),holder.getInfo().getPassword()) == 0) {
                                 java.util.List<SocketEntry> list = this
                                         .parseSocketList(output.toString());
@@ -199,37 +199,38 @@ public class PortViewer extends UtilPageItemView {
                                 return;
                             }
                         } catch (Exception ex) {
+                            // TODO LOG.error();
                             ex.printStackTrace();
-                        }
-                        if (!holder.isSessionClosed()) {
-                            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                            if (!holder.isSessionClosed()) {
+                                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                            }
+                            throw new AlreadyFailedException();
                         }
                     } else {
                         System.out.println("Command was: " + cmd);
                         try {
-                            if (holder.getRemoteSessionInstance().exec(cmd,
-                                    stopFlag, output) == 0) {
-                                System.out.println(
-                                        "Command was: " + cmd + " " + output);
-                                java.util.List<SocketEntry> list = this
-                                        .parseSocketList(output.toString());
+                            if (instance.exec(cmd, stopFlag, output) == 0) {
+                                System.out.println("Command was: " + cmd + " " + output);
+                                java.util.List<SocketEntry> list = this.parseSocketList(output.toString());
                                 SwingUtilities.invokeAndWait(() -> setSocketData(list));
                                 return;
                             }
                             System.out.println("Error: " + output);
                         } catch (Exception ex) {
+                            // TODO LOG.error();
                             ex.printStackTrace();
-                        }
-                        if (!holder.isSessionClosed()) {
-                            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                            if (!holder.isSessionClosed()) {
+                                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                            }
+                            throw new AlreadyFailedException();
                         }
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    holder.enableUi();
-                }
-            });
-        }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                } finally {
+//                    holder.enableUi();
+//                }
+            }, stopFlag);
+//        }
     }
 }

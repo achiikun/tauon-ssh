@@ -118,28 +118,32 @@ public class NetworkToolsPage extends UtilPageItemView {
 
     private void executeAsync(String cmd) {
         AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.disableUi(stopFlag);
-        holder.executor.submit(() -> {
+//        holder.disableUi(stopFlag);
+        holder.submitSSHOperationStoppable(instance -> {
             StringBuilder outText = new StringBuilder();
             try {
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                if (holder.getRemoteSessionInstance().execBin(cmd, stopFlag,
-                        bout, null) == 0) {
+                ByteArrayOutputStream berr = new ByteArrayOutputStream();
+                if (instance.execBin(cmd, stopFlag,
+                        bout, berr) == 0) {
                     outText.append(bout.toString(StandardCharsets.UTF_8)).append("\n");
                     System.out.println("Command stdout: " + outText);
                 } else {
+                    System.err.println(berr.toString(StandardCharsets.UTF_8));
                     JOptionPane.showMessageDialog(this,
                             getBundle().getString("executed_errors"));
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
+            }
+//            catch (Exception e) {
+//                e.printStackTrace();
+//            }
+            finally {
                 SwingUtilities.invokeLater(() -> {
                     this.txtOutput.setText(outText.toString());
                 });
-                holder.enableUi();
+//                holder.enableUi();
             }
-        });
+        }, stopFlag);
     }
 
     @Override
