@@ -33,6 +33,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
 import static tauon.app.services.LanguageService.getBundle;
@@ -64,11 +65,13 @@ public class AppWindow extends JFrame {
      */
     public AppWindow() throws IOException {
         super(APPLICATION_NAME);
+        
         try {
-            this.setIconImage(ImageIO.read(AppWindow.class.getResource("/muon.png")));
+            this.setIconImage(ImageIO.read(Objects.requireNonNull(AppWindow.class.getResource("/muon.png"))));
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.warn("Icon not loaded", e);
         }
+        
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         inputBlocker = new AppInputBlocker(this);
         
@@ -185,14 +188,7 @@ public class AppWindow extends JFrame {
         revalidate();
         repaint();
     }
-
-    /**
-     * @return the sessionListPanel
-     */
-    public SessionListPanel getSessionListPanel() {
-        return sessionListPanel;
-    }
-
+    
     /**
      * @param sessionContentPanel
      */
@@ -239,6 +235,7 @@ public class AppWindow extends JFrame {
         b1.add(Box.createHorizontalGlue());
 
         JLabel lblUpload = new JLabel();
+        lblUpload.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblUpload.setFont(App.skin.getIconFont().deriveFont(16.0f));
         lblUpload.setText(FontAwesomeContants.FA_CLOUD_UPLOAD);
         b1.add(lblUpload);
@@ -263,6 +260,8 @@ public class AppWindow extends JFrame {
         b1.add(Box.createRigidArea(new Dimension(10, 10)));
 
         JLabel lblDownload = new JLabel();
+        lblDownload.setBorder(null);
+        lblDownload.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblDownload.setFont(App.skin.getIconFont().deriveFont(16.0f));
         lblDownload.setText(FontAwesomeContants.FA_CLOUD_DOWNLOAD);
         b1.add(lblDownload);
@@ -276,7 +275,7 @@ public class AppWindow extends JFrame {
                 showPopup(downloadPanel, lblDownload);
             }
         });
-
+        
         lblDownloadCount.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -339,10 +338,10 @@ public class AppWindow extends JFrame {
     private void showPopup(Component panel, Component invoker) {
         popup.removeAll();
         popup.add(panel);
-        popup.setInvoker(bottomPanel);
 
         popup.show(bottomPanel, bottomPanel.getWidth() - popup.getPreferredSize().width,
                 -popup.getPreferredSize().height);
+        popup.setInvoker(invoker);
     }
 
     public void openSettings(SettingsPageName page) {
