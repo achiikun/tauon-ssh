@@ -146,7 +146,6 @@ public class SshFileSystem implements FileSystem {
                     }
                 }
             } catch (SFTPException e) {
-                e.printStackTrace();
                 if (e.getStatusCode() == Response.StatusCode.NO_SUCH_FILE
                         || e.getStatusCode() == Response.StatusCode.NO_SUCH_PATH) {
                     throw new FileNotFoundException(path);
@@ -156,7 +155,6 @@ public class SshFileSystem implements FileSystem {
                 }
                 throw new IOException(e);
             } catch (Exception e) {
-                e.printStackTrace();
                 throw new IOException(e);
             }
             return childs;

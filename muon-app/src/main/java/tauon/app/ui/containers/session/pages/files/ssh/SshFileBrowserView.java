@@ -21,6 +21,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -79,7 +80,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
     @Override
     public String toString() {
         return this.fileBrowser.getInfo().getName()
-                + (this.path == null || this.path.length() < 1 ? "" : " [" + this.path + "]");
+                + (this.path == null || this.path.isEmpty() ? "" : " [" + this.path + "]");
     }
 
     private String trimPath(String path) {
@@ -127,7 +128,13 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
                 SshFileSystem sshfs = this.fileBrowser.getSSHFileSystem();
                 this.path = sshfs.getHome();
             }
-            renderDirectory(instance.getSshFs(), this.path, useCache);
+            try {
+                renderDirectory(instance.getSshFs(), this.path, useCache);
+            }catch (FileNotFoundException e){
+                SshFileSystem sshfs = this.fileBrowser.getSSHFileSystem();
+                this.path = sshfs.getHome();
+                renderDirectory(instance.getSshFs(), this.path, useCache);
+            }
         });
 //        fileBrowser.getHolder().executor.submit(() -> {
 //            this.fileBrowser.disableUi();
