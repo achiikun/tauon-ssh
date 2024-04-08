@@ -5,8 +5,8 @@ import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
-import tauon.app.ui.containers.session.pages.files.view.DndTransferHandler;
-import tauon.app.ui.containers.session.pages.files.view.TableCellLabelRenderer;
+import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
+import tauon.app.ui.components.misc.TableCellLabelRenderer;
 
 import javax.swing.*;
 import javax.swing.RowSorter.SortKey;

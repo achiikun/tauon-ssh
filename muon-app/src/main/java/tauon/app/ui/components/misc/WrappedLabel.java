@@ -1,4 +1,4 @@
-package tauon.app.ui.containers.session.pages.files.view;
+package tauon.app.ui.components.misc;
 
 import javax.swing.*;
 import java.awt.*;

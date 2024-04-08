@@ -2,7 +2,7 @@ package tauon.app.ui.containers.session.pages.files.view.folderview;
 
 import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
-import tauon.app.ui.containers.session.pages.files.view.WrappedLabel;
+import tauon.app.ui.components.misc.WrappedLabel;
 import tauon.app.util.misc.FileIconUtil;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 

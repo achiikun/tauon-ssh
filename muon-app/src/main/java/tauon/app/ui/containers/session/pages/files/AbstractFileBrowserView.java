@@ -6,6 +6,7 @@ import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ui.components.closabletabs.ClosableTabContent;
 import tauon.app.ui.components.closabletabs.ClosableTabbedPanel.TabTitle;
+import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.view.*;
 import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
