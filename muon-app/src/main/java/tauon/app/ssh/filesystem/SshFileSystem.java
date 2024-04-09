@@ -4,8 +4,8 @@ import net.schmizz.sshj.sftp.*;
 import net.schmizz.sshj.sftp.FileMode.Type;
 import net.schmizz.sshj.xfer.FilePermission;
 import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.ssh.TauonRemoteSessionInstance;
-import tauon.app.ssh.TauonSSHClient;
 import tauon.app.util.misc.PathUtils;
 
 import java.io.*;
@@ -26,16 +26,17 @@ public class SshFileSystem implements FileSystem {
         this.ssh = ssh;
     }
 
-    private SFTPClient ensureConnected() throws IOException {
+    private SFTPClient getConnectedSftpClient() throws IOException, OperationCancelledException, InterruptedException, SessionClosedException {
+        ssh.ensureConnected();
         return ssh.getSftpClient();
     }
 
     @Override
-    public void delete(FileInfo f) throws IOException {
+    public void delete(FileInfo f) throws IOException, OperationCancelledException, InterruptedException, SessionClosedException {
         synchronized (this.ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             try {
-                if (f.getType() == FileType.Directory) {
+                if (f.getType() == FileType.DIR) {
                     List<FileInfo> list = list(f.getPath());
                     if (list != null && !list.isEmpty()) {
                         for (FileInfo fc : list) {
@@ -58,7 +59,7 @@ public class SshFileSystem implements FileSystem {
     @Override
     public void chmod(int perm, String path) throws Exception {
         synchronized (this.ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             try {
                 sftp.chmod(path, perm);
             } catch (SFTPException e) {
@@ -71,7 +72,7 @@ public class SshFileSystem implements FileSystem {
     }
 
     @Override
-    public List<FileInfo> list(String path) throws IOException {
+    public List<FileInfo> list(String path) throws IOException, OperationCancelledException, InterruptedException, SessionClosedException {
         synchronized (this.ssh) {
             return listFiles(path);
         }
@@ -90,7 +91,7 @@ public class SshFileSystem implements FileSystem {
                 if (attrs.getType() != Type.SYMLINK) {
                     return new FileInfo(name, pathToResolve,
                             (attrs.getType() == Type.DIRECTORY ? -1 : attrs.getSize()),
-                            attrs.getType() == Type.DIRECTORY ? FileType.DirLink : FileType.FileLink,
+                            attrs.getType() == Type.DIRECTORY ? FileType.DIR_LINK : FileType.FILE_LINK,
                             attrs.getMtime() * 1000, FilePermission.toMask(attrs.getPermissions()), PROTO_SFTP,
                             getPermissionStr(attrs.getPermissions()), attrs.getAtime(), longName, name.startsWith("."));
                 }
@@ -99,7 +100,7 @@ public class SshFileSystem implements FileSystem {
             if (e.getStatusCode() == Response.StatusCode.NO_SUCH_FILE
                     || e.getStatusCode() == Response.StatusCode.NO_SUCH_PATH
                     || e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
-                return new FileInfo(name, pathToResolve, 0, FileType.FileLink, attrs.getMtime() * 1000,
+                return new FileInfo(name, pathToResolve, 0, FileType.FILE_LINK, attrs.getMtime() * 1000,
                         FilePermission.toMask(attrs.getPermissions()), PROTO_SFTP,
                         getPermissionStr(attrs.getPermissions()), attrs.getAtime(), longName, name.startsWith("."));
             }
@@ -111,9 +112,9 @@ public class SshFileSystem implements FileSystem {
 
     }
 
-    private List<FileInfo> listFiles(String path) throws IOException{
+    private List<FileInfo> listFiles(String path) throws IOException, OperationCancelledException, InterruptedException, SessionClosedException {
         synchronized (this.ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             System.out.println("Listing file: " + path);
             List<FileInfo> childs = new ArrayList<>();
             try {
@@ -137,7 +138,7 @@ public class SshFileSystem implements FileSystem {
                         } else {
                             FileInfo e = new FileInfo(ent.getName(), ent.getPath(),
                                     (ent.isDirectory() ? -1 : attrs.getSize()),
-                                    ent.isDirectory() ? FileType.Directory : FileType.File, attrs.getMtime() * 1000,
+                                    ent.isDirectory() ? FileType.DIR : FileType.FILE, attrs.getMtime() * 1000,
                                     FilePermission.toMask(attrs.getPermissions()), PROTO_SFTP,
                                     getPermissionStr(attrs.getPermissions()), attrs.getAtime(), longName,
                                     ent.getName().startsWith("."));
@@ -167,7 +168,7 @@ public class SshFileSystem implements FileSystem {
     }
 
     @Override
-    public String getHome() throws IOException {
+    public String getHome() throws IOException, OperationCancelledException, InterruptedException, SessionClosedException {
         System.out.println("Getting home directory... on " + Thread.currentThread().getName());
         if (home != null) {
             return home;
@@ -175,7 +176,7 @@ public class SshFileSystem implements FileSystem {
 
         synchronized (ssh) {
             System.out.println("Getting home directory");
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             this.home = sftp.canonicalize("");
             return this.home;
         }
@@ -195,7 +196,7 @@ public class SshFileSystem implements FileSystem {
     @Override
     public FileInfo getInfo(String path) throws Exception {
         synchronized (ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             try {
                 FileAttributes attrs = sftp.stat(path);
                 if (attrs.getType() == Type.SYMLINK) {
@@ -203,7 +204,7 @@ public class SshFileSystem implements FileSystem {
                 } else {
                     String name = PathUtils.getFileName(path);
                     return new FileInfo(name, path, (attrs.getType() == Type.DIRECTORY ? -1 : attrs.getSize()),
-                            attrs.getType() == Type.DIRECTORY ? FileType.Directory : FileType.File,
+                            attrs.getType() == Type.DIRECTORY ? FileType.DIR : FileType.FILE,
                             attrs.getMtime() * 1000, FilePermission.toMask(attrs.getPermissions()), PROTO_SFTP,
                             getPermissionStr(attrs.getPermissions()), attrs.getAtime(), null, name.startsWith("."));
                 }
@@ -220,7 +221,7 @@ public class SshFileSystem implements FileSystem {
     @Override
     public void createLink(String src, String dst, boolean hardLink) throws Exception {
         synchronized (ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             if (hardLink) {
                 throw new IOException("Not implemented");
                 // sftp..hardlink(src, dst);
@@ -233,7 +234,7 @@ public class SshFileSystem implements FileSystem {
     @Override
     public void deleteFile(String f) throws Exception {
         synchronized (ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             sftp.rm(f);
         }
     }
@@ -241,7 +242,7 @@ public class SshFileSystem implements FileSystem {
     @Override
     public void createFile(String path) throws Exception {
         synchronized (ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             try {
                 sftp.open(path, EnumSet.of(OpenMode.APPEND, OpenMode.CREAT)).close();
             } catch (SFTPException e) {
@@ -262,7 +263,7 @@ public class SshFileSystem implements FileSystem {
     public void rename(String oldName, String newName) throws Exception {
         synchronized (ssh) {
             try {
-                SFTPClient sftp = ensureConnected();
+                SFTPClient sftp = getConnectedSftpClient();
                 sftp.rename(oldName, newName);
             } catch (SFTPException e) {
                 if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
@@ -282,7 +283,7 @@ public class SshFileSystem implements FileSystem {
     @Override
     public void mkdir(String path) throws Exception {
         synchronized (ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             try {
                 sftp.mkdir(path);
             } catch (SFTPException e) {
@@ -302,7 +303,7 @@ public class SshFileSystem implements FileSystem {
     @Override
     public boolean mkdirs(String absPath) throws Exception {
         synchronized (ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             System.out.println("mkdirs: " + absPath);
             if (absPath.equals("/")) {
                 return true;
@@ -335,7 +336,7 @@ public class SshFileSystem implements FileSystem {
     public long getAllFiles(String dir, String baseDir, Map<String, String> fileMap, Map<String, String> folderMap)
             throws Exception {
         synchronized (ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             long size = 0;
             System.out.println("get files: " + dir);
             String parentFolder = PathUtils.combine(baseDir, PathUtils.getFileName(dir), File.separator);
@@ -344,7 +345,7 @@ public class SshFileSystem implements FileSystem {
 
             List<FileInfo> list = list(dir);
             for (FileInfo f : list) {
-                if (f.getType() == FileType.Directory) {
+                if (f.getType() == FileType.DIR) {
                     folderMap.put(f.getPath(), PathUtils.combine(parentFolder, f.getName(), File.separator));
                     size += getAllFiles(f.getPath(), parentFolder, fileMap, folderMap);
                 } else {
@@ -370,7 +371,7 @@ public class SshFileSystem implements FileSystem {
 
     public InputTransferChannel inputTransferChannel() throws Exception {
         synchronized (ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             try {
                 return new InputTransferChannel() {
                     @Override
@@ -402,7 +403,7 @@ public class SshFileSystem implements FileSystem {
     public OutputTransferChannel outputTransferChannel() throws Exception {
         System.out.println("Create OutputTransferChannel");
         synchronized (ssh) {
-            SFTPClient sftp = ensureConnected();
+            SFTPClient sftp = getConnectedSftpClient();
             try {
                 return new OutputTransferChannel() {
                     @Override
@@ -443,7 +444,7 @@ public class SshFileSystem implements FileSystem {
     }
 
     private List<RemoteResourceInfoWrapper> ls(String path) throws Exception {
-        final SFTPEngine requester = ensureConnected().getSFTPEngine();
+        final SFTPEngine requester = getConnectedSftpClient().getSFTPEngine();
         final byte[] handle = requester
                 .request(requester.newRequest(PacketType.OPENDIR).putString(path,
                         requester.getSubsystem().getRemoteCharset()))

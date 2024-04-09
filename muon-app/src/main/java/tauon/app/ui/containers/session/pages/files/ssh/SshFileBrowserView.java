@@ -1,6 +1,8 @@
 package tauon.app.ui.containers.session.pages.files.ssh;
 
 import tauon.app.App;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
@@ -92,7 +94,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         return path;
     }
 
-    private void renderDirectory(SshFileSystem sshFileSystem, final String path, final boolean fromCache) throws IOException {
+    private void renderDirectory(SshFileSystem sshFileSystem, final String path, final boolean fromCache) throws IOException, OperationCancelledException, InterruptedException, SessionClosedException {
         List<FileInfo> list = null;
         if (fromCache) {
             list = this.fileBrowser.getSSHDirectoryCache().get(trimPath(path));
@@ -128,7 +130,9 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
             }
             try {
                 renderDirectory(instance.getSshFs(), this.path, useCache);
-            }catch (FileNotFoundException e){
+            } catch (OperationCancelledException e){
+                // Do nothing
+            } catch (FileNotFoundException e){
                 SshFileSystem sshfs = this.fileBrowser.getSSHFileSystem();
                 this.path = sshfs.getHome();
                 renderDirectory(instance.getSshFs(), this.path, useCache);

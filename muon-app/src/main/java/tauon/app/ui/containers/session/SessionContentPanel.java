@@ -3,6 +3,7 @@
  */
 package tauon.app.ui.containers.session;
 
+import com.intellij.util.ui.UIUtil;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
@@ -163,65 +164,6 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         return appWindow;
     }
     
-    public void ensureConnected() throws OperationCancelledException, SessionClosedException, InterruptedException {
-        
-        if(!remoteSessionInstance.isConnected()){
-        
-            while(!remoteSessionInstance.connect()){
-                // Ask user
-                
-                // TODO i18n
-                if (JOptionPane.showConfirmDialog(null,
-                        "Unable to connect to server " + this.fileBrowser.getInfo().getName() + " at "
-                                + this.fileBrowser.getInfo().getHost()
-//                                    + (e.getMessage() != null ? "\n\nReason: " + e.getMessage() : "\n")
-                                + "\n\nDo you want to retry?") != JOptionPane.YES_OPTION) {
-                    
-                    throw new OperationCancelledException();
-                }
-                
-            }
-        
-        }
-        
-        // If the main remote session is reconnected (the cached sessions must be also, because the failure
-        // has been produced in the connection itself)
-//        try {
-//            this.remoteSessionInstance.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        try {
-//            this.cachedSessions.forEach((r) -> {
-//                try {
-//                    r.close();
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e); // TODO
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            });
-//        } catch (Exception e2) {
-//            e2.printStackTrace();
-//        }
-//        cachedSessions.clear();
-//
-//        try {
-//            this.remoteSessionInstance.close();
-//        } catch (InterruptedException | IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        this.remoteSessionInstance = new TauonRemoteSessionInstance(info, this, new MyPasswordFinder(), true);
-//
-//        try {
-//            this.remoteSessionInstance.connect();
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-        
-    }
-
     @Override
     public void showPage(String pageId) {
         TabbedPage selectedPage = null;
@@ -308,7 +250,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     public Session openSession() throws Exception {
-        ensureConnected();
+        remoteSessionInstance.ensureConnected();
         return remoteSessionInstance.openSession();
     }
     
@@ -381,13 +323,24 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     @Override
+    public boolean promptReconnect(String name, String host) {
+        // TODO i18n
+        return JOptionPane.showConfirmDialog(appWindow,
+                "Unable to connect to server " + name + " at "
+                        + host
+//                                    + (e.getMessage() != null ? "\n\nReason: " + e.getMessage() : "\n")
+                        + "\n\nDo you want to retry?") != JOptionPane.YES_OPTION;
+    }
+    
+    @Override
     public char[] promptPassword(HopEntry info, String user, AtomicBoolean rememberPassword, boolean isRetrying) {
         JPasswordField passwordField = new JPasswordField(30);
         int ret;
         if(rememberPassword != null) {
             JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("remember_password"));
+            // TODO i18n
             ret = JOptionPane.showOptionDialog(
-                    null,
+                    appWindow,
                     new Object[]{
                             "Type the password for user '" + user + "'",
                             passwordField,
@@ -402,8 +355,9 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
             );
             rememberPassword.set(rememberCheckBox.isSelected());
         }else{
+            // TODO i18n
             ret = JOptionPane.showOptionDialog(
-                    null,
+                    appWindow,
                     new Object[]{
                             "Type the password for user '" + user + "'",
                             passwordField
@@ -445,17 +399,34 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         JTextField txtUser = new SkinnedTextField(30);
         JCheckBox chkCacheUser = new JCheckBox(getBundle().getString("remember_username"));
         // TODO i18n
-        int ret = JOptionPane.showOptionDialog(null, new Object[]{"User name", txtUser, chkCacheUser}, getBundle().getString("user"),
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
-        if (ret == JOptionPane.OK_OPTION) {
-            String user = txtUser.getText();
-            if (chkCacheUser.isSelected()) {
-                remember.set(true);
+        try {
+            int ret = UIUtil.invokeAndWaitIfNeeded(() ->
+                    JOptionPane.showOptionDialog(
+                            appWindow,
+                            new Object[]{"User name", txtUser, chkCacheUser},
+                            getBundle().getString("user"),
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            null,
+                            null
+                    )
+            );
+            
+            if (ret == JOptionPane.OK_OPTION) {
+                String user = txtUser.getText();
+                if (chkCacheUser.isSelected()) {
+                    remember.set(true);
+                }
+                return user;
             }
-            return user;
+            
+            return null;
+            
+        } catch (InterruptedException | InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
         
-        return null;
     }
     
     public UUID getUUID() {
@@ -463,7 +434,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     public void runSSHOperation(SSHOperator consumer) throws Exception {
-        ensureConnected();
+        remoteSessionInstance.ensureConnected();
         try {
             consumer.operate(remoteSessionInstance);
         }catch (OperationCancelledException | AlreadyFailedException ignored){
@@ -472,8 +443,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     public <R> R runSSHOperation(SSHOperatorRet<R> consumer, R defaultIfFailedOrCancelled) throws Exception {
-        
-        ensureConnected();
+        remoteSessionInstance.ensureConnected();
         try {
             return consumer.operate(remoteSessionInstance);
         }catch (OperationCancelledException | AlreadyFailedException ignored){
@@ -484,7 +454,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     public void submitSSHOperation(SSHOperator consumer) {
         executor.submit(() -> {
             try {
-                ensureConnected();
+                remoteSessionInstance.ensureConnected();
                 disableUi();
                 try {
                     consumer.operate(remoteSessionInstance);
@@ -504,7 +474,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     public void submitSSHOperationStoppable(SSHOperator consumer, AtomicBoolean stopFlag) {
         executor.submit(() -> {
             try {
-                ensureConnected();
+                remoteSessionInstance.ensureConnected();
                 disableUi(stopFlag);
                 try {
                     consumer.operate(remoteSessionInstance);
@@ -542,16 +512,10 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         
         @Override
         public char[] reqPassword(Resource<?> resource) {
-            if(SwingUtilities.isEventDispatchThread()){
-                return showReqPasswordDialog(resource);
-            }else{
-                AtomicReference<char[]> ret = new AtomicReference<>();
-                try {
-                    SwingUtilities.invokeAndWait(() -> ret.set(showReqPasswordDialog(resource)));
-                } catch (InterruptedException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
-                }
-                return ret.get();
+            try {
+                return UIUtil.invokeAndWaitIfNeeded(this::showReqPasswordDialog, resource);
+            } catch (InterruptedException | InvocationTargetException e) {
+                throw new RuntimeException(e);
             }
         }
         

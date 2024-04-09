@@ -81,7 +81,7 @@ public class FileTransfer implements AutoCloseable {
                 }
             }
 
-            if (file.getType() == FileType.Directory || file.getType() == FileType.DirLink) {
+            if (file.getType() == FileType.DIR || file.getType() == FileType.DIR_LINK) {
                 fileList.addAll(createFileList(file, targetFolder, proposedName));
             } else {
                 fileList.add(new FileInfoHolder(file, targetFolder, proposedName));
@@ -168,9 +168,9 @@ public class FileTransfer implements AutoCloseable {
             if (stopFlag.get()) {
                 throw new Exception("Interrupted");
             }
-            if (file.getType() == FileType.Directory) {
+            if (file.getType() == FileType.DIR) {
                 fileInfoHolders.addAll(createFileList(file, folderTarget, null));
-            } else if (file.getType() == FileType.File) {
+            } else if (file.getType() == FileType.FILE) {
                 fileInfoHolders.add(new FileInfoHolder(file, folderTarget, null));
                 totalSize += file.getSize();
             }

@@ -23,7 +23,7 @@ public class FileIconUtil {
     private static final String PATTERN_FILE_WORD_EXTENSION = ".*(\\.doc|\\.docx)$";
 
     public static String getIconForType(FileInfo ent) {
-        if (ent.getType() == FileType.Directory || ent.getType() == FileType.DirLink) {
+        if (ent.getType() == FileType.DIR || ent.getType() == FileType.DIR_LINK) {
             return FontAwesomeContants.FA_FOLDER;
         }
         String name = ent.getName().toLowerCase(Locale.ENGLISH);

@@ -66,6 +66,11 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
                     LOG.debug("Error while creating monitor: ", e1);
                     return;
                 }
+            }else{
+                // Download file to a temporary folder
+                // Return that file in getTransferData()
+                // Only move supported, linux will move the whole file until the temporary one is closed.
+                // In case of copy, linux will only copy the bytes already downloaded, not the whole file.
             }
         }
 
@@ -222,7 +227,7 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
                             e.printStackTrace();
                         }
                         FileInfo finfo = new FileInfo(file.getName(), file.getAbsolutePath(), file.length(),
-                                file.isDirectory() ? FileType.Directory : FileType.File, file.lastModified(), -1,
+                                file.isDirectory() ? FileType.DIR : FileType.FILE, file.lastModified(), -1,
                                 LocalFileSystem.PROTO_LOCAL_FILE, "",
                                 attrs != null ? attrs.creationTime().toMillis() : file.lastModified(), "",
                                 file.isHidden());

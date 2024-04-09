@@ -112,26 +112,23 @@ public class BackgroundTransferPanel extends JPanel {
         
         @Override
         public void init(long totalSize, long files, FileTransfer fileTransfer) {
-            SwingUtilities.invokeLater(() -> {
                 progressLabel.setText(
                         String.format("Copying %s to %s", fileTransfer.getSourceName(), fileTransfer.getTargetName()));
                 progressBar.setValue(0);
-            });
         }
         
         @Override
         public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount,
                              FileTransfer fileTransfer) {
-            SwingUtilities.invokeLater(() ->
-                    progressBar.setValue(totalBytes > 0 ? ((int) ((processedBytes * 100) / totalBytes)) : 0));
+                    progressBar.setValue(totalBytes > 0 ? ((int) ((processedBytes * 100) / totalBytes)) : 0);
         }
         
         @Override
         public void error(String cause, FileTransfer fileTransfer) {
             transferCount.decrementAndGet();
             callback.accept(transferCount.get());
-            SwingUtilities.invokeLater(() -> progressLabel.setText(String.format("Error while copying from %s to %s", fileTransfer.getSourceName(),
-                    fileTransfer.getTargetName())));
+                    progressLabel.setText(String.format("Error while copying from %s to %s", fileTransfer.getSourceName(),
+                    fileTransfer.getTargetName()));
         }
         
         @Override
@@ -139,11 +136,9 @@ public class BackgroundTransferPanel extends JPanel {
             transferCount.decrementAndGet();
             callback.accept(transferCount.get());
             System.out.println("done transfer");
-            SwingUtilities.invokeLater(() -> {
                 BackgroundTransferPanel.this.verticalBox.remove(this);
                 BackgroundTransferPanel.this.revalidate();
                 BackgroundTransferPanel.this.repaint();
-            });
         }
     }
 }

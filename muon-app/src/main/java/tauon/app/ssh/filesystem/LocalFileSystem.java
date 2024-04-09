@@ -37,8 +37,8 @@ public class LocalFileSystem implements FileSystem {
         BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
         
         FileType type = Files.isSymbolicLink(p) ?
-                (f.isDirectory() ? FileType.DirLink : FileType.FileLink) :
-                (f.isDirectory() ? FileType.Directory : FileType.File);
+                (f.isDirectory() ? FileType.DIR_LINK : FileType.FILE_LINK) :
+                (f.isDirectory() ? FileType.DIR : FileType.FILE);
         
         return new FileInfo(f.getName(), f.getAbsolutePath(), f.length(),
                 type, f.lastModified(), -1, PROTO_LOCAL_FILE,
@@ -97,7 +97,7 @@ public class LocalFileSystem implements FileSystem {
     }
 
     public synchronized void delete(FileInfo f) throws Exception {
-        if (f.getType() == FileType.Directory) {
+        if (f.getType() == FileType.DIR) {
             List<FileInfo> list = list(f.getPath());
             if (list != null && list.size() > 0) {
                 for (FileInfo fc : list) {
@@ -141,7 +141,7 @@ public class LocalFileSystem implements FileSystem {
 
         List<FileInfo> list = list(dir);
         for (FileInfo f : list) {
-            if (f.getType() == FileType.Directory) {
+            if (f.getType() == FileType.DIR) {
                 folderMap.put(f.getPath(), PathUtils.combineUnix(parentFolder, f.getName()));
                 size += getAllFiles(f.getPath(), parentFolder, fileMap, folderMap);
             } else {

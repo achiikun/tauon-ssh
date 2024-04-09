@@ -229,8 +229,8 @@ public class PropertiesDialog extends JDialog {
         this.details = new FileInfo[1];
         this.details[0] = details;
         System.out.println("Extra: " + details.getExtra());
-        btnCalculate2.setEnabled(details.getType() == FileType.Directory
-                || details.getType() == FileType.DirLink);
+        btnCalculate2.setEnabled(details.getType() == FileType.DIR
+                || details.getType() == FileType.DIR_LINK);
         this.permissions = details.getPermission();
         if (this.pattern != null && details.getExtra() != null
                 && details.getExtra().length() > 0) {
@@ -247,12 +247,12 @@ public class PropertiesDialog extends JDialog {
                 .format(DateTimeFormatter.ISO_DATE_TIME));
         this.txtName.setText(details.getName());
         this.txtPath.setText(details.getPath());
-        this.txtSize.setText(details.getType() == FileType.Directory
-                || details.getType() == FileType.DirLink ? "---"
+        this.txtSize.setText(details.getType() == FileType.DIR
+                || details.getType() == FileType.DIR_LINK ? "---"
                 : FormatUtils.humanReadableByteCount(details.getSize(),
                 true));
-        this.txtType.setText(details.getType() == FileType.Directory
-                || details.getType() == FileType.DirLink ? "Directory"
+        this.txtType.setText(details.getType() == FileType.DIR
+                || details.getType() == FileType.DIR_LINK ? "Directory"
                 : "File");
         boolean[] perms = extractPermissions(permissions);
         for (int i = 0; i < 9; i++) {
@@ -265,16 +265,16 @@ public class PropertiesDialog extends JDialog {
         boolean hasAnyDir = false;
         long totalSize = 0;
         for (FileInfo file : files) {
-            if (file.getType() == FileType.DirLink
-                    || file.getType() == FileType.Directory) {
+            if (file.getType() == FileType.DIR_LINK
+                    || file.getType() == FileType.DIR) {
                 hasAnyDir = true;
                 break;
             }
         }
         if (!hasAnyDir) {
             for (FileInfo file : files) {
-                if (file.getType() == FileType.File
-                        || file.getType() == FileType.FileLink) {
+                if (file.getType() == FileType.FILE
+                        || file.getType() == FileType.FILE_LINK) {
                     totalSize += file.getSize();
                 }
             }
@@ -284,8 +284,8 @@ public class PropertiesDialog extends JDialog {
         btnCalculate1.setEnabled(hasAnyDir);
         int fc = 0, dc = 0;
         for (FileInfo f : files) {
-            if (f.getType() == FileType.Directory
-                    || f.getType() == FileType.DirLink) {
+            if (f.getType() == FileType.DIR
+                    || f.getType() == FileType.DIR_LINK) {
                 dc++;
             } else {
                 fc++;

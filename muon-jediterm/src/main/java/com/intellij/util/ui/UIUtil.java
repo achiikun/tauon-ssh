@@ -58,6 +58,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
@@ -88,7 +90,35 @@ public class UIUtil extends DrawUtil {
 
 
     }
-
+    
+    public static void invokeAndWaitIfNeeded(@NotNull Runnable runnable) throws InterruptedException, InvocationTargetException {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeAndWait(runnable);
+        }
+    }
+    
+    public static <R> R invokeAndWaitIfNeeded(@NotNull Supplier<R> runnable) throws InterruptedException, InvocationTargetException {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return runnable.get();
+        } else {
+            AtomicReference<R> ret = new AtomicReference<>();
+            SwingUtilities.invokeAndWait(() -> ret.set(runnable.get()));
+            return ret.get();
+        }
+    }
+    
+    public static <T, R> R invokeAndWaitIfNeeded(@NotNull Function<T, R> runnable, T param) throws InterruptedException, InvocationTargetException {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return runnable.fun(param);
+        } else {
+            AtomicReference<R> ret = new AtomicReference<>();
+            SwingUtilities.invokeAndWait(() -> ret.set(runnable.fun(param)));
+            return ret.get();
+        }
+    }
+    
     public static void invokeLaterIfNeeded(@NotNull Runnable runnable) {
         if (SwingUtilities.isEventDispatchThread()) {
             runnable.run();

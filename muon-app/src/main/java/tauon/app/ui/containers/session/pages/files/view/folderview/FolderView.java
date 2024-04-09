@@ -209,7 +209,7 @@ public class FolderView extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 FileInfo[] files = getSelectedFiles();
                 if (files.length > 0) {
-                    if (files[0].getType() == FileType.Directory || files[0].getType() == FileType.DirLink) {
+                    if (files[0].getType() == FileType.DIR || files[0].getType() == FileType.DIR_LINK) {
                         String str = files[0].getPath();
                         listener.render(str, SettingsService.getSettings().isDirectoryCache());
                     }
@@ -248,7 +248,7 @@ public class FolderView extends JPanel {
                     }
                     if (r == table.getSelectedRow()) {
                         FileInfo fileInfo = folderViewModel.getItemAt(getRow(r));
-                        if (fileInfo.getType() == FileType.Directory || fileInfo.getType() == FileType.DirLink) {
+                        if (fileInfo.getType() == FileType.DIR || fileInfo.getType() == FileType.DIR_LINK) {
                             listener.addBack(fileInfo.getPath());
                             listener.render(fileInfo.getPath(), SettingsService.getSettings().isDirectoryCache());
                         } else {
@@ -299,7 +299,7 @@ public class FolderView extends JPanel {
                     }
                     if (r == x) {
                         FileInfo fileInfo = folderViewModel.getItemAt(getRow(r));
-                        if (fileInfo.getType() == FileType.Directory || fileInfo.getType() == FileType.DirLink) {
+                        if (fileInfo.getType() == FileType.DIR || fileInfo.getType() == FileType.DIR_LINK) {
                             listener.addBack(fileInfo.getPath());
                             listener.render(fileInfo.getPath(), SettingsService.getSettings().isDirectoryCache());
                         } else {

@@ -421,14 +421,14 @@ public class SshMenuHandler {
     private int createBuiltInItems1(int selectionCount, JPopupMenu popup, FileInfo[] selectedFiles) {
         int count = 0;
         if (selectionCount == 1) {
-            if (selectedFiles[0].getType() == FileType.Directory || selectedFiles[0].getType() == FileType.DirLink) {
+            if (selectedFiles[0].getType() == FileType.DIR || selectedFiles[0].getType() == FileType.DIR_LINK) {
                 popup.add(mOpenInTab);
                 count++;
                 popup.add(mOpenFolderInTerminal);
                 count++;
             }
 
-            if ((selectedFiles[0].getType() == FileType.File || selectedFiles[0].getType() == FileType.FileLink)) {
+            if ((selectedFiles[0].getType() == FileType.FILE || selectedFiles[0].getType() == FileType.FILE_LINK)) {
                 popup.add(mOpen);
                 count++;
 
@@ -483,7 +483,7 @@ public class SshMenuHandler {
 
         if (selectionCount == 1) {
             FileInfo fileInfo = selectedFiles[0];
-            if ((selectedFiles[0].getType() == FileType.File || selectedFiles[0].getType() == FileType.FileLink)
+            if ((selectedFiles[0].getType() == FileType.FILE || selectedFiles[0].getType() == FileType.FILE_LINK)
                     && this.archiveOperation.isSupportedArchive(fileInfo.getName())) {
                 popup.add(mExtractHere);
                 popup.add(mExtractTo);
@@ -499,7 +499,7 @@ public class SshMenuHandler {
         }
 
         if (selectionCount < 1 || (selectionCount == 1
-                && (selectedFiles[0].getType() == FileType.File || selectedFiles[0].getType() == FileType.FileLink))) {
+                && (selectedFiles[0].getType() == FileType.FILE || selectedFiles[0].getType() == FileType.FILE_LINK))) {
             popup.add(mUpload);
             count += 1;
         }
@@ -507,7 +507,7 @@ public class SshMenuHandler {
         // check only if folder is selected
         boolean allFolder = true;
         for (FileInfo f : selectedFiles) {
-            if (f.getType() != FileType.Directory && f.getType() != FileType.DirLink) {
+            if (f.getType() != FileType.DIR && f.getType() != FileType.DIR_LINK) {
                 allFolder = false;
                 break;
             }
@@ -532,7 +532,7 @@ public class SshMenuHandler {
         FileInfo[] files = folderView.getSelectedFiles();
         if (files.length == 1) {
             FileInfo file = files[0];
-            if (file.getType() == FileType.Directory || file.getType() == FileType.DirLink) {
+            if (file.getType() == FileType.DIR || file.getType() == FileType.DIR_LINK) {
                 fileBrowser.openSshFileBrowserView(file.getPath(), this.fileBrowserView.getOrientation());
             } else {
 
@@ -764,7 +764,7 @@ public class SshMenuHandler {
         if (arr.length > 0) {
             BookmarkManager.getInstance().addEntry(fileBrowser.getInfo().getId(),
                     Arrays.asList(arr).stream()
-                            .filter(a -> a.getType() == FileType.DirLink || a.getType() == FileType.Directory)
+                            .filter(a -> a.getType() == FileType.DIR_LINK || a.getType() == FileType.DIR)
                             .map(a -> a.getPath()).collect(Collectors.toList()));
         } else if (arr.length == 0) {
             BookmarkManager.getInstance().addEntry(fileBrowser.getInfo().getId(), fileBrowserView.getCurrentDirectory());

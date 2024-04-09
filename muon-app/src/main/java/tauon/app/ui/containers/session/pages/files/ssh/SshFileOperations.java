@@ -80,8 +80,8 @@ public class SshFileOperations {
 
         StringBuilder command = new StringBuilder();
         for (FileInfo fileInfo : files) {
-            if (fileInfo.getType() == FileType.DirLink
-                    || fileInfo.getType() == FileType.Directory) {
+            if (fileInfo.getType() == FileType.DIR_LINK
+                    || fileInfo.getType() == FileType.DIR) {
                 command.append("mv ");
             } else {
                 command.append("mv -T ");
@@ -158,8 +158,8 @@ public class SshFileOperations {
 
         StringBuilder command = new StringBuilder();
         for (FileInfo fileInfo : files) {
-            if (fileInfo.getType() == FileType.DirLink
-                    || fileInfo.getType() == FileType.Directory) {
+            if (fileInfo.getType() == FileType.DIR_LINK
+                    || fileInfo.getType() == FileType.DIR) {
                 command.append("cp -rf ");
             } else {
                 command.append("cp -Tf ");

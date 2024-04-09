@@ -1,6 +1,8 @@
 package tauon.app.util.misc;
 
 import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
+import tauon.app.ssh.filesystem.FileInfo;
+import tauon.app.ssh.filesystem.FileType;
 import tauon.app.updater.VersionEntry;
 
 import java.io.File;
@@ -39,6 +41,7 @@ public class Constants {
     public static void updateStrings() {
         TransferMode.update();
         ConflictAction.update();
+        FileType.update();
     }
     
     public enum ConflictAction {

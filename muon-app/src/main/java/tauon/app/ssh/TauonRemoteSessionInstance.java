@@ -9,11 +9,13 @@ import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.SessionClosedException;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
 
+import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +41,8 @@ public class TauonRemoteSessionInstance {
     private final AtomicBoolean closed = new AtomicBoolean(false);
     
     private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final GuiHandle.Delegate<TauonSSHClient> guiHandle;
+    private final SessionInfo info;
     
     public TauonRemoteSessionInstance(SessionInfo info, GuiHandle<TauonRemoteSessionInstance> guiHandle, PasswordFinder passwordFinder, boolean openPortForwarding, GraphicalHostKeyVerifier hostKeyVerifier) {
         
@@ -49,6 +53,8 @@ public class TauonRemoteSessionInstance {
             }
         };
         
+        this.info = info;
+        this.guiHandle = guiHandleDelegate;
         this.ssh = new TauonSSHClient(info, guiHandleDelegate, passwordFinder, executorService, openPortForwarding, hostKeyVerifier);
         this.sshFs = new SshFileSystem(this);
     }
@@ -59,6 +65,24 @@ public class TauonRemoteSessionInstance {
             throw new SessionClosedException();
         
         return ssh.connect();
+    }
+    
+    public void ensureConnected() throws OperationCancelledException, SessionClosedException, InterruptedException {
+        
+        if(!isConnected()){
+            
+            while(!connect()){
+                // Ask user
+                
+                if (guiHandle.promptReconnect(info.getName(), info.getHost())) {
+                    
+                    throw new OperationCancelledException();
+                }
+                
+            }
+            
+        }
+        
     }
     
     public int exec(String command, Function<Command, Integer> callback, boolean pty) throws Exception {

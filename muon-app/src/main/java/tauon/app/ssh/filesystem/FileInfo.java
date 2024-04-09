@@ -169,6 +169,6 @@ public class FileInfo implements Serializable {
     }
 
     public boolean isDirectory() {
-        return getType() == FileType.Directory || getType() == FileType.DirLink;
+        return getType() == FileType.DIR || getType() == FileType.DIR_LINK;
     }
 }

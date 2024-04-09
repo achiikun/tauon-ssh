@@ -154,11 +154,11 @@ public class LocalMenuHandler {
 
     private void createBuitinItems1(int selectionCount, JPopupMenu popup, FileInfo[] selectedFiles) {
         if (selectionCount == 1) {
-            if (selectedFiles[0].getType() == FileType.File || selectedFiles[0].getType() == FileType.FileLink) {
+            if (selectedFiles[0].getType() == FileType.FILE || selectedFiles[0].getType() == FileType.FILE_LINK) {
                 popup.add(mOpen);
                 popup.add(mOpenInFileExplorer);
             }
-            if (selectedFiles[0].getType() == FileType.Directory || selectedFiles[0].getType() == FileType.DirLink) {
+            if (selectedFiles[0].getType() == FileType.DIR || selectedFiles[0].getType() == FileType.DIR_LINK) {
                 popup.add(mOpenInNewTab);
                 popup.add(mOpenInFileExplorer);
             }
@@ -178,7 +178,7 @@ public class LocalMenuHandler {
         FileInfo[] files = folderView.getSelectedFiles();
         if (files.length == 1) {
             FileInfo file = files[0];
-            if (file.getType() == FileType.FileLink || file.getType() == FileType.File) {
+            if (file.getType() == FileType.FILE_LINK || file.getType() == FileType.FILE) {
             }
         }
     }
@@ -187,7 +187,7 @@ public class LocalMenuHandler {
         FileInfo[] files = folderView.getSelectedFiles();
         if (files.length == 1) {
             FileInfo file = files[0];
-            if (file.getType() == FileType.Directory || file.getType() == FileType.DirLink) {
+            if (file.getType() == FileType.DIR || file.getType() == FileType.DIR_LINK) {
                 fileBrowser.openLocalFileBrowserView(file.getPath(), this.fileBrowserView.getOrientation());
             }
         }
@@ -282,7 +282,7 @@ public class LocalMenuHandler {
         if (arr.length > 0) {
             BookmarkManager.getInstance().addEntry(null,
                     Arrays.asList(arr).stream()
-                            .filter(a -> a.getType() == FileType.DirLink || a.getType() == FileType.Directory)
+                            .filter(a -> a.getType() == FileType.DIR_LINK || a.getType() == FileType.DIR)
                             .map(a -> a.getPath()).collect(Collectors.toList()));
         } else if (arr.length == 0) {
             BookmarkManager.getInstance().addEntry(null, fileBrowserView.getCurrentDirectory());

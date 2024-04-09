@@ -87,7 +87,7 @@ public class TableCellLabelRenderer implements TableCellRenderer {
                 label.setText(FormatUtils.formatDate(ent.getLastModified()));
                 break;
             case 2:
-                if (ent.getType() == FileType.Directory || ent.getType() == FileType.DirLink) {
+                if (ent.getType() == FileType.DIR || ent.getType() == FileType.DIR_LINK) {
                     label.setText("");
                 } else {
                     label.setText(FormatUtils.humanReadableByteCount(ent.getSize(), true));

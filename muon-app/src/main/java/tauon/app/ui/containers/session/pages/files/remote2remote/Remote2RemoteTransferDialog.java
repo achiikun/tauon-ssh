@@ -234,10 +234,10 @@ public class Remote2RemoteTransferDialog extends JDialog {
         sb.append("cd \"" + e.getPath() + "\"\n");
 
         for (FileInfo finfo : selectedFiles) {
-            if (finfo.getType() == FileType.Directory) {
+            if (finfo.getType() == FileType.DIR) {
                 sb.append("mkdir \"" + finfo.getName() + "\"\n");
                 sb.append("put -r \"" + finfo.getName() + "\"\n");
-            } else if (finfo.getType() == FileType.File) {
+            } else if (finfo.getType() == FileType.FILE) {
                 sb.append("put -P \"" + finfo.getName() + "\"\n");
             }
         }

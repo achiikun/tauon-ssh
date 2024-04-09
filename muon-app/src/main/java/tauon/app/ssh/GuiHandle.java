@@ -17,6 +17,8 @@ public interface GuiHandle<C> {
     
     String promptUser(HopEntry info, AtomicBoolean remember);
     
+    boolean promptReconnect(String name, String host);
+    
     char[] promptPassword(HopEntry info, String user, AtomicBoolean remember, boolean isRetrying);
     
     void showMessage(String name, String instruction);
@@ -48,6 +50,11 @@ public interface GuiHandle<C> {
         
         public void reportException(Throwable cause) {
             delagator.reportException(cause);
+        }
+        
+        @Override
+        public boolean promptReconnect(String name, String host) {
+            return delagator.promptReconnect(name, host);
         }
         
         public char[] promptPassword(HopEntry info, String user, AtomicBoolean remember, boolean isRetrying) {
