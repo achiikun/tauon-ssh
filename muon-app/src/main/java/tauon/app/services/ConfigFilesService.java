@@ -61,7 +61,7 @@ public class ConfigFilesService {
         
         backupdirectory = new File(directory, "backup");
         if(!backupdirectory.exists() && !backupdirectory.mkdirs()) {
-            LOG.error("The backup config directory for tauon cannot be created: " + backupdirectory);
+            LOG.error("The backup config directory for tauon cannot be created: {}", backupdirectory);
             throw new InitializationException();
         }
         
@@ -73,7 +73,7 @@ public class ConfigFilesService {
         if (!Constants.CONFIG_DIR.exists()) {
             //Validate if the config directory can be created
             if (!Constants.CONFIG_DIR.mkdirs()) {
-                LOG.error("The default config directory for tauon cannot be created: " + Constants.CONFIG_DIR);
+                LOG.error("The default config directory for tauon cannot be created: {}", Constants.CONFIG_DIR);
                 throw new InitializationException();
             }
             
@@ -84,7 +84,7 @@ public class ConfigFilesService {
                         FileUtils.copyDirectory(oldDir, Constants.CONFIG_DIR);
                         return; // Break execution
                     } catch (IOException e) {
-                        LOG.error("The copy to the new directory failed: " + oldDir, e);
+                        LOG.error("The copy to the new directory failed: {}", oldDir, e);
                         throw new InitializationException();
                     }
                 }
@@ -105,11 +105,11 @@ public class ConfigFilesService {
         if (tauonPath != null && !tauonPath.isEmpty()) {
             //Validate if the config directory can be created
             if (!Paths.get(tauonPath).toFile().exists()) {
-                LOG.error("The config directory set by user for tauon doesn't exist: " + tauonPath);
+                LOG.error("The config directory set by user for tauon doesn't exist: {}", tauonPath);
                 throw new InitializationException();
             }
             
-            LOG.info("User set a custom config directory: " + tauonPath);
+            LOG.info("User set a custom config directory: {}", tauonPath);
             return tauonPath;
         }
         
@@ -217,7 +217,7 @@ public class ConfigFilesService {
             try{
                 Files.copy(file1.toPath(), backup.toPath(), REPLACE_EXISTING);
             }catch (Exception e){
-                LOG.error("Error while backuping " + file + " to " + backup, e);
+                LOG.error("Error while backuping {} to {}", file, backup, e);
             }
             
             return false;
@@ -240,13 +240,13 @@ public class ConfigFilesService {
             try{
                 Files.copy(file1a.toPath(), backup1.toPath(), REPLACE_EXISTING);
             }catch (Exception e){
-                LOG.error("Error while backuping " + file1a + " to " + backup1, e);
+                LOG.error("Error while backuping {} to {}", file1a, backup1, e);
             }
             
             try{
                 Files.copy(file2a.toPath(), backup2.toPath(), REPLACE_EXISTING);
             }catch (Exception e){
-                LOG.error("Error while backuping " + file2a + " to " + backup2, e);
+                LOG.error("Error while backuping {} to {}", file2a, backup2, e);
             }
             
             return false;
