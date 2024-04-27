@@ -49,13 +49,13 @@ public class ConfigFilesService {
         }
         
         if(!directory.exists() && !directory.mkdirs()) {
-            LOG.error("The default config directory for tauon cannot be created: " + directory);
+            LOG.error("The default config directory for tauon cannot be created: {}", directory);
             throw new InitializationException();
         }
         
         tempdirectory = new File(directory, ".temp");
         if(!tempdirectory.exists() && !tempdirectory.mkdirs()) {
-            LOG.error("The temp config directory for tauon cannot be created: " + tempdirectory);
+            LOG.error("The temp config directory for tauon cannot be created: {}", tempdirectory);
             throw new InitializationException();
         }
         
