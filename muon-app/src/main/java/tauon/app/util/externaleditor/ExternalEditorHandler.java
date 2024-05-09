@@ -103,26 +103,29 @@ public class ExternalEditorHandler extends JDialog {
             setVisible(true);
         });
         this.fileWatcher.stopWatching();
-        long totalSize = 0L;
-        for (FileModificationInfo info : files) {
-            totalSize += info.localFile.length();
-        }
-        System.out.println("Total size: " + totalSize);
-        long totalBytes = 0L;
-        for (FileModificationInfo info : files) {
-            System.out.println("Total size: " + totalSize + " opcying: " + info);
-            try {
-                totalBytes += saveRemoteFile(info, totalSize, totalBytes);
-            } catch (Exception e) {
-                // TODO log
-                e.printStackTrace();
+        try {
+            long totalSize = 0L;
+            for (FileModificationInfo info : files) {
+                totalSize += info.localFile.length();
             }
+            System.out.println("Total size: " + totalSize);
+            long totalBytes = 0L;
+            for (FileModificationInfo info : files) {
+                System.out.println("Total size: " + totalSize + " opcying: " + info);
+                try {
+                    totalBytes += saveRemoteFile(info, totalSize, totalBytes);
+                } catch (Exception e) {
+                    // TODO log
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("Transfer complete");
+        }finally {
+            fileWatcher.resumeWatching();
+            SwingUtilities.invokeLater(() -> {
+                setVisible(false);
+            });
         }
-        fileWatcher.resumeWatching();
-        System.out.println("Transfer complete");
-        SwingUtilities.invokeLater(() -> {
-            setVisible(false);
-        });
     }
 
     /**
@@ -160,7 +163,7 @@ public class ExternalEditorHandler extends JDialog {
                     }
                     totalBytes1 += x;
                     out.write(b, 0, x);
-                    final int progress = (int) ((totalBytes1 * 100) / total);
+                    final int progress = total > 0 ? (int) ((totalBytes1 * 100) / total) : 100;
                     SwingUtilities.invokeLater(() -> {
                         progressBar.setValue(progress);
                     });
@@ -235,7 +238,7 @@ public class ExternalEditorHandler extends JDialog {
                     }
                     totalBytes += x;
                     out.write(b, 0, x);
-                    final int progress = (int) ((totalBytes * 100) / remoteFile.getSize());
+                    final int progress = remoteFile.getSize() > 0 ? (int) ((totalBytes * 100) / remoteFile.getSize()) : 100;
                     SwingUtilities.invokeLater(() -> {
                         progressBar.setValue(progress);
                     });

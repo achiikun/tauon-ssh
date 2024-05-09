@@ -92,36 +92,47 @@ public class PortForwardingPanel extends JPanel {
     }
 
     private PortForwardingRule addOrEditEntry(PortForwardingRule r) {
-        JComboBox<String> cmbPFType = new JComboBox<>(new String[]{getBundle().getString("local"), getBundle().getString("remote")});
+        JComboBox<String> cmbPFType = new JComboBox<>(new String[]{
+                getBundle().getString("local"),
+                getBundle().getString("remote")
+        });
+        
+        JTextField txtLocalHost = new SkinnedTextField(30);
+        txtLocalHost.setText("127.0.0.1");
+        
+        JSpinner spLocalPort = new JSpinner(new SpinnerNumberModel(0, 0, SessionInfoPanel.DEFAULT_MAX_PORT, 1));
 
-        JTextField txtHost = new SkinnedTextField(30);
+        JTextField txtRemoteHost = new SkinnedTextField(30);
+        txtRemoteHost.setText("127.0.0.1");
 
-        JSpinner spSourcePort = new JSpinner(new SpinnerNumberModel(0, 0, SessionInfoPanel.DEFAULT_MAX_PORT, 1));
-        JSpinner spTargetPort = new JSpinner(new SpinnerNumberModel(0, 0, SessionInfoPanel.DEFAULT_MAX_PORT, 1));
-
-        JTextField txtBindAddress = new SkinnedTextField(30);
-        txtBindAddress.setText("127.0.0.1");
+        JSpinner spRemotePort = new JSpinner(new SpinnerNumberModel(0, 0, SessionInfoPanel.DEFAULT_MAX_PORT, 1));
 
         if (r != null) {
-            txtHost.setText(r.getHost());
-            spSourcePort.setValue(r.getSourcePort());
-            spTargetPort.setValue(r.getTargetPort());
-            txtBindAddress.setText(r.getBindHost());
+            txtLocalHost.setText(r.getLocalHost());
+            spLocalPort.setValue(r.getLocalPort());
+            txtRemoteHost.setText(r.getRemoteHost());
+            spRemotePort.setValue(r.getRemotePort());
             cmbPFType.setSelectedIndex(r.getType() == PortForwardingType.Local ? 0 : 1);
         }
 
         while (JOptionPane.showOptionDialog(this,
-                new Object[]{"Port forwarding type", cmbPFType, "Host", txtHost, "Source Port", spSourcePort,
-                        "Target Port", spTargetPort, "Bind Address", txtBindAddress},
+                // TODO i18n
+                new Object[]{
+                        "Port forwarding type", cmbPFType,
+                        "Local Host", txtLocalHost,
+                        "Local Port", spLocalPort,
+                        "Remote Host", txtRemoteHost,
+                        "Remote Port", spRemotePort,
+                },
                 "Port forwarding rule", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null,
                 null) == JOptionPane.OK_OPTION) {
 
-            String host = txtHost.getText();
-            int port1 = (Integer) spSourcePort.getValue();
-            int port2 = (Integer) spTargetPort.getValue();
-            String bindAddress = txtBindAddress.getText();
+            String host = txtRemoteHost.getText();
+            int port1 = (Integer) spRemotePort.getValue();
+            int port2 = (Integer) spLocalPort.getValue();
+            String bindAddress = txtLocalHost.getText();
 
-            if (host.length() < 1 || bindAddress.length() < 1 || port1 <= 0 || port2 <= 0) {
+            if (host.isEmpty() || bindAddress.isEmpty() || port1 <= 0 || port2 <= 0) {
                 JOptionPane.showMessageDialog(this, getBundle().getString("invalid_input"));
                 continue;
             }
@@ -130,10 +141,10 @@ public class PortForwardingPanel extends JPanel {
                 r = new PortForwardingRule();
             }
             r.setType(cmbPFType.getSelectedIndex() == 0 ? PortForwardingType.Local : PortForwardingType.Remote);
-            r.setHost(host);
-            r.setBindHost(bindAddress);
-            r.setSourcePort(port1);
-            r.setTargetPort(port2);
+            r.setRemoteHost(host);
+            r.setLocalHost(bindAddress);
+            r.setRemotePort(port1);
+            r.setLocalPort(port2);
             return r;
         }
         return null;
@@ -141,7 +152,14 @@ public class PortForwardingPanel extends JPanel {
 
     private static class PFTableModel extends AbstractTableModel {
 
-        private final String[] columns = {getBundle().getString("type"), getBundle().getString("host"), getBundle().getString("source_port"), getBundle().getString("target_port"), getBundle().getString("bind_host")};
+        private final String[] columns = {
+                getBundle().getString("type"),
+                getBundle().getString("local_host"),
+                getBundle().getString("local_port"),
+                getBundle().getString("remote_host"),
+                getBundle().getString("remote_port")
+        };
+        
         private final List<PortForwardingRule> list = new ArrayList<>();
 
         @Override
@@ -166,13 +184,13 @@ public class PortForwardingPanel extends JPanel {
                 case 0:
                     return pf.getType();
                 case 1:
-                    return pf.getHost();
+                    return pf.getLocalHost();
                 case 2:
-                    return pf.getSourcePort();
+                    return pf.getLocalPort();
                 case 3:
-                    return pf.getTargetPort();
+                    return pf.getRemoteHost();
                 case 4:
-                    return pf.getBindHost();
+                    return pf.getRemotePort();
                 default:
                     return "";
             }
@@ -185,9 +203,7 @@ public class PortForwardingPanel extends JPanel {
         private void setRules(List<PortForwardingRule> rules) {
             list.clear();
             if (rules != null) {
-                for (PortForwardingRule r : rules) {
-                    list.add(r);
-                }
+                list.addAll(rules);
             }
             fireTableDataChanged();
         }

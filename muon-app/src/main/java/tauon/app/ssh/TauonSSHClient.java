@@ -256,12 +256,12 @@ public class TauonSSHClient {
         
         portForwardingState.serverSocket = new ServerSocket();
         portForwardingState.serverSocket.setReuseAddress(true);
-        portForwardingState.serverSocket.bind(new InetSocketAddress(r.getBindHost(), r.getSourcePort()));
+        portForwardingState.serverSocket.bind(new InetSocketAddress(r.getLocalHost(), r.getRemotePort()));
         
         portForwardingState.thread = new Thread(() -> {
             try {
                 ssh.newLocalPortForwarder(
-                                new Parameters(r.getBindHost(), r.getSourcePort(), r.getHost(), r.getTargetPort()), portForwardingState.serverSocket)
+                                new Parameters(r.getLocalHost(), r.getLocalPort(), r.getRemoteHost(), r.getRemotePort()), portForwardingState.serverSocket)
                         .listen();
             } catch (IOException e) {
                 portForwardingState.thread = null;
@@ -289,9 +289,9 @@ public class TauonSSHClient {
             try {
                 ssh.getRemotePortForwarder().bind(
                         // where the server should listen
-                        new RemotePortForwarder.Forward(r.getSourcePort()),
+                        new RemotePortForwarder.Forward(r.getRemoteHost(), r.getRemotePort()),
                         // what we do with incoming connections that are forwarded to us
-                        new SocketForwardingConnectListener(new InetSocketAddress(r.getHost(), r.getTargetPort())));
+                        new SocketForwardingConnectListener(new InetSocketAddress(r.getLocalHost(), r.getLocalPort())));
                 
                 // Something to hang on to so that the forwarding stays
                 ssh.getTransport().join();

@@ -6,31 +6,20 @@ package tauon.app.settings;
 public class PortForwardingRule {
 
     private PortForwardingType type;
-    private String host;
-    private String bindHost;
-    private int sourcePort;
-    private int targetPort;
+    private String remoteHost;
+    private String localHost;
+    private int remotePort;
+    private int localPort;
 
-    /**
-     * @param type       Local or remote
-     * @param host       In case of local port forwarding, the destination host,
-     *                   which is accessible from remote server, in case of remote
-     *                   port forwarding this will be the network interface address
-     *                   of the service running on local system
-     * @param sourcePort Local port to bind for local port forwarding, for remote
-     *                   this is the port bind on remote server
-     * @param targetPort For local port forwarding this is the target port, for
-     *                   remote this will be the local port of that local service
-     * @param bindHost
-     */
-    public PortForwardingRule(PortForwardingType type, String host, int sourcePort, int targetPort, String bindHost) {
-        super();
-        this.type = type;
-        this.host = host;
-        this.sourcePort = sourcePort;
-        this.targetPort = targetPort;
-        this.bindHost = bindHost;
-    }
+//    public PortForwardingRule(PortForwardingType type, String remoteHost, int remotePort, int localPort, String localHost) {
+//        super();
+//        this.type = type;
+//        this.remoteHost = remoteHost;
+//        this.remotePort = remotePort;
+//        this.localPort = localPort;
+//        this.localHost = localHost;
+//    }
+    
     public PortForwardingRule() {
     }
 
@@ -42,50 +31,88 @@ public class PortForwardingRule {
         this.type = type;
     }
 
-    public String getHost() {
-        return host;
+    public String getRemoteHost() {
+        return remoteHost;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setRemoteHost(String remoteHost) {
+        this.remoteHost = remoteHost;
     }
 
-    public int getSourcePort() {
-        return sourcePort;
+    public int getRemotePort() {
+        return remotePort;
     }
 
-    public void setSourcePort(int sourcePort) {
-        this.sourcePort = sourcePort;
+    public void setRemotePort(int remotePort) {
+        this.remotePort = remotePort;
     }
 
-    public int getTargetPort() {
-        return targetPort;
+    public int getLocalPort() {
+        return localPort;
     }
 
-    public void setTargetPort(int targetPort) {
-        this.targetPort = targetPort;
+    public void setLocalPort(int localPort) {
+        this.localPort = localPort;
     }
 
-    public String getBindHost() {
-        return bindHost;
+    public String getLocalHost() {
+        return localHost;
     }
 
-    public void setBindHost(String bindHost) {
-        this.bindHost = bindHost;
+    public void setLocalHost(String localHost) {
+        this.localHost = localHost;
     }
     
+    @Deprecated
+    public String getHost() {
+        return localHost;
+    }
+    
+    @Deprecated
+    public void setHost(String host) {
+        this.localHost = host;
+    }
+    
+    @Deprecated
+    public int getSourcePort() {
+        return localPort;
+    }
+    
+    @Deprecated
+    public void setSourcePort(int sourcePort) {
+        this.localPort = sourcePort;
+    }
+    
+    @Deprecated
+    public int getTargetPort() {
+        return remotePort;
+    }
+    
+    @Deprecated
+    public void setTargetPort(int targetPort) {
+        this.remotePort = targetPort;
+    }
+    
+    @Deprecated
+    public String getBindHost() {
+        return remoteHost;
+    }
+    
+    @Deprecated
+    public void setBindHost(String bindHost) {
+        this.remoteHost = bindHost;
+    }
+
     public PortForwardingRule copyTo(PortForwardingRule portForwardingRule) {
         portForwardingRule.type = type;
-        portForwardingRule.host = host;
-        portForwardingRule.bindHost = bindHost;
-        portForwardingRule.sourcePort = sourcePort;
-        portForwardingRule.targetPort = targetPort;
+        portForwardingRule.remoteHost = remoteHost;
+        portForwardingRule.localHost = localHost;
+        portForwardingRule.remotePort = remotePort;
+        portForwardingRule.localPort = localPort;
         return portForwardingRule;
     }
     
-    
-    
     public enum PortForwardingType {
-        Local, Remote
+        Local, Remote;
     }
 }
