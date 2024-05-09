@@ -1,0 +1,136 @@
+package tauon.app.ui.containers.session.pages.info.sysload;
+
+import tauon.app.util.misc.FormatUtils;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+
+import static tauon.app.services.LanguageService.getBundle;
+
+public class SystemLoadPanel extends JPanel {
+    private final LineGraph cpuGraph;
+    private final LineGraph memGraph;
+    private final LineGraph swpGraph;
+    private final double[] cpuStats = new double[10];
+    private final double[] memStats = new double[10];
+    private final double[] swpStats = new double[10];
+    private final JLabel cpuLabel;
+    private final JLabel memoryLabel;
+    private final JLabel swapLabel;
+    private long totalMemory;
+    private long usedMemory;
+    private long totalSwap;
+    private long usedSwap;
+    private double cpuUsage;
+    private double memoryUsage;
+    private double swapUsage;
+
+    public SystemLoadPanel() {
+        super(new BorderLayout(5, 5));
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+        setMinimumSize(new Dimension(200, 100));
+        setPreferredSize(new Dimension(300, 400));
+        Box b1 = Box.createVerticalBox();
+
+        cpuLabel = new JLabel(getBundle().getString("cpu_usage"));
+        cpuLabel.setBorder(new EmptyBorder(0, 0, 10, 0));
+        cpuLabel.setAlignmentX(Box.LEFT_ALIGNMENT);
+        b1.add(cpuLabel);
+
+        cpuGraph = new LineGraph();
+        cpuGraph.setValues(cpuStats);
+        cpuGraph.setAlignmentX(Box.LEFT_ALIGNMENT);
+        b1.add(cpuGraph);
+
+        memoryLabel = new JLabel(getBundle().getString("memory_usage"));
+        memoryLabel.setBorder(new EmptyBorder(20, 0, 10, 0));
+        memoryLabel.setAlignmentX(Box.LEFT_ALIGNMENT);
+        b1.add(memoryLabel);
+
+        memGraph = new LineGraph();
+        memGraph.setValues(memStats);
+        memGraph.setAlignmentX(Box.LEFT_ALIGNMENT);
+        b1.add(memGraph);
+
+        swapLabel = new JLabel(getBundle().getString("swap_usage"));
+        swapLabel.setBorder(new EmptyBorder(20, 0, 10, 0));
+        swapLabel.setAlignmentX(Box.LEFT_ALIGNMENT);
+        b1.add(swapLabel);
+
+        swpGraph = new LineGraph();
+        swpGraph.setValues(swpStats);
+        swpGraph.setAlignmentX(Box.LEFT_ALIGNMENT);
+        b1.add(swpGraph);
+
+        add(b1);
+    }
+
+    public void setCpuUsage(double cpuUsage) {
+        this.cpuUsage = cpuUsage;
+        if (this.cpuUsage != 0) {
+            System.arraycopy(cpuStats, 1, cpuStats, 0, cpuStats.length - 1);
+            cpuStats[cpuStats.length - 1] = cpuUsage;
+        }
+    }
+
+    public void setMemoryUsage(double memoryUsage) {
+        this.memoryUsage = memoryUsage;
+        if (this.memoryUsage != 0) {
+            System.arraycopy(memStats, 1, memStats, 0, memStats.length - 1);
+            memStats[memStats.length - 1] = memoryUsage;
+        }
+    }
+
+    public void setSwapUsage(double swapUsage) {
+        this.swapUsage = swapUsage;
+        if (this.swapUsage != 0) {
+            System.arraycopy(swpStats, 1, swpStats, 0, swpStats.length - 1);
+            swpStats[swpStats.length - 1] = swapUsage;
+        }
+    }
+
+    public void setTotalMemory(long totalMemory) {
+        this.totalMemory = totalMemory;
+    }
+
+    public void setUsedMemory(long usedMemory) {
+        this.usedMemory = usedMemory;
+    }
+
+    public void setTotalSwap(long totalSwap) {
+        this.totalSwap = totalSwap;
+    }
+
+    public void setUsedSwap(long usedSwap) {
+        this.usedSwap = usedSwap;
+    }
+
+    public void refreshUi() {
+        this.cpuLabel
+                .setText(String.format(getBundle().getString("cpu_usage") + ": %.1f", cpuUsage) + "% ");
+        this.memoryLabel.setText(String.format(getBundle().getString("memory_usage") + ": %.1f",
+                memoryUsage)
+                + "%"
+                + (totalMemory != 0
+                ? (", (Total: " + FormatUtils
+                .humanReadableByteCount(totalMemory, true)
+                + ", " + getBundle().getString("used2") + ": "
+                + FormatUtils.humanReadableByteCount(usedMemory,
+                true)
+                + ")")
+                : ""));
+        this.swapLabel.setText(String.format(getBundle().getString("swap_usage") + ": %.1f", swapUsage)
+                + "% "
+                + (totalSwap != 0
+                ? (", ( Total: "
+                + FormatUtils.humanReadableByteCount(totalSwap,
+                true)
+                + ", " + getBundle().getString("used2") + ": " + FormatUtils
+                .humanReadableByteCount(usedSwap, true)
+                + ")")
+                : ""));
+        this.revalidate();
+        this.repaint();
+    }
+}

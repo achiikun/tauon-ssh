@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.exceptions.AlreadyFailedException;
 import tauon.app.exceptions.OperationCancelledException;
-import tauon.app.exceptions.SessionClosedException;
 import tauon.app.services.SessionService;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.HopEntry;
@@ -30,13 +29,13 @@ import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.PageHolder;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.containers.main.FileTransferProgress;
-import tauon.app.ui.containers.session.pages.diskspace.DiskspaceAnalyzer;
+import tauon.app.ui.containers.session.pages.tools.diskspace.DiskspaceAnalyzer;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
+import tauon.app.ui.containers.session.pages.info.InfoPage;
 import tauon.app.ui.containers.session.pages.logviewer.LogViewer;
-import tauon.app.ui.containers.session.pages.processview.ProcessViewer;
-import tauon.app.ui.containers.session.pages.search.SearchPanel;
+import tauon.app.ui.containers.session.pages.tools.search.SearchPanel;
 import tauon.app.ui.containers.session.pages.terminal.TerminalHolder;
-import tauon.app.ui.containers.session.pages.utilpage.UtilityPage;
+import tauon.app.ui.containers.session.pages.tools.ToolsPage;
 import tauon.app.ui.dialogs.sessions.PasswordPromptHelper;
 import tauon.app.util.misc.LayoutUtilities;
 
@@ -51,7 +50,6 @@ import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static tauon.app.services.LanguageService.getBundle;
@@ -81,10 +79,8 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     private final FileBrowser fileBrowser;
     private final LogViewer logViewer;
     private final TerminalHolder terminalHolder;
-    private final DiskspaceAnalyzer diskspaceAnalyzer;
-    private final SearchPanel searchPanel;
-    private final ProcessViewer processViewer;
-    private final UtilityPage utilityPage;
+    private final InfoPage processViewer;
+    private final ToolsPage toolsPage;
     
     private final AtomicBoolean closed = new AtomicBoolean(false);
     
@@ -114,18 +110,16 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         fileBrowser = new FileBrowser(info, this);
         logViewer = new LogViewer(this);
         terminalHolder = new TerminalHolder(info, this);
-        diskspaceAnalyzer = new DiskspaceAnalyzer(this);
-        searchPanel = new SearchPanel(this);
-        processViewer = new ProcessViewer(this);
-        utilityPage = new UtilityPage(this);
+        processViewer = new InfoPage(this);
+        toolsPage = new ToolsPage(this);
 
         Page[] pageArr = null;
         if (SettingsService.getSettings().isFirstFileBrowserView()) {
-            pageArr = new Page[]{fileBrowser, terminalHolder, logViewer, searchPanel, diskspaceAnalyzer,
-                    processViewer, utilityPage};
+            pageArr = new Page[]{fileBrowser, terminalHolder, logViewer,
+                    processViewer, toolsPage};
         } else {
-            pageArr = new Page[]{terminalHolder, fileBrowser, logViewer, searchPanel, diskspaceAnalyzer,
-                    processViewer, utilityPage};
+            pageArr = new Page[]{terminalHolder, fileBrowser, logViewer,
+                    processViewer, toolsPage};
         }
 
         this.cardLayout = new CardLayout();

@@ -112,6 +112,8 @@ public class TauonRemoteSessionInstance {
         ByteArrayOutputStream bout = output == null ? null : new ByteArrayOutputStream();
         ByteArrayOutputStream berr = error == null ? null : new ByteArrayOutputStream();
         int ret = execBin(command, stopFlag, bout, berr);
+        LOG.debug("Out len: " + (bout != null ? bout.size() : 0));
+        LOG.debug("Err len: " + (berr != null ? berr.size() : 0));
         if (output != null) {
             output.append(bout.toString(StandardCharsets.UTF_8));
         }
@@ -161,7 +163,7 @@ public class TauonRemoteSessionInstance {
                     if (err.available() > 0) {
                         int m = err.available();
                         while (m > 0) {
-                            int x = err.read(b, 0, m > b.length ? b.length : m);
+                            int x = err.read(b, 0, Math.min(m, b.length));
                             if (x == -1) {
                                 break;
                             }
@@ -173,7 +175,7 @@ public class TauonRemoteSessionInstance {
                         }
                     }
 
-                } while (cmd.isOpen());
+                } while (cmd.isOpen() || in.available() > 0 || err.available() > 0);
                 
                 LOG.debug(cmd.isOpen() + " " + cmd.isEOF() + " " + cmd.getExitStatus());
                 
