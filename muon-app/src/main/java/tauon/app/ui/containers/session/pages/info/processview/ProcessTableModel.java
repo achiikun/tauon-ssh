@@ -1,5 +1,7 @@
 package tauon.app.ui.containers.session.pages.info.processview;
 
+import tauon.app.ui.components.tablerenderers.ByteCountValue;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +77,7 @@ public class ProcessTableModel extends AbstractTableModel {
                 return Integer.class;
             case 2:
             case 3:
-                return Float.class;
+                return ByteCountValue.class;
             default:
                 return Object.class;
         }

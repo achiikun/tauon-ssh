@@ -1,5 +1,9 @@
 package tauon.app.ui.containers.session.pages.tools.diskspace;
 
+import tauon.app.ui.components.tablerenderers.ByteCountValue;
+import tauon.app.ui.components.tablerenderers.PercentageRenderer;
+import tauon.app.ui.components.tablerenderers.PercentageValue;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,9 +76,9 @@ public class PartitionTableModel extends AbstractTableModel {
             case 1:
             case 2:
             case 3:
-                return Long.class;
+                return ByteCountValue.class;
             case 4:
-                return Double.class;
+                return PercentageValue.class;
             default:
                 return String.class;
         }

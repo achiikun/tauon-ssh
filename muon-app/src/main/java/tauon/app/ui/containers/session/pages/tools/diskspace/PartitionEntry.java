@@ -1,18 +1,21 @@
 package tauon.app.ui.containers.session.pages.tools.diskspace;
 
+import tauon.app.ui.components.tablerenderers.ByteCountValue;
+import tauon.app.ui.components.tablerenderers.PercentageValue;
+
 public class PartitionEntry {
     private String fileSystem, mountPoint;
-    private long totalSize, used, available;
-    private double usedPercent;
+    private ByteCountValue totalSize, used, available;
+    private PercentageValue usedPercent;
 
     public PartitionEntry(String fileSystem, String mountPoint, long totalSize,
                           long used, long available, double usedPercent) {
         this.fileSystem = fileSystem;
         this.mountPoint = mountPoint;
-        this.totalSize = totalSize;
-        this.used = used;
-        this.available = available;
-        this.usedPercent = usedPercent;
+        this.totalSize = new ByteCountValue(totalSize);
+        this.used = new ByteCountValue(used);
+        this.available = new ByteCountValue(available);
+        this.usedPercent = new PercentageValue(usedPercent);
     }
 
     public String getFileSystem() {
@@ -31,35 +34,35 @@ public class PartitionEntry {
         this.mountPoint = mountPoint;
     }
 
-    public long getTotalSize() {
+    public ByteCountValue getTotalSize() {
         return totalSize;
     }
 
-    public void setTotalSize(long totalSize) {
+    public void setTotalSize(ByteCountValue totalSize) {
         this.totalSize = totalSize;
     }
 
-    public long getUsed() {
+    public ByteCountValue getUsed() {
         return used;
     }
 
-    public void setUsed(long used) {
+    public void setUsed(ByteCountValue used) {
         this.used = used;
     }
 
-    public long getAvailable() {
+    public ByteCountValue getAvailable() {
         return available;
     }
 
-    public void setAvailable(long available) {
+    public void setAvailable(ByteCountValue available) {
         this.available = available;
     }
 
-    public double getUsedPercent() {
+    public PercentageValue getUsedPercent() {
         return usedPercent;
     }
 
-    public void setUsedPercent(double usedPercent) {
+    public void setUsedPercent(PercentageValue usedPercent) {
         this.usedPercent = usedPercent;
     }
 }

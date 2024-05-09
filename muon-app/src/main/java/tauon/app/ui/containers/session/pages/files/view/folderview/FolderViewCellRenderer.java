@@ -1,9 +1,8 @@
-package tauon.app.ui.components.misc;
+package tauon.app.ui.containers.session.pages.files.view.folderview;
 
 import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
-import tauon.app.ui.containers.session.pages.files.view.folderview.FolderViewTableModel;
 import tauon.app.util.misc.FileIconUtil;
 import tauon.app.util.misc.FormatUtils;
 
@@ -12,7 +11,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-public class TableCellLabelRenderer implements TableCellRenderer {
+public class FolderViewCellRenderer implements TableCellRenderer {
     private final JPanel panel;
     private final JLabel textLabel;
     private final JLabel iconLabel;
@@ -20,7 +19,7 @@ public class TableCellLabelRenderer implements TableCellRenderer {
     private final int height;
     private final Color foreground;
 
-    public TableCellLabelRenderer() {
+    public FolderViewCellRenderer() {
         foreground = App.skin.getInfoTextForeground();
         panel = new JPanel(new BorderLayout(10, 5));
         panel.setBorder(new EmptyBorder(5, 10, 5, 5));
@@ -78,6 +77,7 @@ public class TableCellLabelRenderer implements TableCellRenderer {
 
         label.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
         label.setForeground(isSelected ? table.getSelectionForeground() : foreground);
+        label.setToolTipText(null);
 
         switch (c) {
             case 0:
@@ -85,6 +85,7 @@ public class TableCellLabelRenderer implements TableCellRenderer {
                 break;
             case 1:
                 label.setText(FormatUtils.formatDate(ent.getLastModified()));
+                label.setToolTipText(FormatUtils.formatDate(ent.getLastModified()));
                 break;
             case 2:
                 if (ent.getType() == FileType.DIR || ent.getType() == FileType.DIR_LINK) {

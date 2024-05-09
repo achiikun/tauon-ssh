@@ -1,4 +1,4 @@
-package tauon.app.ui.containers.session.pages.tools.diskspace;
+package tauon.app.ui.components.tablerenderers;
 
 import tauon.app.util.misc.FormatUtils;
 
@@ -7,12 +7,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-public class PartitionRenderer extends JLabel implements TableCellRenderer {
+public class ByteCountRenderer extends JLabel implements TableCellRenderer {
 
-    public PartitionRenderer() {
+    public ByteCountRenderer(){
+        setText("-");
         setBorder(new EmptyBorder(5, 5, 5, 5));
         setOpaque(true);
-        setText("/dev");
     }
 
     @Override
@@ -24,6 +24,8 @@ public class PartitionRenderer extends JLabel implements TableCellRenderer {
                 : table.getForeground());
         if (value instanceof Long) {
             setText(FormatUtils.humanReadableByteCount((long) value, true));
+        } else if(value instanceof ByteCountValue){
+            setText(FormatUtils.humanReadableByteCount(((ByteCountValue) value).getValue(), true));
         } else {
             setText(value.toString());
         }

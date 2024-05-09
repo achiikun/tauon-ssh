@@ -6,7 +6,6 @@ import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
-import tauon.app.ui.components.misc.TableCellLabelRenderer;
 
 import javax.swing.*;
 import javax.swing.RowSorter.SortKey;
@@ -47,14 +46,14 @@ public class FolderView extends JPanel {
 
         folderViewModel = new FolderViewTableModel(false);
 
-        TableCellLabelRenderer r1 = new TableCellLabelRenderer();
+        FolderViewCellRenderer folderViewCellRenderer = new FolderViewCellRenderer();
 
         table = new JTable(folderViewModel);
         table.setSelectionForeground(App.skin.getDefaultSelectionForeground());
-        table.setDefaultRenderer(FileInfo.class, r1);
-        table.setDefaultRenderer(Long.class, r1);
-        table.setDefaultRenderer(LocalDateTime.class, r1);
-        table.setDefaultRenderer(Object.class, r1);
+        table.setDefaultRenderer(FileInfo.class, folderViewCellRenderer);
+        table.setDefaultRenderer(Long.class, folderViewCellRenderer);
+        table.setDefaultRenderer(LocalDateTime.class, folderViewCellRenderer);
+        table.setDefaultRenderer(Object.class, folderViewCellRenderer);
         table.setFillsViewportHeight(true);
         table.setShowGrid(false);
 
@@ -268,11 +267,11 @@ public class FolderView extends JPanel {
         resizeColumnWidth(table);
 
         tableScroller = new SkinnedScrollPane(table);
-        table.setRowHeight(r1.getHeight());
+        table.setRowHeight(folderViewCellRenderer.getHeight());
 
         resizeColumnWidth(table);
 
-        System.out.println("Row height: " + r1.getHeight());
+        System.out.println("Row height: " + folderViewCellRenderer.getHeight());
 
         fileList = new JList<>(folderViewModel);
         fileList.setBackground(App.skin.getTableBackgroundColor());
@@ -284,11 +283,11 @@ public class FolderView extends JPanel {
         fileList.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                System.out.println("Mouse click on table");
+                System.out.println("Mouse click on table " + e.getClickCount() );
                 if (fileList.getSelectionModel().getValueIsAdjusting()) {
                     System.out.println("Value adjusting");
-                    selectListRow(e);
-                    return;
+                    if(selectListRow(e))
+                        return;
                 }
                 if (e.getClickCount() == 2) {
                     Point p = e.getPoint();
@@ -298,7 +297,7 @@ public class FolderView extends JPanel {
                         return;
                     }
                     if (r == x) {
-                        FileInfo fileInfo = folderViewModel.getItemAt(getRow(r));
+                        FileInfo fileInfo = folderViewModel.getItemAt(r);
                         if (fileInfo.getType() == FileType.DIR || fileInfo.getType() == FileType.DIR_LINK) {
                             listener.addBack(fileInfo.getPath());
                             listener.render(fileInfo.getPath(), SettingsService.getSettings().isDirectoryCache());
@@ -311,7 +310,7 @@ public class FolderView extends JPanel {
                     System.out.println("called");
                     listener.createMenu(popup, getSelectedFiles());
                     popup.pack();
-                    popup.show(table, e.getX(), e.getY());
+                    popup.show(listScroller, e.getX(), e.getY());
                 }
             }
         });
@@ -337,7 +336,7 @@ public class FolderView extends JPanel {
         }
     }
 
-    private void selectListRow(MouseEvent e) {
+    private boolean selectListRow(MouseEvent e) {
         int r = fileList.locationToIndex(e.getPoint());
         System.out.println("Row at point: " + r);
         if (r == -1) {
@@ -347,12 +346,13 @@ public class FolderView extends JPanel {
                 int[] rows = fileList.getSelectedIndices();
                 for (int row : rows) {
                     if (r == row) {
-                        return;
+                        return false;
                     }
                 }
             }
             fileList.setSelectedIndex(r);
         }
+        return true;
     }
 
     public FileInfo[] getSelectedFiles() {

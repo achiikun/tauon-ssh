@@ -6,6 +6,7 @@ package tauon.app.ui.containers.session.pages.info.processview;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.subpage.Subpage;
+import tauon.app.ui.components.tablerenderers.ByteCountValue;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.util.misc.ScriptLoader;
@@ -136,7 +137,7 @@ public class ProcessViewer extends Subpage {
             } catch (Exception e) {
             }
             try {
-                ent.setMemory(Float.parseFloat(p[2].trim()));
+                ent.setMemory(new ByteCountValue((long) Float.parseFloat(p[2].trim()) * 1024));
             } catch (Exception e) {
             }
             ent.setTime(p[3]);

@@ -8,12 +8,17 @@ import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.subpage.Subpage;
+import tauon.app.ui.components.tablerenderers.ByteCountRenderer;
+import tauon.app.ui.components.tablerenderers.ByteCountValue;
+import tauon.app.ui.components.tablerenderers.PercentageRenderer;
+import tauon.app.ui.components.tablerenderers.PercentageValue;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.util.misc.OptionPaneUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
@@ -129,16 +134,18 @@ public class DiskspaceAnalyzer extends Subpage {
     }
 
     private Component createVolumesPanel() {
-        PartitionRenderer r1 = new PartitionRenderer();
-        UsagePercentageRenderer r2 = new UsagePercentageRenderer();
+        ByteCountRenderer byteCountRenderer = new ByteCountRenderer();
+        PercentageRenderer percentageRenderer = new PercentageRenderer();
+        
         model = new PartitionTableModel();
         table = new JTable(model);
         table.setFillsViewportHeight(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setAutoCreateRowSorter(true);
-        table.setDefaultRenderer(Object.class, r1);
-        table.setDefaultRenderer(Double.class, r2);
-        table.setRowHeight(Math.max(r1.getPreferredSize().height, r2.getPreferredSize().height));
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer());
+        table.setDefaultRenderer(ByteCountValue.class, byteCountRenderer);
+        table.setDefaultRenderer(PercentageValue.class, percentageRenderer);
+        table.setRowHeight(Math.max(byteCountRenderer.getPreferredSize().height, percentageRenderer.getPreferredSize().height));
         table.setSelectionForeground(App.skin.getDefaultSelectionForeground());
         JScrollPane jsp = new SkinnedScrollPane(table);
 

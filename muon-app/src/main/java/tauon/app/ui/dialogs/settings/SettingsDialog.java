@@ -61,7 +61,7 @@ public class SettingsDialog extends JDialog {
     private ColorSelectorButton defaultColorFg, defaultColorBg, defaultSelectionFg, defaultSelectionBg, defaultFoundFg,
             defaultFoundBg;
     private JCheckBox chkConfirmBeforeDelete, chkConfirmBeforeMoveOrCopy, chkShowHiddenFilesByDefault, chkFirstFileBrowserView,
-            chkUseSudo, chkPromptForSudo, chkTransferTemporaryDirectory,
+            chkUseSudo, chkPromptForSudo, chkListViewEnabled, chkTransferTemporaryDirectory,
             chkDirectoryCache, chkShowPathBar, chkConfirmBeforeTerminalClosing, chkShowMessagePrompt, chkStartMaximized, chkShowActualDateOnlyHour,
             chkUseGlobalDarkTheme, spConnectionKeepAlive;
     private KeyShortcutComponent[] kcc;
@@ -436,6 +436,7 @@ public class SettingsDialog extends JDialog {
         chkFirstFileBrowserView = new JCheckBox(getBundle().getString("show_filebrowser_first"));
         chkPromptForSudo = new JCheckBox(getBundle().getString("prompt_for_sudo"));
         chkUseSudo = new JCheckBox(getBundle().getString("use_sudo_if_fails"));
+        chkListViewEnabled = new JCheckBox(getBundle().getString("list_view_enabled"));
         chkTransferTemporaryDirectory = new JCheckBox(getBundle().getString("transfer_temporary_directory"));
         chkDirectoryCache = new JCheckBox(getBundle().getString("directory_caching"));
         chkShowPathBar = new JCheckBox(getBundle().getString("current_folder"));
@@ -478,6 +479,7 @@ public class SettingsDialog extends JDialog {
         chkConfirmBeforeMoveOrCopy.setAlignmentX(Box.LEFT_ALIGNMENT);
         chkShowHiddenFilesByDefault.setAlignmentX(Box.LEFT_ALIGNMENT);
         chkFirstFileBrowserView.setAlignmentX(Box.LEFT_ALIGNMENT);
+        chkListViewEnabled.setAlignmentX(Box.LEFT_ALIGNMENT);
         chkTransferTemporaryDirectory.setAlignmentX(Box.LEFT_ALIGNMENT);
         chkUseSudo.setAlignmentX(Box.LEFT_ALIGNMENT);
         chkPromptForSudo.setAlignmentX(Box.LEFT_ALIGNMENT);
@@ -502,6 +504,8 @@ public class SettingsDialog extends JDialog {
         vbox.add(chkShowHiddenFilesByDefault);
         vbox.add(Box.createRigidArea(new Dimension(10, 10)));
         vbox.add(chkFirstFileBrowserView);
+        vbox.add(Box.createRigidArea(new Dimension(10, 10)));
+        vbox.add(chkListViewEnabled);
         vbox.add(Box.createRigidArea(new Dimension(10, 10)));
         vbox.add(chkTransferTemporaryDirectory);
         vbox.add(Box.createRigidArea(new Dimension(10, 10)));
@@ -600,6 +604,7 @@ public class SettingsDialog extends JDialog {
             settings.setShowHiddenFilesByDefault(chkShowHiddenFilesByDefault.isSelected());
             settings.setFirstFileBrowserView(chkFirstFileBrowserView.isSelected());
             settings.setUseSudo(chkUseSudo.isSelected());
+            settings.setListViewEnabled(chkListViewEnabled.isSelected());
             settings.setTransferTemporaryDirectory(chkTransferTemporaryDirectory.isSelected());
             settings.setPromptForSudo(chkPromptForSudo.isSelected());
             settings.setDirectoryCache(chkDirectoryCache.isSelected());
@@ -687,6 +692,7 @@ public class SettingsDialog extends JDialog {
         chkConfirmBeforeMoveOrCopy.setSelected(settings.isConfirmBeforeMoveOrCopy());
         chkShowHiddenFilesByDefault.setSelected(settings.isShowHiddenFilesByDefault());
         chkFirstFileBrowserView.setSelected(settings.isFirstFileBrowserView());
+        chkListViewEnabled.setSelected(settings.isListViewEnabled());
         chkTransferTemporaryDirectory.setSelected(settings.isTransferTemporaryDirectory());
         chkUseSudo.setSelected(settings.isUseSudo());
         chkUseSudo.addActionListener(e -> setStatusCheckBox(chkPromptForSudo, chkUseSudo.isSelected()));

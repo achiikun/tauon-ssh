@@ -2,9 +2,14 @@ package tauon.app.ui.containers.session.pages.info.processview;
 
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
+import tauon.app.ui.components.tablerenderers.ByteCountRenderer;
+import tauon.app.ui.components.tablerenderers.ByteCountValue;
+import tauon.app.ui.components.tablerenderers.PercentageRenderer;
+import tauon.app.ui.components.tablerenderers.PercentageValue;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
@@ -39,10 +44,15 @@ public class ProcessListPanel extends JPanel {
         table = new JTable(model);
 
         table.getSelectionModel().addListSelectionListener(e -> enableProcessesButtons());
-
-        ProcessListRenderer renderer = new ProcessListRenderer();
+        
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
+        ByteCountRenderer byteCountRenderer = new ByteCountRenderer();
         table.setDefaultRenderer(Object.class, renderer);
-        table.setRowHeight(renderer.getPreferredSize().height);
+        table.setDefaultRenderer(ByteCountValue.class, byteCountRenderer);
+        table.setRowHeight(Math.max(
+                renderer.getPreferredSize().height,
+                byteCountRenderer.getPreferredSize().height
+        ));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getColumnModel().getColumn(0).setPreferredWidth(200);

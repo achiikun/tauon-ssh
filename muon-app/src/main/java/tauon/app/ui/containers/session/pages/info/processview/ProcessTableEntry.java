@@ -1,5 +1,7 @@
 package tauon.app.ui.containers.session.pages.info.processview;
 
+import tauon.app.ui.components.tablerenderers.ByteCountValue;
+
 public class ProcessTableEntry {
     private String name;
     private String user;
@@ -7,7 +9,7 @@ public class ProcessTableEntry {
     private String tty;
     private String args;
     private float cpu;
-    private float memory;
+    private ByteCountValue memory;
     private int pid;
     private int ppid;
     private int nice;
@@ -60,11 +62,11 @@ public class ProcessTableEntry {
         this.cpu = cpu;
     }
 
-    public float getMemory() {
+    public ByteCountValue getMemory() {
         return memory;
     }
 
-    public void setMemory(float memory) {
+    public void setMemory(ByteCountValue memory) {
         this.memory = memory;
     }
 
