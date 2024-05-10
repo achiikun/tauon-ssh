@@ -112,6 +112,7 @@ public class FileTransfer implements AutoCloseable {
                 transfer(this.targetFolder, callback);
                 callback.done(this);
             } catch (AccessDeniedException e) {
+                
                 if (targetFs instanceof SshFileSystem) {
                     String tmpDir = "/tmp/" + UUID.randomUUID();
                     if (SettingsService.getSettings().isTransferTemporaryDirectory()) {
@@ -122,29 +123,36 @@ public class FileTransfer implements AutoCloseable {
                         tmpFilePath.setText("Files copied in " + tmpDir + " due to permission issues");
                         tmpFilePath.setEnabled(true);
                         JOptionPane.showMessageDialog(null, tmpFilePath, "Copied to temp directory", JOptionPane.WARNING_MESSAGE);
-
-                        if (!SettingsService.getSettings().isPromptForSudo() ||
-                                JOptionPane.showConfirmDialog(null,
-                                        "Permission denied, do you want to copy files from the temporary folder to destination with sudo?",
-                                        getBundle().getString("insufficient_permisions"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                            String command = "sh -c  \"cd '" + tmpDir + "'; cp -r * '" + this.targetFolder + "'\"";
-                            
-                            instance.runSSHOperation(instance2 -> {
-                                System.out.println("Invoke sudo: " + command);
-                                int ret = SudoUtils.runSudo(command, instance2);
-                                if (ret == 0) {
-                                    callback.done(this);
-                                }
-                            });
-                            return;
-                            
-                        }
                     }
-
-
+                    
+                    if (!SettingsService.getSettings().isPromptForSudo() ||
+                            JOptionPane.showConfirmDialog(null,
+                                    "Permission denied, do you want to copy files from the temporary folder to destination with sudo?",
+                                    getBundle().getString("insufficient_permissions"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        
+                        // Because transferTemporaryDirectory already create and transfer files, here can skip these steps
+                        if (!SettingsService.getSettings().isTransferTemporaryDirectory()) {
+                            targetFs.mkdir(tmpDir);
+                            transfer(tmpDir, callback);
+                        }
+                        
+                        String command = "sh -c  \"cd '" + tmpDir + "'; cp -r * '" + this.targetFolder + "'\"";
+                        
+                        instance.runSSHOperation(instance2 -> {
+                            System.out.println("Invoke sudo: " + command);
+                            int ret = SudoUtils.runSudo(command, instance2);
+                            if (ret == 0) {
+                                callback.done(this);
+                            }
+                        });
+                        return;
+                        
+                    }
+                    
                     throw e;
                 }
             }
+            
         } catch (Exception e) {
             e.printStackTrace();
             if (stopFlag.get()) {

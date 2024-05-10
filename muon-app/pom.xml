@@ -68,13 +68,15 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.6</version>
+            <version>3.9.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.shinyhut</groupId>
-            <artifactId>vernacular</artifactId>
-            <version>1.6</version>
-        </dependency>
+
+<!--        *************************** Uncomment it to do VNC ***************************-->
+<!--        <dependency>-->
+<!--            <groupId>com.shinyhut</groupId>-->
+<!--            <artifactId>vernacular</artifactId>-->
+<!--            <version>1.6</version>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -313,7 +315,7 @@
                         </goals>
                         <configuration>
                             <icon>src/exe/muonssh.ico</icon>
-                            <headerType>console</headerType>
+                            <headerType>gui</headerType>
                             <outfile>target/muonssh_${project.version}.exe</outfile>
                             <jar>target/muonssh_${project.version}.jar</jar>
                             <errTitle>Failed to load muonssh</errTitle>
@@ -377,15 +379,13 @@
             <name>central</name>
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
-        <repository>
-            <id>jcenter</id>
-            <name>jcenter</name>
-            <url>https://jcenter.bintray.com</url>
-        </repository>
-        <repository>
-            <id>personal</id>
-            <name>extra</name>
-            <url>https://subhra74.github.io/extra-jars/</url>
-        </repository>
+
+        <!--        *************************** Uncomment it to do VNC ***************************-->
+        <!--        This is for vernacular-->
+<!--        <repository>-->
+<!--            <id>jcenter</id>-->
+<!--            <name>jcenter</name>-->
+<!--            <url>https://jcenter.bintray.com</url>-->
+<!--        </repository>-->
     </repositories>
 </project>

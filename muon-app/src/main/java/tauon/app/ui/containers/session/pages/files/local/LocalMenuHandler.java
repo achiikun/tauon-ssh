@@ -14,6 +14,7 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
@@ -28,21 +29,32 @@ public class LocalMenuHandler {
     private JMenuItem mOpenInNewTab, mRename, mDelete, mNewFile, mNewFolder, mCopy, mPaste, mCut, mAddToFav, mOpen,
             mOpenInFileExplorer;
     private FolderView folderView;
-
+    
     public LocalMenuHandler(FileBrowser fileBrowser, LocalFileBrowserView fileBrowserView) {
         this.fileBrowser = fileBrowser;
         this.fileOperations = new LocalFileOperations();
         this.fileBrowserView = fileBrowserView;
     }
-
+    
     public void initMenuHandler(FolderView folderView) {
         this.folderView = folderView;
         InputMap map = folderView.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap act = folderView.getActionMap();
-        this.initMenuItems();
+        this.initMenuItems(map, act);
     }
-
-    private void initMenuItems() {
+    
+    /**
+     * Add shortcut for menu item
+     */
+    private static void addShortcut(JMenuItem menuItem, KeyStroke keyStroke, InputMap inputMap,
+                                    ActionMap actionMap, String actionKey, Action action) {
+        menuItem.addActionListener(action);
+        inputMap.put(keyStroke, actionKey);
+        actionMap.put(actionKey, action);
+        menuItem.setAccelerator(keyStroke);
+    }
+    
+    private void initMenuItems(InputMap map, ActionMap act) {
         mOpen = new JMenuItem(getBundle().getString("open"));
         mOpen.addActionListener(new ActionListener() {
             @Override
@@ -57,7 +69,7 @@ public class LocalMenuHandler {
                 openNewTab();
             }
         });
-
+        
         mOpenInFileExplorer = new JMenuItem(
                 PlatformUtils.IS_WINDOWS ? "Open in Windows Explorer" : (PlatformUtils.IS_MAC ? "Open in Finder" : "Open in File Browser"));
         mOpenInFileExplorer.addActionListener(new ActionListener() {
@@ -78,7 +90,7 @@ public class LocalMenuHandler {
                 }
             }
         });
-
+        
         mRename = new JMenuItem(getBundle().getString("rename"));
         mRename.addActionListener(new ActionListener() {
             @Override
@@ -86,15 +98,21 @@ public class LocalMenuHandler {
                 rename(folderView.getSelectedFiles()[0], fileBrowserView.getCurrentDirectory());
             }
         });
-
-        mDelete = new JMenuItem(getBundle().getString("delete"));
-        mDelete.addActionListener(new ActionListener() {
+        
+        
+        AbstractAction aDelete = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                delete(folderView.getSelectedFiles());
+                delete(folderView.getSelectedFiles(), fileBrowserView.getCurrentDirectory());
             }
-        });
-
+        };
+        mDelete = new JMenuItem(getBundle().getString("delete"));
+        mDelete.addActionListener(aDelete);
+        KeyStroke ksDelete = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
+        map.put(ksDelete, "ksDelete");
+        act.put("ksDelete", aDelete);
+        mDelete.setAccelerator(ksDelete);
+        
         mNewFile = new JMenuItem(getBundle().getString("new_file"));
         mNewFile.addActionListener(new ActionListener() {
             @Override
@@ -102,7 +120,7 @@ public class LocalMenuHandler {
                 newFile();
             }
         });
-
+        
         mNewFolder = new JMenuItem(getBundle().getString("new_folder"));
         mNewFolder.addActionListener(new ActionListener() {
             @Override
@@ -110,28 +128,28 @@ public class LocalMenuHandler {
                 newFolder(fileBrowserView.getCurrentDirectory());
             }
         });
-
+        
         mCopy = new JMenuItem(getBundle().getString("copy"));
         mCopy.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
-
+        
         mPaste = new JMenuItem(getBundle().getString("paste"));
         mPaste.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
-
+        
         mCut = new JMenuItem(getBundle().getString("cut"));
         mCut.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
-
+        
         mAddToFav = new JMenuItem(getBundle().getString("bookmark"));
         mAddToFav.addActionListener(new ActionListener() {
             @Override
@@ -140,18 +158,18 @@ public class LocalMenuHandler {
             }
         });
     }
-
+    
     public void createMenu(JPopupMenu popup, FileInfo[] selectedFiles) {
         createMenuContext(popup, selectedFiles);
     }
-
+    
     private void createMenuContext(JPopupMenu popup, FileInfo[] files) {
         popup.removeAll();
         int selectionCount = files.length;
         createBuitinItems1(selectionCount, popup, files);
         createBuitinItems2(selectionCount, popup);
     }
-
+    
     private void createBuitinItems1(int selectionCount, JPopupMenu popup, FileInfo[] selectedFiles) {
         if (selectionCount == 1) {
             if (selectedFiles[0].getType() == FileType.FILE || selectedFiles[0].getType() == FileType.FILE_LINK) {
@@ -164,16 +182,17 @@ public class LocalMenuHandler {
             }
             popup.add(mRename);
         }
-
+        
     }
-
+    
     private void createBuitinItems2(int selectionCount, JPopupMenu popup) {
+        popup.add(mDelete);
         popup.add(mNewFolder);
         popup.add(mNewFile);
         // check only if folder is selected
         popup.add(mAddToFav);
     }
-
+    
     private void open() {
         FileInfo[] files = folderView.getSelectedFiles();
         if (files.length == 1) {
@@ -182,7 +201,7 @@ public class LocalMenuHandler {
             }
         }
     }
-
+    
     private void openNewTab() {
         FileInfo[] files = folderView.getSelectedFiles();
         if (files.length == 1) {
@@ -192,14 +211,14 @@ public class LocalMenuHandler {
             }
         }
     }
-
+    
     private void rename(FileInfo info, String baseFolder) {
         String text = JOptionPane.showInputDialog(getBundle().getString("enter_new_name"), info.getName());
         if (text != null && text.length() > 0) {
             renameAsync(info.getPath(), PathUtils.combineUnix(PathUtils.getParent(info.getPath()), text), baseFolder);
         }
     }
-
+    
     private void renameAsync(String oldName, String newName, String baseFolder) {
         fileBrowser.getHolder().submitLocalOperation(() -> {
             if (fileOperations.rename(oldName, newName)) {
@@ -215,8 +234,8 @@ public class LocalMenuHandler {
 //            }
 //        });
     }
-
-    private void delete(FileInfo[] selectedFiles) {
+    
+    private void delete(FileInfo[] selectedFiles, String baseFolder) {
         fileBrowser.getHolder().submitLocalOperation(() -> {
             for (FileInfo f : selectedFiles) {
                 try {
@@ -226,6 +245,7 @@ public class LocalMenuHandler {
                     e.printStackTrace();
                 }
             }
+            fileBrowserView.render(baseFolder);
         });
 //        fileBrowser.getHolder().executor.submit(() -> {
 //            fileBrowser.disableUi();
@@ -239,7 +259,7 @@ public class LocalMenuHandler {
 //            fileBrowser.enableUi();
 //        });
     }
-
+    
     private void newFile() {
         fileBrowser.getHolder().submitLocalOperation(() -> {
             String baseFolder = fileBrowserView.getCurrentDirectory();
@@ -257,7 +277,7 @@ public class LocalMenuHandler {
 //            }
 //        });
     }
-
+    
     private void newFolder(String currentDirectory) {
         fileBrowser.getHolder().submitLocalOperation(() -> {
             String baseFolder = currentDirectory;
@@ -275,10 +295,10 @@ public class LocalMenuHandler {
 //            }
 //        });
     }
-
+    
     private void addToFavourites() {
         FileInfo[] arr = folderView.getSelectedFiles();
-
+        
         if (arr.length > 0) {
             BookmarkManager.getInstance().addEntry(null,
                     Arrays.asList(arr).stream()
@@ -287,11 +307,11 @@ public class LocalMenuHandler {
         } else if (arr.length == 0) {
             BookmarkManager.getInstance().addEntry(null, fileBrowserView.getCurrentDirectory());
         }
-
+        
         this.fileBrowserView.getOverflowMenuHandler().loadFavourites();
-
+        
     }
-
+    
     public JPopupMenu createAddressPopup() {
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem mOpenInNewTab = new JMenuItem(getBundle().getString("open_new_tab"));
@@ -302,20 +322,20 @@ public class LocalMenuHandler {
         popupMenu.add(mCopyPath);
         popupMenu.add(mOpenInTerminal);
         popupMenu.add(mBookmark);
-
+        
         mOpenInNewTab.addActionListener(e -> {
             String path = popupMenu.getName();
         });
-
+        
         mOpenInTerminal.addActionListener(e -> {
-
+        
         });
-
+        
         mCopyPath.addActionListener(e -> {
             String path = popupMenu.getName();
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(path), null);
         });
-
+        
         mBookmark.addActionListener(e -> {
             String path = popupMenu.getName();
             BookmarkManager.getInstance().addEntry(null, path);

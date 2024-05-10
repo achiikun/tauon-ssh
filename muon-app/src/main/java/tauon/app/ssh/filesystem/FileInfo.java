@@ -38,7 +38,7 @@ public class FileInfo implements Serializable {
         this.permissionString = permissionString;
         this.created = TimeUtils.toDateTime(created);
         this.extra = extra;
-        if (this.extra != null && this.extra.length() > 0) {
+        if (this.extra != null && !this.extra.isEmpty()) {
             this.user = getUserName();
         }
         this.hidden = hidden;
@@ -46,7 +46,7 @@ public class FileInfo implements Serializable {
 
     private String getUserName() {
         try {
-            if (this.extra != null && this.extra.length() > 0) {
+            if (this.extra != null && !this.extra.isEmpty()) {
                 Matcher matcher = USER_REGEX.matcher(this.extra);
                 if (matcher.find()) {
                     return matcher.group(1);

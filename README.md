@@ -70,19 +70,24 @@ although I recognize the great job done in that repo.
 * [X] Bug: Sometimes when shell is present, no cursor is blinking (After reconnecting, cursor disappears)
 * [ ] Bug: Unicode characters in terminal (tree is not displaying properly)
 * [ ] Bug: Forwarded ports remain active after closing session
-* [ ] Add a connection status page
+* [ ] Add a connection status page (list of active forwarding ports)
+* [ ] Add a name and an enable check to each port forwarding
 * [ ] Run ports with sudo by default
 * [ ] When hit a CTRL+C, flush console buffer to receive the prompt ASAP
 * [ ] Open the program in the last location, or in the active screen if multiple
 * [ ] Copy PID from processes
 * [ ] When a port forwarding fails, notify to the user
-* [ ] File Browser Issues
+* [ ] Notification tray
+* [ ] Store securely proxy password
+* [ ] Let user upload private key files and store them securely
+* [ ] File Browser Issues 
   * [ ] Unify behavior for all file tasks (ask for sudo, ask for reconnect)
   * [ ] File browser arrows (history) don't work
   * [ ] Download is not implemented
   * [ ] Refresh window after copying files
   * [ ] Add a box to query what happens when copying a file that exists
   * [ ] Move an item to a folder in the same window
+  * [ ] Create a remote folder picker
 
 
 **Here goes new features**

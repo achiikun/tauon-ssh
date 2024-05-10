@@ -119,13 +119,13 @@ public class TauonSSHClient {
                             try {
                                 forwardLocalPort(r, sshConnectedHop.sshj);
                             } catch (Exception e) {
-                                LOG.error("Local port forwarding failed: " + r, e);
+                                LOG.error("Local port forwarding failed: {}", r, e);
                             }
                         } else if (r.getType() == PortForwardingRule.PortForwardingType.Remote) {
                             try {
                                 forwardRemotePort(r, sshConnectedHop.sshj);
                             } catch (Exception e) {
-                                LOG.error("Remote port forwarding failed: " + r, e);
+                                LOG.error("Remote port forwarding failed: {}", r, e);
                             }
                         }
                     }
@@ -436,7 +436,7 @@ public class TauonSSHClient {
                         throw new InterruptedException(); // Will be disconnected by TauonSSHClient
                     }
                     
-                    LOG.debug("Trying auth method: " + authMethod);
+                    LOG.debug("Trying auth method: {}", authMethod);
                     
                     switch (authMethod) {
                         case "publickey":
@@ -522,7 +522,7 @@ public class TauonSSHClient {
                 return true;
             } catch (Exception e) {
                 allowedMethodsIfNotAuthenticated.addAll(sshj.getUserAuth().getAllowedMethods());
-                LOG.debug("List of allowed authentications: " + allowedMethodsIfNotAuthenticated);
+                LOG.debug("List of allowed authentications: {}", allowedMethodsIfNotAuthenticated);
             }
             return false;
         }
@@ -533,8 +533,8 @@ public class TauonSSHClient {
                 File keyFile = new File(info.getPrivateKeyFile());
                 if (keyFile.exists()) {
                     provider = sshj.loadKeys(info.getPrivateKeyFile(), passwordFinder);
-                    LOG.debug("Key provider: " + provider);
-                    LOG.debug("Key type: " + provider.getType());
+                    LOG.debug("Key provider: {}", provider);
+                    LOG.debug("Key type: {}", provider.getType());
                 }
             }
             
