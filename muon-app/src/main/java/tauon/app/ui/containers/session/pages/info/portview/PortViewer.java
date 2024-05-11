@@ -3,11 +3,14 @@
  */
 package tauon.app.ui.containers.session.pages.info.portview;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.AlreadyFailedException;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
+import tauon.app.util.misc.PlatformUtils;
 import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;
@@ -25,6 +28,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class PortViewer extends Subpage {
+    private static final Logger LOG = LoggerFactory.getLogger(PortViewer.class);
+    
     private static final String SEPARATOR = UUID.randomUUID().toString();
     public static final String LSOF_COMMAND = "sh -c \"export PATH=$PATH:/usr/sbin; echo;echo "
             + SEPARATOR + ";lsof -b -n -i tcp -P -s tcp:LISTEN -F cn 2>&1\"";

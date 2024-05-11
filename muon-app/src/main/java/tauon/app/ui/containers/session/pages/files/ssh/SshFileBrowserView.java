@@ -1,5 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.ssh;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.SessionClosedException;
@@ -14,6 +16,7 @@ import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
 import tauon.app.ssh.filesystem.SshFileSystem;
+import tauon.app.ui.containers.session.pages.terminal.snippets.SnippetPanel;
 import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.PathUtils;
 
@@ -27,6 +30,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SshFileBrowserView extends AbstractFileBrowserView {
+    private static final Logger LOG = LoggerFactory.getLogger(SshFileBrowserView.class);
+    
     private final SshMenuHandler menuHandler;
     private final JPopupMenu addressPopup;
     private final DndTransferHandler transferHandler;
@@ -138,47 +143,6 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
                 renderDirectory(instance.getSshFs(), this.path, useCache);
             }
         });
-//        fileBrowser.getHolder().executor.submit(() -> {
-//            this.fileBrowser.disableUi();
-//            try {
-//                while (!fileBrowser.isCloseRequested()) {
-//                    System.out.println("Listing files now ...");
-//                    try {
-//                        if (path == null) {
-//                            SshFileSystem sshfs = this.fileBrowser.getSSHFileSystem();
-//                            this.path = sshfs.getHome();
-//                        }
-//                        renderDirectory(this.path, useCache);
-//                        break;
-//                    } catch (OperationCancelledException e) {
-//                        e.printStackTrace();
-//
-//                        break;
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                        if (this.fileBrowser.isSessionClosed()) {
-//                            return;
-//                        }
-//                        System.out.println("Exception caught in sftp file browser: " + e.getMessage());
-//
-//                        // TODO i18n
-//                        if (JOptionPane.showConfirmDialog(null,
-//                                "Unable to connect to server " + this.fileBrowser.getInfo().getName() + " at "
-//                                        + this.fileBrowser.getInfo().getHost()
-//                                        + (e.getMessage() != null ? "\n\nReason: " + e.getMessage() : "\n")
-//                                        + "\n\nDo you want to retry?") == JOptionPane.YES_OPTION) {
-//
-//                            this.fileBrowser.getHolder().ensureConnected();
-//
-//                            continue;
-//                        }
-//                        break;
-//                    }
-//                }
-//            } finally {
-//                this.fileBrowser.enableUi();
-//            }
-//        });
     }
 
     @Override

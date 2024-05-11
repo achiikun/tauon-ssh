@@ -1,5 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.ssh;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.FileInfo;
@@ -20,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class SshFileOperations {
+    private static final Logger LOG = LoggerFactory.getLogger(SshFileOperations.class);
 
     public SshFileOperations() {
     }

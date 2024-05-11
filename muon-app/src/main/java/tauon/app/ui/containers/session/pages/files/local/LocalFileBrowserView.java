@@ -1,5 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.local;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
@@ -9,6 +11,7 @@ import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
+import tauon.app.ui.containers.session.pages.tools.keys.KeyPage;
 import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
@@ -21,6 +24,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class LocalFileBrowserView extends AbstractFileBrowserView {
+    private static final Logger LOG = LoggerFactory.getLogger(LocalFileBrowserView.class);
+    
     private final LocalMenuHandler menuHandler;
     private final DndTransferHandler transferHandler;
     private final JPopupMenu addressPopup;

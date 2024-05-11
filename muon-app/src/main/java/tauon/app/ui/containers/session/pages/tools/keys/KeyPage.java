@@ -3,6 +3,9 @@
  */
 package tauon.app.ui.containers.session.pages.tools.keys;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.ui.components.misc.FontItemRenderer;
 import tauon.app.ui.components.misc.TabbedPanel;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
@@ -16,6 +19,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class KeyPage extends Subpage {
+    private static final Logger LOG = LoggerFactory.getLogger(KeyPage.class);
+    
     private RemoteKeyPanel remoteKeyPanel;
     private LocalKeyPanel localKeyPanel;
     private TabbedPanel tabs;

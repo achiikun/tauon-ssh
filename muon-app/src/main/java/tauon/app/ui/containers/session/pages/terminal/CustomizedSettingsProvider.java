@@ -7,9 +7,12 @@ import com.jediterm.terminal.TerminalColor;
 import com.jediterm.terminal.TextStyle;
 import com.jediterm.terminal.emulator.ColorPalette;
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.Settings;
 import tauon.app.settings.SessionInfo;
+import tauon.app.ui.components.closabletabs.ClosableTabbedPanel;
 import tauon.app.util.misc.FontUtils;
 
 import javax.swing.*;
@@ -21,6 +24,8 @@ import com.jediterm.core.Color;
  *
  */
 public class CustomizedSettingsProvider extends DefaultSettingsProvider {
+    private static final Logger LOG = LoggerFactory.getLogger(CustomizedSettingsProvider.class);
+    
     private final ColorPalette palette;
     
     private final SessionInfo info;

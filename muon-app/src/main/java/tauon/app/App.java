@@ -41,14 +41,11 @@ public class App {
     
     public static AppSkin skin;
     
-//    private static Settings settings;
     private static ExternalEditorHandler externalEditorHandler;
-//    private static AppWindow mw;
 
     static {
         System.setProperty("java.net.useSystemProxies", "true");
         System.setProperty("log4j.debug", "true");
-        
     }
     
     private App(){
@@ -72,26 +69,6 @@ public class App {
         ConfigFilesService.getInstance().initialize();
         SettingsService.getInstance().initialize();
         getBundle();
-        
-//        validateCustomMuonPath();
-//        boolean importOnFirstRun = validateConfigPath();
-
-//        setBundleLanguage();
-//        loadSettings();
-        
-//        if (importOnFirstRun) {
-//            SessionExportImport.importOnFirstRun();
-        
-        /*File appDir = new File(CONFIG_DIR);
-       if (!appDir.exists()) {
-            //Validate if the config directory can be created
-            if(!appDir.mkdirs()){
-                System.err.println("The config directory for muon cannot be created: "+ CONFIG_DIR);
-                System.exit(1);
-            }
-            firstRun = true;
-            
-        }*/
         
         if (getSettings().isManualScaling()) {
             System.setProperty("sun.java2d.uiScale.enabled", "true");
@@ -147,13 +124,5 @@ public class App {
     public static ExternalEditorHandler getExternalEditorHandler() {
         return externalEditorHandler;
     }
-
-//    public static synchronized void openSettings(SettingsPageName page) {
-//        mw.openSettings(page);
-//    }
-
-//    public static synchronized AppWindow getAppWindow() {
-//        return mw;
-//    }
 
 }

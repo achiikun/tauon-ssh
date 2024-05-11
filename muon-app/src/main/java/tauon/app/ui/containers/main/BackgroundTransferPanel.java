@@ -1,6 +1,9 @@
 package tauon.app.ui.containers.main;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.ui.components.glasspanes.AppInputBlocker;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.files.transfer.FileTransfer;
@@ -16,6 +19,8 @@ import java.util.function.Consumer;
 
 
 public class BackgroundTransferPanel extends JPanel {
+    private static final Logger LOG = LoggerFactory.getLogger(BackgroundTransferPanel.class);
+    
     private final Box verticalBox;
     private final AtomicInteger transferCount = new AtomicInteger(0);
     private final Consumer<Integer> callback;

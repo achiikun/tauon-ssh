@@ -1,11 +1,14 @@
 package tauon.app.ui.containers.session.pages.files.transfer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.SSHRemoteFileInputStream;
 import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
 import tauon.app.ssh.filesystem.*;
 import tauon.app.ui.containers.main.FileTransferProgress;
 import tauon.app.ui.containers.session.SessionContentPanel;
+import tauon.app.ui.containers.session.pages.tools.diskspace.DiskspaceAnalyzer;
 import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.Constants.ConflictAction;
 import tauon.app.util.misc.PathUtils;
@@ -24,6 +27,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class FileTransfer implements AutoCloseable {
+    private static final Logger LOG = LoggerFactory.getLogger(FileTransfer.class);
+    
     // -> skip
     private static final int BUF_SIZE = Short.MAX_VALUE;
     private final FileSystem sourceFs;

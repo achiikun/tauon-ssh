@@ -1,6 +1,9 @@
 package tauon.app.ui.containers.session.pages.files.ssh;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ui.components.glasspanes.AppInputBlocker;
 import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
@@ -11,6 +14,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ArchiveOperation {
+    private static final Logger LOG = LoggerFactory.getLogger(ArchiveOperation.class);
+    
     private final Map<String, String> extractCommands;
     private final Map<String, String> compressCommands;
 
@@ -87,7 +92,7 @@ public class ArchiveOperation {
             throws Exception {
         String command = getExtractCommand(archivePath);
         if (command == null) {
-            System.out.println("Unsupported file: " + archivePath);
+            LOG.error("Unsupported file type: {}", archivePath);
             return false;
         }
         command = String
@@ -97,10 +102,14 @@ public class ArchiveOperation {
                                 getArchiveFileName(PathUtils
                                         .getFileName(archivePath)))
                                 : targetFolder);
-        System.out.println("Invoke command: " + command);
+        
+        LOG.debug("Invoke command: {}", command);
+        
         StringBuilder output = new StringBuilder();
         boolean ret = client.exec(command, stopFlag, output) == 0;
-        System.out.println("output: " + output);
+        
+        LOG.debug("Output: {}", output);
+        
         return ret;
     }
 
@@ -112,6 +121,7 @@ public class ArchiveOperation {
         JTextField txtTargetFolder = new JTextField(targetFolder);
         JComboBox<String> comboBox = new JComboBox<>(
                 compressCommands.keySet().toArray(new String[0]));
+        // TODO i18n
         if (JOptionPane.showOptionDialog(null,
                 new Object[]{"Archive name", txtFileName, "Target folder",
                         txtTargetFolder, "Archive type", comboBox},
@@ -121,7 +131,7 @@ public class ArchiveOperation {
 
             StringBuilder sb = new StringBuilder();
             for (String s : files) {
-                sb.append(" \"" + s + "\"");
+                sb.append(" \"").append(s).append("\"");
             }
 
             String ext = comboBox.getSelectedItem() + "";
@@ -130,11 +140,16 @@ public class ArchiveOperation {
                     sb,
                     PathUtils.combineUnix(txtTargetFolder.getText(),
                             txtFileName.getText() + "." + ext));
+            
             String cd = String.format("cd \"%s\";", txtTargetFolder.getText());
-            System.out.println(cd + compressCmd);
+            
+            LOG.debug("Invoke command: {}", cd + compressCmd);
+            
             StringBuilder output = new StringBuilder();
             boolean ret = client.exec(cd + compressCmd, stopFlag, output) == 0;
-            System.out.println("output: " + output);
+            
+            LOG.debug("Output: {}", output);
+            
             return ret;
         }
         return true;

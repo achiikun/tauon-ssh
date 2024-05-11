@@ -1,5 +1,7 @@
 package tauon.app.ui.containers.session.pages.files;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
@@ -11,6 +13,7 @@ import tauon.app.ui.containers.session.pages.files.view.*;
 import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderViewEventListener;
+import tauon.app.util.externaleditor.ExternalEditorHandler;
 import tauon.app.util.misc.LayoutUtilities;
 import tauon.app.util.misc.PathUtils;
 
@@ -22,6 +25,9 @@ import java.awt.event.KeyEvent;
 import java.util.UUID;
 
 public abstract class AbstractFileBrowserView extends JPanel implements FolderViewEventListener, ClosableTabContent {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractFileBrowserView.class);
+    
     private final NavigationHistory history;
     private final JButton btnBack;
     private final JButton btnNext;
@@ -50,12 +56,12 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
         createAddressBar();
         addressBar.addActionListener(e -> {
             String text = e.getActionCommand();
-            System.out.println("Address changed: " + text + " old: " + this.path);
+            LOG.debug("Address changed: {} old: {}", text, this.path);
+            // TODO lots of bugs here
             if (PathUtils.isSamePath(this.path, text)) {
-                System.out.println("Same text");
                 return;
             }
-            if (text != null && text.length() > 0) {
+            if (text != null && !text.isEmpty()) {
                 addBack(this.path);
                 render(text, SettingsService.getSettings().isDirectoryCache());
             }
@@ -180,7 +186,7 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
     public abstract String toString();
 
     public boolean close() {
-        System.out.println("Unregistering for view mode notification");
+        LOG.trace("Unregistering for view mode notification");
         this.fileBrowser.unRegisterForViewNotification(this);
         return true;
     }

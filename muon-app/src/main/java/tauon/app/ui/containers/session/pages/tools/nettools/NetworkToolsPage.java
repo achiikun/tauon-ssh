@@ -3,11 +3,14 @@
  */
 package tauon.app.ui.containers.session.pages.tools.nettools;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
+import tauon.app.ui.containers.session.pages.logviewer.LogContent;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,6 +27,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class NetworkToolsPage extends Subpage {
+    private static final Logger LOG = LoggerFactory.getLogger(NetworkToolsPage.class);
+    
     private JTextArea txtOutput;
     private DefaultComboBoxModel<String> modelHost, modelPort;
     private JComboBox<String> cmbHost, cmbPort, cmbDNSTool;

@@ -3,8 +3,11 @@
  */
 package tauon.app.ui.containers.session.pages.info.sysload;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
+import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -18,6 +21,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class SysLoadPage extends Subpage {
+    private static final Logger LOG = LoggerFactory.getLogger(SysLoadPage.class);
+    
     private final AtomicInteger sleepInterval = new AtomicInteger(3);
     private SystemLoadPanel systemLoadPanel;
     private JSpinner spInterval;

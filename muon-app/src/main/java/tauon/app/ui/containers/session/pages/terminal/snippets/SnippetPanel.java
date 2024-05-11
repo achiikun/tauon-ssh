@@ -1,5 +1,7 @@
 package tauon.app.ui.containers.session.pages.terminal.snippets;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.services.SnippetManager;
 import tauon.app.ui.components.misc.SkinnedTextField;
@@ -21,6 +23,8 @@ import java.util.function.Consumer;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class SnippetPanel extends JPanel {
+    private static final Logger LOG = LoggerFactory.getLogger(SnippetPanel.class);
+    
     private final DefaultListModel<SnippetItem> listModel = new DefaultListModel<>();
     private final List<SnippetItem> snippetList = new ArrayList<>();
     private final JList<SnippetItem> listView = new JList<>(listModel);

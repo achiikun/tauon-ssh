@@ -4,12 +4,15 @@ import com.jediterm.terminal.RequestOrigin;
 import com.jediterm.terminal.ui.JediTermWidget;
 import com.jediterm.terminal.ui.TerminalPanelListener;
 import com.jediterm.terminal.ui.TerminalSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ui.components.closabletabs.ClosableTabContent;
 import tauon.app.ui.components.closabletabs.ClosableTabbedPanel.TabTitle;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
+import tauon.app.ui.containers.session.pages.info.sysload.SysLoadPage;
 import tauon.app.ui.containers.session.pages.terminal.ssh.DisposableTtyConnector;
 import tauon.app.ui.containers.session.pages.terminal.ssh.SshTtyConnector;
 
@@ -20,6 +23,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 public class TerminalComponent extends JPanel implements ClosableTabContent {
+    private static final Logger LOG = LoggerFactory.getLogger(SysLoadPage.class);
+    
     private final JPanel contentPane;
     private final JediTermWidget term;
     private DisposableTtyConnector tty;

@@ -192,44 +192,6 @@ public class FileBrowser extends Page {
                 }
         );
         
-//        holder.startFileTransferModal(e -> this.ongoingFileTransfer.close());
-//        holder.executor.submit(() -> this.ongoingFileTransfer.run(new FileTransferProgress() {
-//
-//            @Override
-//            public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount,
-//                                 FileTransfer fileTransfer) {
-//                SwingUtilities.invokeLater(() -> {
-//                    if (totalBytes == 0) {
-//                        holder.setTransferProgress(0);
-//                    } else {
-//                        holder.setTransferProgress((int) ((processedBytes * 100) / totalBytes));
-//                    }
-//                });
-//            }
-//
-//            @Override
-//            public void init(long totalSize, long files, FileTransfer fileTransfer) {
-//            }
-//
-//            @Override
-//            public void error(String cause, FileTransfer fileTransfer) {
-//                SwingUtilities.invokeLater(() -> {
-//                    holder.endFileTransfer();
-//                    if (!holder.isSessionClosed()) {
-//                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
-//                    }
-//                });
-//            }
-//
-//            @Override
-//            public void done(FileTransfer fileTransfer) {
-//                System.out.println("Done");
-//                SwingUtilities.invokeLater(() -> {
-//                    holder.endFileTransfer();
-//                    reloadView();
-//                });
-//            }
-//        }));
     }
 
     private void reloadView() {

@@ -3,6 +3,8 @@
  */
 package tauon.app.ui.containers.session.pages.tools.diskspace;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
@@ -14,6 +16,7 @@ import tauon.app.ui.components.tablerenderers.PercentageRenderer;
 import tauon.app.ui.components.tablerenderers.PercentageValue;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.ui.containers.session.pages.terminal.CustomizedSettingsProvider;
 import tauon.app.util.misc.OptionPaneUtils;
 
 import javax.swing.*;
@@ -35,6 +38,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class DiskspaceAnalyzer extends Subpage {
+    private static final Logger LOG = LoggerFactory.getLogger(DiskspaceAnalyzer.class);
+    
     private final CardLayout cardLayout;
     private PartitionTableModel model;
     private JTable table;
@@ -231,21 +236,6 @@ public class DiskspaceAnalyzer extends Subpage {
             System.out.println("Listing partitions");
             listPartitions(instance, stopFlag);
         }, stopFlag);
-        
-        
-//        AtomicBoolean stopFlag = new AtomicBoolean(false);
-//        holder.executor.submit(() -> {
-//            try {
-//                holder.disableUi(stopFlag);
-//                System.out.println("Listing partitions");
-//                listPartitions(stopFlag);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            } finally {
-//                System.out.println("Enabling....");
-//                holder.enableUi();
-//            }
-//        });
     }
 
     private void analyze(String path) {

@@ -1,10 +1,13 @@
 package tauon.app.ui.containers.session.pages.terminal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ui.components.closabletabs.ClosableTabbedPanel;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
+import tauon.app.ui.containers.session.pages.info.sysload.SysLoadPage;
 import tauon.app.ui.containers.session.pages.terminal.snippets.SnippetPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
@@ -17,6 +20,8 @@ import java.awt.event.ComponentEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TerminalHolder extends Page implements AutoCloseable {
+    private static final Logger LOG = LoggerFactory.getLogger(SysLoadPage.class);
+    
     private final ClosableTabbedPanel tabs;
     private JPopupMenu snippetPopupMenu;
     private final SnippetPanel snippetPanel;

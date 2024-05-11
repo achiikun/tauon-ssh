@@ -1,7 +1,10 @@
 package tauon.app.ui.containers.session.pages.files.view.addressbar;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ui.components.misc.SkinnedTextField;
+import tauon.app.util.externaleditor.ExternalEditorHandler;
 import tauon.app.util.misc.LayoutUtilities;
 
 import javax.swing.*;
@@ -12,13 +15,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AddressBar extends JPanel {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(AddressBar.class);
+    
     private final AddressBarBreadCrumbs addressBar;
     private final JComboBox<String> txtAddressBar;
     private final JButton btnEdit;
     private final JPanel addrPanel;
-    private boolean updating = false;
+    private AtomicBoolean updating = new AtomicBoolean();
     private ActionListener a;
     private JPopupMenu popup;
     private final char separator;
@@ -44,13 +51,13 @@ public class AddressBar extends JPanel {
         txtAddressBar.putClientProperty("paintNoBorder", "True");
 
         txtAddressBar.addActionListener(e -> {
-            if (updating) {
+            if (updating.get()) {
                 return;
             }
-            System.out.println("calling action listener");
+            
+            LOG.debug("Calling action listener. Command: {}", e.getActionCommand());
             String item = (String) txtAddressBar.getSelectedItem();
             if (e.getActionCommand().equals("comboBoxEdited")) {
-                System.out.println("Editted");
                 ComboBoxModel<String> model = txtAddressBar.getModel();
                 boolean found = false;
                 for (int i = 0; i < model.getSize(); i++) {
@@ -67,6 +74,7 @@ public class AddressBar extends JPanel {
                 }
             }
         });
+        
         txtAddressBar.setEditable(true);
         ComboBoxEditor cmdEdit = new BasicComboBoxEditor() {
             @Override
@@ -78,11 +86,10 @@ public class AddressBar extends JPanel {
             }
         };
         txtAddressBar.setEditor(cmdEdit);
-        System.out.println("Editor: " + txtAddressBar.getEditor());
+
         addressBar = new AddressBarBreadCrumbs(separator == '/', popupTriggeredListener);
         addressBar.addActionListener(e -> {
             if (a != null) {
-                System.out.println("Performing action");
                 a.actionPerformed(new ActionEvent(this, 0, e.getActionCommand()));
             }
         });
@@ -141,12 +148,11 @@ public class AddressBar extends JPanel {
     }
 
     public void setText(String text) {
-        System.out.println("Setting text: " + text);
-        updating = true;
+        LOG.debug("Setting text: {}", text);
+        updating.set(true);
         txtAddressBar.setSelectedItem(text);
         addressBar.setPath(text);
-        updating = false;
-        System.out.println("Setting text done: " + text);
+        updating.set(false);
     }
 
     public void addActionListener(ActionListener e) {

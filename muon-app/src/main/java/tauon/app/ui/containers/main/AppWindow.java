@@ -67,7 +67,7 @@ public class AppWindow extends JFrame {
         super(APPLICATION_NAME);
         
         try {
-            this.setIconImage(ImageIO.read(Objects.requireNonNull(AppWindow.class.getResource("/muon.png"))));
+            this.setIconImage(ImageIO.read(Objects.requireNonNull(AppWindow.class.getResource("/tauon.png"))));
         } catch (Exception e) {
             LOG.warn("Icon not loaded", e);
         }

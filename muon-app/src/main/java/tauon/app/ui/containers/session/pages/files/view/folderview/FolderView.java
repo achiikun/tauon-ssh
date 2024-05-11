@@ -1,11 +1,14 @@
 package tauon.app.ui.containers.session.pages.files.view.folderview;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
+import tauon.app.ui.containers.session.pages.files.transfer.FileTransfer;
 
 import javax.swing.*;
 import javax.swing.RowSorter.SortKey;
@@ -25,6 +28,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class FolderView extends JPanel {
+    private static final Logger LOG = LoggerFactory.getLogger(FolderView.class);
+    
     private final FolderViewTableModel folderViewModel;
     private final JTable table;
     private final JScrollPane tableScroller;

@@ -1,5 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.view.folderview;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
@@ -12,6 +14,8 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 public class FolderViewCellRenderer implements TableCellRenderer {
+    private static final Logger LOG = LoggerFactory.getLogger(FolderViewCellRenderer.class);
+    
     private final JPanel panel;
     private final JLabel textLabel;
     private final JLabel iconLabel;

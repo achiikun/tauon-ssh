@@ -3,7 +3,10 @@
  */
 package tauon.app.ui.components.glasspanes;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,6 +20,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class AppInputBlocker extends JDialog implements InputBlocker, ActionListener {
+    private static final Logger LOG = LoggerFactory.getLogger(AppInputBlocker.class);
+    
     private final JFrame window;
 
     private final JPanel jPanel = new JPanel(null);
@@ -66,7 +71,8 @@ public class AppInputBlocker extends JDialog implements InputBlocker, ActionList
     @Override
     public void blockInput(Runnable cancellable) {
         SwingUtilities.invokeLater(() -> {
-            System.out.println("Making visible...");
+            LOG.trace("Making dialog visible and blocking input.");
+            
             this.setLocationRelativeTo(window);
             connectingLabel.setHorizontalAlignment(SwingConstants.CENTER);
             
@@ -84,6 +90,8 @@ public class AppInputBlocker extends JDialog implements InputBlocker, ActionList
     @Override
     public void unblockInput() {
         SwingUtilities.invokeLater(() -> {
+            LOG.trace("Hiding dialog and unblocking input.");
+            
             this.cancellable = null;
             cancelButton.setVisible(false);
             this.setVisible(false);

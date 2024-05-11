@@ -1,9 +1,12 @@
 package tauon.app.ui.containers.session.pages.files.ssh;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
+import tauon.app.ui.containers.session.pages.info.portview.PortViewer;
 import tauon.app.util.misc.FormatUtils;
 
 import javax.swing.*;
@@ -20,6 +23,8 @@ import java.util.regex.Pattern;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class PropertiesDialog extends JDialog {
+    private static final Logger LOG = LoggerFactory.getLogger(PropertiesDialog.class);
+    
     public static final int S_IRUSR = 00400; // read by owner
     public static final int S_IWUSR = 00200; // write by owner
     public static final int S_IXUSR = 00100; // execute/search by owner

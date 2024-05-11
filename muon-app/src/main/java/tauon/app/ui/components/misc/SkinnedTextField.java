@@ -3,6 +3,9 @@
  */
 package tauon.app.ui.components.misc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,6 +17,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class SkinnedTextField extends JTextField {
+    private static final Logger LOG = LoggerFactory.getLogger(SkinnedTextField.class);
+    
     /**
      *
      */

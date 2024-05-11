@@ -1,6 +1,9 @@
 package tauon.app.util.ssh;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ui.containers.session.pages.terminal.ssh.SshTtyConnector;
 
 import javax.swing.*;
 import java.io.InputStream;
@@ -13,6 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class SudoUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(SudoUtils.class);
+    
     private static final JPasswordField PASSWORD_FIELD = new JPasswordField(30);
 
     public static int runSudo(String command, TauonRemoteSessionInstance instance, String password) {

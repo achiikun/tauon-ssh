@@ -3,9 +3,12 @@
  */
 package tauon.app.ui.containers.session.pages.logviewer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.ui.containers.session.pages.tools.nettools.NetworkToolsPage;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -20,6 +23,8 @@ import java.nio.ByteBuffer;
  *
  */
 public class PagedLogSearchPanel extends JPanel {
+    private static final Logger LOG = LoggerFactory.getLogger(PagedLogSearchPanel.class);
+    
     private final JTextField txtSearch;
     private JLabel lblResults;
     private final SearchListener searchListener;

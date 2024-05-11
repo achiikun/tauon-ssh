@@ -1,8 +1,11 @@
 package tauon.app.ui.containers.session.pages.terminal.ssh;
 
 import com.jediterm.terminal.Questioner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.services.SettingsService;
+import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -21,6 +24,8 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SshTtyConnector implements DisposableTtyConnector {
+    private static final Logger LOG = LoggerFactory.getLogger(SshTtyConnector.class);
+    
     private InputStreamReader myInputStreamReader;
     private InputStream myInputStream = null;
     private OutputStream myOutputStream = null;

@@ -3,7 +3,10 @@
  */
 package tauon.app.ui.components.misc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.ui.containers.session.pages.files.view.folderview.FolderViewKeyHandler;
 import tauon.app.util.misc.FontUtils;
 
 import javax.swing.*;
@@ -14,6 +17,8 @@ import java.awt.*;
  *
  */
 public class FontItemRenderer extends JLabel implements ListCellRenderer<String> {
+    private static final Logger LOG = LoggerFactory.getLogger(FontItemRenderer.class);
+    
 
     /**
      *

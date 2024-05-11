@@ -3,9 +3,12 @@ package tauon.app.ssh.filesystem;
 import net.schmizz.sshj.sftp.*;
 import net.schmizz.sshj.sftp.FileMode.Type;
 import net.schmizz.sshj.xfer.FilePermission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.SessionClosedException;
 import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ui.containers.session.pages.files.ssh.SshFileOperations;
 import tauon.app.util.misc.PathUtils;
 
 import java.io.*;
@@ -15,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SshFileSystem implements FileSystem {
+    private static final Logger LOG = LoggerFactory.getLogger(SshFileSystem.class);
     
     public static final String PROTO_SFTP = "sftp";
     

@@ -1,6 +1,9 @@
 package tauon.app.ui.components.glasspanes;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.ui.containers.session.pages.tools.search.SearchPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +11,8 @@ import java.awt.event.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SessionInputBlocker extends JPanel {
+    private static final Logger LOG = LoggerFactory.getLogger(SessionInputBlocker.class);
+    
     public static final Color TRANSPARENT = new Color(255, 255, 255, 0);
     double angle = 0.0;
     JButton btn = new JButton();

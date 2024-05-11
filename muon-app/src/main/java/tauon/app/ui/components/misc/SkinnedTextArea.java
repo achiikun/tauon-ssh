@@ -3,6 +3,10 @@
  */
 package tauon.app.ui.components.misc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.ui.containers.main.SessionListPanel;
+
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,6 +18,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class SkinnedTextArea extends JTextArea {
+    private static final Logger LOG = LoggerFactory.getLogger(SkinnedTextArea.class);
+    
     /**
      *
      */

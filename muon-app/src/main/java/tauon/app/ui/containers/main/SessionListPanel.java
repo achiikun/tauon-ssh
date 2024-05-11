@@ -3,6 +3,9 @@
  */
 package tauon.app.ui.containers.main;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.ui.components.glasspanes.SessionInputBlocker;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.App;
 import tauon.app.ui.containers.main.AppWindow;
@@ -24,6 +27,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class SessionListPanel extends JPanel {
+    private static final Logger LOG = LoggerFactory.getLogger(SessionListPanel.class);
+    
     private static final Cursor HAND_CURSOR = new Cursor(Cursor.HAND_CURSOR);
     private static final Cursor DEFAULT_CURSOR = new Cursor(Cursor.DEFAULT_CURSOR);
     private final DefaultListModel<SessionContentPanel> sessionListModel;

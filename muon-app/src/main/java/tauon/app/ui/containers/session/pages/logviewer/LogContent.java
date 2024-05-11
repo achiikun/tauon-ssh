@@ -3,9 +3,12 @@
  */
 package tauon.app.ui.containers.session.pages.logviewer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.ui.components.closabletabs.ClosableTabContent;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
@@ -35,6 +38,8 @@ import java.util.zip.GZIPInputStream;
  * @author subhro
  */
 public class LogContent extends JPanel implements ClosableTabContent {
+    private static final Logger LOG = LoggerFactory.getLogger(LogContent.class);
+    
     private final static int LINE_PER_PAGE = 50;
     private final SessionContentPanel holder;
     private final String remoteFile;

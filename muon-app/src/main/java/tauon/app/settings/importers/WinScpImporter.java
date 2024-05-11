@@ -5,10 +5,13 @@ package tauon.app.settings.importers;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.settings.NamedItem;
 import tauon.app.settings.SessionFolder;
 import tauon.app.settings.SessionInfo;
 import tauon.app.util.misc.RegUtil;
+import tauon.app.util.misc.Win32DragHandler;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.net.URLDecoder;
@@ -22,6 +25,8 @@ import java.util.Map;
  * @author subhro
  */
 public class WinScpImporter {
+    private static final Logger LOG = LoggerFactory.getLogger(WinScpImporter.class);
+    
     private static final String WIN_SCP_REG_KEY = "Software\\Martin Prikryl\\WinSCP 2\\Sessions";
 
     public static Map<String, String> getKeyNames() {

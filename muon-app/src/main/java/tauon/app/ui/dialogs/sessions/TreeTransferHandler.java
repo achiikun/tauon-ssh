@@ -1,5 +1,9 @@
 package tauon.app.ui.dialogs.sessions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.ui.containers.session.pages.info.sysload.SysLoadPage;
+
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -9,6 +13,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 
 public class TreeTransferHandler extends TransferHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(TreeTransferHandler.class);
+    
     DataFlavor nodesFlavor;
     DataFlavor[] flavors = new DataFlavor[1];
     DefaultMutableTreeNode[] nodesToRemove;

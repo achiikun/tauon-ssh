@@ -3,6 +3,8 @@
  */
 package tauon.app.ui.containers.session.pages.tools.search;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
@@ -11,6 +13,7 @@ import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.subpage.Subpage;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.ui.containers.session.pages.files.ssh.PropertiesDialog;
 import tauon.app.util.misc.PathUtils;
 import tauon.app.util.misc.ScriptLoader;
 
@@ -40,6 +43,8 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class SearchPanel extends Subpage {
+    private static final Logger LOG = LoggerFactory.getLogger(SearchPanel.class);
+    
     private static final String LS_REGEX_1 = "([dflo])\\|(.*)";
 
     private JTextField txtName;

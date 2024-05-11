@@ -1,10 +1,13 @@
 package tauon.app.ui.containers.session.pages.files.ssh;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
+import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.components.misc.NativeFileChooser;
 import tauon.app.services.BookmarkManager;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
@@ -39,6 +42,8 @@ import java.util.stream.Collectors;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class SshMenuHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(SshMenuHandler.class);
+    
     private final FileBrowser fileBrowser;
     private final SshFileOperations fileOperations;
     private final SshFileBrowserView fileBrowserView;

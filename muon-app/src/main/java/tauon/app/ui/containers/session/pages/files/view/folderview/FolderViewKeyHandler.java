@@ -1,6 +1,8 @@
 package tauon.app.ui.containers.session.pages.files.view.folderview;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.ssh.filesystem.FileInfo;
 
 import javax.swing.*;
@@ -10,6 +12,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public class FolderViewKeyHandler extends KeyAdapter {
+    private static final Logger LOG = LoggerFactory.getLogger(FolderViewKeyHandler.class);
 
     private JTable table;
     private FolderViewTableModel model;

@@ -4,6 +4,9 @@
 package tauon.app.ssh.filesystem;
 
 import net.schmizz.sshj.sftp.RemoteFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.ui.containers.session.pages.files.ssh.SshMenuHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,6 +16,8 @@ import java.io.OutputStream;
  *
  */
 public class SSHRemoteFileOutputStream extends OutputStream {
+    private static final Logger LOG = LoggerFactory.getLogger(SSHRemoteFileOutputStream.class);
+    
     private int bufferCapacity;
     private final RemoteFile remoteFile;
     private final OutputStream remoteFileOutputStream;

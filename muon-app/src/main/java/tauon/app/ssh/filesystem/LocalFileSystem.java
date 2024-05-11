@@ -1,6 +1,9 @@
 package tauon.app.ssh.filesystem;
 
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.ui.containers.session.pages.files.local.LocalFileBrowserView;
 import tauon.app.util.misc.PathUtils;
 
 import java.io.*;
@@ -14,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 public class LocalFileSystem implements FileSystem {
+    private static final Logger LOG = LoggerFactory.getLogger(LocalFileSystem.class);
+    
     public static final String PROTO_LOCAL_FILE = "local";
 
     public void chmod(int perm, String path) throws Exception {

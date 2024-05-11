@@ -1,7 +1,10 @@
 package tauon.app.ui.components.closabletabs;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.ui.containers.main.BackgroundTransferPanel;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -13,6 +16,8 @@ import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 public class ClosableTabbedPanel extends JPanel {
+    private static final Logger LOG = LoggerFactory.getLogger(ClosableTabbedPanel.class);
+    
     private final Color unselectedBg = App.skin.getSelectedTabColor();
     private final Color selectedBg = App.skin.getDefaultBackground();
     private final CardLayout cardLayout;
