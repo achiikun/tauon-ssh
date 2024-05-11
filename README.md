@@ -20,14 +20,14 @@ __* You must have Java 11 installed minimum</b>__
 ### History
 
 This project is the next iteration of another one called [Muon](https://github.com/devlinx9/muon-ssh).
-Its last update is from some years ago. I've been doing lots of refactorings and cleaning code in order to solve bugs and
-make its development of new features easier. The main change respect Muon is that now x11 forwarding (in linux) is supported.
-Some of this description above is copy-pasted from Devlinx9 repo ;)
+Its last update was a few years ago. I've been doing lots of refactorings and cleaning code in order to fix bugs and
+make the development of new features easier. The main change respect Muon is that now x11 forwarding (in linux) is supported.
+Some of the description above is copy-pasted from the Devlinx9 repo ;)
 
-I started this fork when I switch my dev operating system to linux from windows and I noted that MobaXTerm was not compatible.
-After some searching I discovered Snowflake and Muon, but they still have lots of unsolved bugs. I decided to stick to Muon
-because I think is the only application with the power to become a competitive good open source SSH client for linux: 
-No companies, registration forms, paywalls, and written in a nice language (Java).
+I started this fork when I switched my dev operating system to linux from windows and I realized that MobaXTerm was not compatible.
+After some research I discovered Snowflake and Muon, but they still have lots of unsolved bugs. I decided to stick to Muon
+because I think is the only application with the power to become a competitive, good and open source SSH client for linux: 
+No companies, registration forms nor paywalls, and written in a nice language (Java).
 
 I forked Muon into a new application instead of pulling request the original 
 because I knew from the beginning I'd refactor it heavily.
