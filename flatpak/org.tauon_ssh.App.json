@@ -1,0 +1,50 @@
+{
+    "app-id": "org.tauon_ssh.App",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "19.08",
+    "sdk": "org.freedesktop.Sdk",
+    "sdk-extensions" : [ "org.freedesktop.Sdk.Extension.openjdk11" ],
+    "command": "tauon",
+    "modules": [
+	   {
+		    "name" : "openjdk",
+		    "buildsystem" : "simple",
+		    "build-commands" : [ "/usr/lib/sdk/openjdk11/install.sh" ]
+	   },
+        {
+            "name": "tauon",
+            "buildsystem": "simple",
+            "build-commands": [
+            	 "mkdir -p /app/tauon",
+            	 "mkdir -p /app/bin",
+            	 "mkdir -p /app/share/icons/hicolor/128x128/apps",
+            	 "mkdir -p /app/share/applications",
+            	  "cp tauon.jar /app/tauon",
+            	  "cp tauon /app/bin",
+            	  "chmod 755 /app/bin/tauon",
+            	  "cp org.tauon_ssh.App.png /app/share/icons/hicolor/128x128/apps",
+            	  "cp org.tauon_ssh.App.desktop /app/share/applications"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "path": "tauon.jar"
+                },
+                {
+                    "type": "file",
+                    "path": "tauon"
+                },
+                {
+                    "type": "file",
+                    "path": "org.tauon_ssh.App.png"
+                },
+                {
+                    "type": "file",
+                    "path": "org.tauon_ssh.App.desktop"
+                }
+            ]
+        }
+    ],
+    "finish-args" : [ "--env=PATH=/app/jre/bin:/usr/bin:/app/bin","--share=ipc", "--socket=x11",
+        "--share=network","--filesystem=host" ]
+}

@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Tauon SSH client
+Exec=tauon
+Icon=${SNAP}/meta/gui/tauonssh.png
+Type=Application
