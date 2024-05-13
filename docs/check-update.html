@@ -2,15 +2,22 @@
 
 <head>
     <script>
-        var CURRENT_VERSION = 220;
-        var RELEASE_URL = "https://github.com/devlinx9/muon-ssh/releases/tag/v2.2.0";
+        var CURRENT_VERSION = 3.0.0;
         function printVersion() {
-            var rx = /\?v=(\d+)/;
+            var rx = /\?v=(\d+)\.(\d+)\.(\d+)/;
             var str = window.location.search;
             var match = rx.exec(str);
+            var match2 = rx.exec(CURRENT_VERSION);
             if (match != null) {
-                var v = parseInt(match[1], 10);
-                if (v < CURRENT_VERSION) {
+                var v1 = parseInt(match[1], 10);
+                var v2 = parseInt(match[2], 10);
+                var v3 = parseInt(match[3], 10);
+                var c1 = parseInt(match2[1], 10);
+                var c2 = parseInt(match2[2], 10);
+                var c3 = parseInt(match2[3], 10);
+
+                if (c1 > v1 || c2 > v2 || c3 > v3) {
+                    var RELEASE_URL = "https://github.com/achiikun/tauon-ssh/releases/tag/v" + c1 + "." + c2 + "." + c3;
                     document.getElementById("ver").innerHTML = "A newer version is available, download it <a href='" + RELEASE_URL + "'>here</a>";
                 } else {
                     document.getElementById("ver").innerHTML = "App is up to date";

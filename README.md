@@ -15,7 +15,7 @@ The application is targeted mainly towards web/backend developers who often depl
 their code on remote servers and not overly fond of complex terminal based commands. 
 It could also be useful for sysadmins as well who manages lots of remote servers manually.
 
-__* You must have Java 11 installed minimum</b>__
+__* You must have Java 11 installed minimum__
 
 ### History
 
@@ -38,6 +38,23 @@ because I knew from the beginning I'd refactor it heavily.
 > <b>mvn clean install</b> to build the project.
 > The jar will be created in target directory
 
+### Install as deb (Debian)
+
+1. Execute `mvn clean install` to create the `.deb` file.
+2. Install the deb file:
+```shell
+sudo dpkg -i target/tauonssh_*.deb
+```
+
+### Install as flatpak (Experimental)
+
+1. Execute `mvn clean install` to create the jar. (It will be copied automatically into flatpak's folder)
+2. Build the app using flatpak:
+```shell
+cd flatpak
+flatpak-builder --force-clean --sandbox --user --install --install-deps-from=flathub --ccache --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir org.tauon_ssh.App.yml 
+```
+
 ## Features:
 
 * Simple graphical interface for common file operations
@@ -55,7 +72,7 @@ because I knew from the beginning I'd refactor it heavily.
 
 The [TODO](TODO.md) file contains what is currently developed and scheduled to develop.
 
-## Licence
+## Licences
 
 Tauon respects the licence from its previous versions: [GPLv3](/LICENSE)
 

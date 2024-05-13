@@ -12,7 +12,11 @@ target/*
 .project
 .settings/
 
-flatpak/flatpak-commands.txt
+flatpak/*
+!flatpak/org.tauon_ssh.App.desktop
+!flatpak/org.tauon_ssh.App.png
+!flatpak/org.tauon_ssh.App.yml
+!flatpak/tauon
 
 muon-app/target/*
 muon-jediterm/target/*

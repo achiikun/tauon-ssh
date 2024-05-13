@@ -1,7 +1,7 @@
 {
     "app-id": "org.tauon_ssh.App",
     "runtime": "org.freedesktop.Platform",
-    "runtime-version": "19.08",
+    "runtime-version": "45",
     "sdk": "org.freedesktop.Sdk",
     "sdk-extensions" : [ "org.freedesktop.Sdk.Extension.openjdk11" ],
     "command": "tauon",
@@ -19,7 +19,7 @@
             	 "mkdir -p /app/bin",
             	 "mkdir -p /app/share/icons/hicolor/128x128/apps",
             	 "mkdir -p /app/share/applications",
-            	  "cp tauon.jar /app/tauon",
+            	  "cp ../tauon_app/target/tauonssh_3.0.0.jar /app/tauon",
             	  "cp tauon /app/bin",
             	  "chmod 755 /app/bin/tauon",
             	  "cp org.tauon_ssh.App.png /app/share/icons/hicolor/128x128/apps",
@@ -28,7 +28,7 @@
             "sources": [
                 {
                     "type": "file",
-                    "path": "tauon.jar"
+                    "path": "../tauon_app/target/tauonssh_3.0.0.jar"
                 },
                 {
                     "type": "file",

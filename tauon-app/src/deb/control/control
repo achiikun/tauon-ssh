@@ -1,10 +1,10 @@
-Package: muonssh
+Package: tauonssh
 Version: [[version]]
 Section: base
 Priority: optional
 Architecture: all
 Depends: openjdk-11-jre
-Maintainer: Devlinx9 <devlinx9@github.com>
-Description: Muon is a modern graphical SSH client
- Muon is a modern graphical SSH client which provides
+Maintainer: Achiikun <achiikun@github.com>
+Description: Tauon is a modern graphical SSH client
+ Tauon is a modern graphical SSH client which provides
  simple easy to use GUI for common tasks

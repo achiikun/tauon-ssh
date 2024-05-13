@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Tauon SSH
+Exec=/usr/bin/tauonssh
+Icon=/opt/tauonssh/tauonssh-logo.png
+Type=Application
