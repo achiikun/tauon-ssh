@@ -5,6 +5,7 @@ target/*
 *.iml
 *.class
 *.jar
+!*/lib/*.jar
 
 /target/
 
