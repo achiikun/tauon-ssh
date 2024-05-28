@@ -24,12 +24,12 @@
         <dependency>
             <groupId>org.jetbrains.jediterm</groupId>
             <artifactId>jediterm-core</artifactId>
-            <version>3.42-SNAPSHOT</version>
+            <version>3.44-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.jediterm</groupId>
             <artifactId>jediterm-ui</artifactId>
-            <version>3.42-SNAPSHOT</version>
+            <version>3.44-SNAPSHOT</version>
         </dependency>
 
 
