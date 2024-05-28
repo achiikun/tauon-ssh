@@ -180,7 +180,6 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
         );
     }
     
-    @Override
     public String getSudoPassword() {
         return info.getSudoPassword();
     }

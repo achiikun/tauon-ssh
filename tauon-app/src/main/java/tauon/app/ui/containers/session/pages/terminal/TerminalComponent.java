@@ -1,9 +1,11 @@
 package tauon.app.ui.containers.session.pages.terminal;
 
 import com.jediterm.terminal.RequestOrigin;
+import com.jediterm.terminal.model.TerminalApplicationTitleListener;
 import com.jediterm.terminal.ui.JediTermWidget;
-import com.jediterm.terminal.ui.TerminalPanelListener;
 import com.jediterm.terminal.ui.TerminalSession;
+import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
@@ -87,21 +89,13 @@ public class TerminalComponent extends JPanel implements ClosableTabContent {
             });
         });
         term.setTtyConnector(tty);
-        term.setTerminalPanelListener(new TerminalPanelListener() {
-
+        term.getTerminal().addApplicationTitleListener(new TerminalApplicationTitleListener() {
             @Override
-            public void onTitleChanged(String title) {
-                System.out.println("new title: " + title);
-                TerminalComponent.this.name = title;
-                SwingUtilities.invokeLater(() -> tabTitle.getCallback().accept(title));
+            public void onApplicationTitleChanged(@Nls @NotNull String newApplicationTitle) {
+                System.out.println("new title: " + newApplicationTitle);
+                TerminalComponent.this.name = newApplicationTitle;
+                SwingUtilities.invokeLater(() -> tabTitle.getCallback().accept(newApplicationTitle));
             }
-
-            
-            public void onSessionChanged(TerminalSession currentSession) {
-                System.out.println("currentSession: " + currentSession);
-            }
-
-            public void onPanelResize(RequestOrigin origin) {  }
         });
         contentPane.add(term);
 
@@ -120,7 +114,7 @@ public class TerminalComponent extends JPanel implements ClosableTabContent {
     }
 
     public void sendCommand(String command) {
-        this.term.getTerminalStarter().sendString(command);
+        this.term.getTerminalStarter().sendString(command, false); // Disable type ahead
     }
 
     /**
