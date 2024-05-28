@@ -22,10 +22,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>tauon-jediterm</groupId>
-            <artifactId>tauon-jediterm</artifactId>
-            <version>3.0.0</version>
+            <groupId>org.jetbrains.jediterm</groupId>
+            <artifactId>jediterm-core</artifactId>
+            <version>3.42-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains.jediterm</groupId>
+            <artifactId>jediterm-ui</artifactId>
+            <version>3.42-SNAPSHOT</version>
+        </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>
