@@ -1,0 +1,3 @@
+[submodule "tauon-jediterm2"]
+	path = tauon-jediterm2
+	url = https://github.com/achiikun/jediterm.git

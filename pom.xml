@@ -7,6 +7,6 @@
   <packaging>pom</packaging>
   <modules>
     <module>tauon-app</module>
-    <module>tauon-jediterm</module>
+    <module>tauon-jediterm2</module>
   </modules>
 </project>
