@@ -16,7 +16,7 @@ public class Constants {
     public static final String UPDATE_URL = "https://achiikun.github.io/tauon-ssh";
     public static final String API_UPDATE_URL = "https://api.github.com/repos/achiikun/tauon-ssh/releases/latest";
     public static final String REPOSITORY_URL = BASE_URL + "/tauon-ssh";
-    public static final String APPLICATION_VERSION = "3.0.0";
+    public static final String APPLICATION_VERSION = "3.0.1";
     public static final String APPLICATION_NAME = "Tauon SSH";
 
     public static final VersionEntry VERSION = new VersionEntry("v" + APPLICATION_VERSION);
