@@ -6,18 +6,24 @@ package tauon.app.ui.containers.session.pages.terminal;
 import com.jediterm.terminal.TerminalColor;
 import com.jediterm.terminal.TextStyle;
 import com.jediterm.terminal.emulator.ColorPalette;
+import com.jediterm.terminal.ui.TerminalActionPresentation;
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.Settings;
 import tauon.app.settings.SessionInfo;
-import tauon.app.ui.components.closabletabs.ClosableTabbedPanel;
 import tauon.app.util.misc.FontUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+
 import com.jediterm.core.Color;
+
+import static com.jediterm.terminal.ui.UtilKt.isMacOS;
 
 /**
  * @author subhro
@@ -148,29 +154,31 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
     public final TerminalColor getTerminalColor(int rgb) {
         return TerminalColor.fromColor(new Color(rgb));
     }
-
     
-    public KeyStroke[] getCopyKeyStrokes() {
-        return new KeyStroke[]{getKeyStroke(Settings.COPY_KEY)};
-    }
-
     
-    public KeyStroke[] getPasteKeyStrokes() {
-        return new KeyStroke[]{getKeyStroke(Settings.PASTE_KEY)};
-    }
-
-    
-    public KeyStroke[] getClearBufferKeyStrokes() {
-        return new KeyStroke[]{getKeyStroke(Settings.CLEAR_BUFFER)};
-    }
-
-    
-    public KeyStroke[] getFindKeyStrokes() {
-        return new KeyStroke[]{getKeyStroke(Settings.FIND_KEY)};
+    @Override
+    public @NotNull TerminalActionPresentation getCopyActionPresentation() {
+        return new TerminalActionPresentation("Copy", getKeyStroke(Settings.COPY_KEY));
     }
     
-    public KeyStroke[] getTypeSudoPasswordKeyKeyStrokes() {
-        return new KeyStroke[]{getKeyStroke(Settings.TYPE_SUDO_PASSWORD)};
+    @Override
+    public @NotNull TerminalActionPresentation getPasteActionPresentation() {
+        return new TerminalActionPresentation("Paste", getKeyStroke(Settings.PASTE_KEY));
+    }
+    
+    @Override
+    public @NotNull TerminalActionPresentation getClearBufferActionPresentation() {
+        return new TerminalActionPresentation("Clear Buffer", getKeyStroke(Settings.CLEAR_BUFFER));
+    }
+    
+    @Override
+    public @NotNull TerminalActionPresentation getFindActionPresentation() {
+        return new TerminalActionPresentation("Find", getKeyStroke(Settings.FIND_KEY));
+    }
+    
+    @Override
+    public @NotNull TerminalActionPresentation getTypeSudoPasswordActionPresentation() {
+        return new TerminalActionPresentation("Type SUDO Password", getKeyStroke(Settings.TYPE_SUDO_PASSWORD));
     }
     
     private KeyStroke getKeyStroke(String key) {
@@ -180,6 +188,7 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
         );
     }
     
+    @Override
     public String getSudoPassword() {
         return info.getSudoPassword();
     }
