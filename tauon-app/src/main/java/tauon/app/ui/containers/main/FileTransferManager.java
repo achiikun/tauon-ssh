@@ -58,7 +58,15 @@ public class FileTransferManager {
                                     
                                     @Override
                                     public void done(FileTransfer fileTransfer) {
-                                        fileTransfer.getSession().getFileBrowser().notifyTransferDone(fileTransfer);
+                                        // This code is unfocusing the terminal, prefer to update manually than unfocusing the terminal
+//                                        Component focus = fileTransfer.getSession().getAppWindow().getFocusOwner();
+//                                        fileTransfer.getSession().getFileBrowser().notifyTransferDone(fileTransfer);
+//                                        if(focus != null) {
+//                                            SwingUtilities.invokeLater(() -> {
+//                                                Component focus2 = fileTransfer.getSession().getAppWindow().getFocusOwner();
+//                                                fileTransfer.getSession().getTerminalHolder().focusTerminal();
+//                                            });
+//                                        }
                                     }
                                 },
                                 callback
