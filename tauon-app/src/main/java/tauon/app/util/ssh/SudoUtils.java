@@ -6,10 +6,7 @@ import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.containers.session.pages.terminal.ssh.SshTtyConnector;
 
 import javax.swing.*;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -141,7 +138,59 @@ public class SudoUtils {
             return -1;
         }
     }
+    
+    public static int runSudoWithOutput(String exports, String command,
+                                        TauonRemoteSessionInstance instance, StringBuilder output,
+                                        StringBuilder error, String password) {
+        String prompt = UUID.randomUUID().toString();
+        try {
+            String fullCommand = exports + "sudo -E -S -p '" + prompt + "' " + command;
+            System.out.println(
+                    "Full sudo: " + fullCommand + "\nprompt: " + prompt);
+            int ret = instance.exec(fullCommand, cmd -> {
+                try {
+                    InputStream in = cmd.getInputStream();
+                    OutputStream out = cmd.getOutputStream();
+                    StringBuilder sb = new StringBuilder();
+                    
+                    BufferedOutputStream toStdOut = new BufferedOutputStream(System.out);
+                    
+                    Reader r = new InputStreamReader(in,
+                            StandardCharsets.UTF_8);
+                    
+                    while (true) {
+                        int ch = r.read();
+                        if (ch == -1)
+                            break;
+                        if(sb != null)
+                            sb.append((char) ch);
+                        output.append((char) ch); // TODO don't send prompt
+                        toStdOut.write((char) ch);
 
+//                        System.out.println("buffer: " + sb);
+                        if (sb != null && sb.indexOf(prompt) != -1) {
+                            sb = null;
+                            out.write(
+                                    (password
+                                            + "\n").getBytes());
+                            out.flush();
+                        }
+                        
+                    }
+                    cmd.join();
+                    cmd.close();
+                    return cmd.getExitStatus();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return -1;
+                }
+            }, true);
+            return ret;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
     public static int runSudoWithOutput(String command,
                                         TauonRemoteSessionInstance instance, StringBuilder output,
                                         StringBuilder error, String password) {
@@ -155,7 +204,9 @@ public class SudoUtils {
                     InputStream in = cmd.getInputStream();
                     OutputStream out = cmd.getOutputStream();
                     StringBuilder sb = new StringBuilder();
-
+                    
+                    BufferedOutputStream toStdOut = new BufferedOutputStream(System.out);
+                    
                     Reader r = new InputStreamReader(in,
                             StandardCharsets.UTF_8);
 
@@ -163,12 +214,14 @@ public class SudoUtils {
                         int ch = r.read();
                         if (ch == -1)
                             break;
-                        sb.append((char) ch);
-                        output.append((char) ch);
-
-                        System.out.println("buffer: " + sb);
-                        if (sb.indexOf(prompt) != -1) {
-                            sb = new StringBuilder();
+                        if(sb != null)
+                            sb.append((char) ch);
+                        output.append((char) ch); // TODO don't send prompt
+                        toStdOut.write((char) ch);
+                        
+//                        System.out.println("buffer: " + sb);
+                        if (sb != null && sb.indexOf(prompt) != -1) {
+                            sb = null;
                             out.write(
                                     (password
                                             + "\n").getBytes());

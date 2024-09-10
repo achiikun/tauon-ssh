@@ -556,7 +556,7 @@ public class SshMenuHandler {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
             if (fileOperations.rename(oldName, newName, fileBrowserView.getFileSystem(),
-                    instance, fileBrowser.getInfo().getPassword())) {
+                    instance, fileBrowser.getHolder()::getSudoPassword)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -587,7 +587,7 @@ public class SshMenuHandler {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
             if (fileOperations.delete(targetList, fileBrowserView.getFileSystem(),
-                    instance, fileBrowser.getInfo().getPassword())) {
+                    instance, fileBrowser.getHolder()::getSudoPassword)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -613,7 +613,7 @@ public class SshMenuHandler {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
             if (fileOperations.newFile(files, fileBrowserView.getFileSystem(), baseFolder,
-                    instance, fileBrowser.getInfo().getPassword())) {
+                    instance, fileBrowser.getHolder()::getSudoPassword)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -639,7 +639,7 @@ public class SshMenuHandler {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
             if (fileOperations.newFolder(files, baseFolder, fileBrowserView.getFileSystem(),
-                    instance, fileBrowser.getInfo().getPassword())) {
+                    instance, fileBrowser.getHolder()::getSudoPassword)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -719,7 +719,7 @@ public class SshMenuHandler {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
             if (fileOperations.copyTo(instance, files, targetFolder,
-                    fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
+                    fileBrowserView.getFileSystem(), fileBrowser.getHolder()::getSudoPassword)) {
                 fileBrowserView.render(targetFolder);
             }
         });
@@ -743,7 +743,7 @@ public class SshMenuHandler {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
             if (fileOperations.moveTo(instance, files, targetFolder,
-                    fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
+                    fileBrowserView.getFileSystem(), fileBrowser.getHolder()::getSudoPassword)) {
                 fileBrowserView.render(targetFolder);
             }
         });

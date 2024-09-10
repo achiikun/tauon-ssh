@@ -7,16 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
-import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.subpage.Subpage;
 import tauon.app.ui.components.tablerenderers.ByteCountRenderer;
 import tauon.app.ui.components.tablerenderers.ByteCountValue;
 import tauon.app.ui.components.tablerenderers.PercentageRenderer;
 import tauon.app.ui.components.tablerenderers.PercentageValue;
 import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.ui.components.misc.FontAwesomeContants;
-import tauon.app.ui.containers.session.pages.terminal.CustomizedSettingsProvider;
 import tauon.app.util.misc.OptionPaneUtils;
 
 import javax.swing.*;
@@ -45,13 +43,25 @@ public class DiskspaceAnalyzer extends Subpage {
     private JTable table;
     private JTree resultTree;
     private DefaultTreeModel treeModel;
-
+    private JCheckBox chkRunAsSuperUser1;
+    private JCheckBox chkRunAsSuperUser2;
+    
+    private String lastAnalyzedPath;
+    
     /**
      *
      */
     public DiskspaceAnalyzer(SessionContentPanel holder) {
         super(holder);
         Component firstPanel = createFirstPanel();
+        
+        chkRunAsSuperUser1 = new JCheckBox(
+                getBundle().getString("actions_sudo"));
+        chkRunAsSuperUser2 = new JCheckBox(
+                getBundle().getString("actions_sudo"));
+        chkRunAsSuperUser1.addChangeListener(changeEvent -> chkRunAsSuperUser2.setSelected(chkRunAsSuperUser1.isSelected()));
+        chkRunAsSuperUser2.addChangeListener(changeEvent -> chkRunAsSuperUser1.setSelected(chkRunAsSuperUser2.isSelected()));
+        
         cardLayout = new CardLayout();
         this.setLayout(cardLayout);
         this.add(firstPanel, "firstPanel");
@@ -68,9 +78,18 @@ public class DiskspaceAnalyzer extends Subpage {
         btnStart.addActionListener(e -> {
             cardLayout.show(this, "firstPanel");
         });
+        JButton btnReload = new JButton(getBundle().getString("reload"));
+        btnReload.addActionListener(e -> {
+            if(lastAnalyzedPath != null){
+                analyze(lastAnalyzedPath);
+            }
+        });
 
         Box resultBox = Box.createHorizontalBox();
         resultBox.setBorder(new EmptyBorder(10, 10, 10, 10));
+        resultBox.add(chkRunAsSuperUser1);
+        resultBox.add(Box.createHorizontalStrut(10));
+        resultBox.add(btnReload);
         resultBox.add(Box.createHorizontalGlue());
         resultBox.add(Box.createHorizontalStrut(10));
         resultBox.add(btnStart);
@@ -172,8 +191,15 @@ public class DiskspaceAnalyzer extends Subpage {
         btnBack.addActionListener(e -> {
             cardLayout.show(this, "firstPanel");
         });
-
+        
+        btnReload.addActionListener(e -> {
+            // TODO
+        });
+        
         Box bottomBox = Box.createHorizontalBox();
+        
+        bottomBox.add(chkRunAsSuperUser2);
+        bottomBox.add(Box.createHorizontalStrut(10));
         bottomBox.add(btnReload);
         bottomBox.add(Box.createHorizontalGlue());
         bottomBox.add(btnBack);
@@ -239,11 +265,12 @@ public class DiskspaceAnalyzer extends Subpage {
     }
 
     private void analyze(String path) {
+        this.lastAnalyzedPath = path;
         System.out.println("Analyzing path: " + path);
         AtomicBoolean stopFlag = new AtomicBoolean(false);
         cardLayout.show(this, "Results");
         holder.submitSSHOperationStoppable(instance -> {
-            DiskAnalysisTask task = new DiskAnalysisTask(path, stopFlag, res -> {
+            DiskAnalysisTask task = new DiskAnalysisTask(path, chkRunAsSuperUser1.isSelected(), stopFlag, res -> {
                 SwingUtilities.invokeLater(() -> {
                     if (res != null) {
                         System.out.println("Result found");
@@ -253,7 +280,7 @@ public class DiskspaceAnalyzer extends Subpage {
                         treeModel.setRoot(root);
                     }
                 });
-            }, instance);
+            }, instance, holder);
             task.run();
         }, stopFlag);
     }

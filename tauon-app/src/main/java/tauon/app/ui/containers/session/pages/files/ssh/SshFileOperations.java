@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -54,7 +55,7 @@ public class SshFileOperations {
     }
 
     public boolean moveTo(TauonRemoteSessionInstance instance, List<FileInfo> files,
-                          String targetFolder, FileSystem fs, String password) throws Exception {
+                          String targetFolder, FileSystem fs, Supplier<String> password) throws Exception {
         List<FileInfo> fileList = fs.list(targetFolder);
         List<FileInfo> dupList = new ArrayList<>();
         for (FileInfo file : files) {
@@ -117,7 +118,7 @@ public class SshFileOperations {
                 return false;
             }
 
-            int ret = SudoUtils.runSudo(command.toString(), instance, password);
+            int ret = SudoUtils.runSudo(command.toString(), instance, password.get());
             if (ret != -1) {
                 return ret == 0;
             }
@@ -132,7 +133,7 @@ public class SshFileOperations {
     }
 
     public boolean copyTo(TauonRemoteSessionInstance instance, List<FileInfo> files,
-                          String targetFolder, FileSystem fs, String password) throws Exception {
+                          String targetFolder, FileSystem fs, Supplier<String> password) throws Exception {
         List<FileInfo> fileList = fs.list(targetFolder);
         List<FileInfo> dupList = new ArrayList<>();
         for (FileInfo file : files) {
@@ -194,7 +195,7 @@ public class SshFileOperations {
                 return false;
             }
 
-            int ret = SudoUtils.runSudo(command.toString(), instance, password);
+            int ret = SudoUtils.runSudo(command.toString(), instance, password.get());
             if (ret != -1) {
                 return ret == 0;
             }
@@ -225,7 +226,7 @@ public class SshFileOperations {
     }
 
     public boolean rename(String oldName, String newName, FileSystem fs,
-                          TauonRemoteSessionInstance instance, String password) {
+                          TauonRemoteSessionInstance instance, Supplier<String> password) {
         try {
             fs.rename(oldName, newName);
             return true;
@@ -242,7 +243,7 @@ public class SshFileOperations {
                     || JOptionPane.showConfirmDialog(null,
                     "Access denied, rename using sudo?", getBundle().getString("use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                return renameWithPrivilege(oldName, newName, instance, password);
+                return renameWithPrivilege(oldName, newName, instance, password.get());
             }
 
             if (!instance.isSessionClosed()) {
@@ -273,7 +274,7 @@ public class SshFileOperations {
     }
 
     public boolean delete(FileInfo[] targetList, FileSystem fs,
-                          TauonRemoteSessionInstance instance, String password) {
+                          TauonRemoteSessionInstance instance, Supplier<String> password) {
         try {
             try {
                 // Try to remove it using "rm -rf" because it's faster than sftp
@@ -301,7 +302,7 @@ public class SshFileOperations {
                     || JOptionPane.showConfirmDialog(null,
                     "Access denied, delete using sudo?", getBundle().getString("use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                return deletePrivilege(targetList, instance, password);
+                return deletePrivilege(targetList, instance, password.get());
             }
             if (!instance.isSessionClosed()) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
@@ -334,7 +335,7 @@ public class SshFileOperations {
     }
 
     public boolean newFile(FileInfo[] files, FileSystem fs, String folder,
-                           TauonRemoteSessionInstance instance, String password) {
+                           TauonRemoteSessionInstance instance, Supplier<String> password) {
         String text = JOptionPane.showInputDialog("New file");
         if (text == null || text.length() < 1) {
             return false;
@@ -363,7 +364,7 @@ public class SshFileOperations {
                     || JOptionPane.showConfirmDialog(null,
                     "Access denied, new file using sudo?", getBundle().getString("use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                if (!touchWithPrivilege(folder, text, instance, password)) {
+                if (!touchWithPrivilege(folder, text, instance, password.get())) {
                     if (!instance.isSessionClosed()) {
                         JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
                     }
@@ -401,7 +402,7 @@ public class SshFileOperations {
     }
 
     public boolean newFolder(FileInfo[] files, String folder, FileSystem fs,
-                             TauonRemoteSessionInstance instance, String password) {
+                             TauonRemoteSessionInstance instance, Supplier<String> password) {
         String text = JOptionPane.showInputDialog("New folder name");
         if (text == null || text.length() < 1) {
             return false;
@@ -432,7 +433,7 @@ public class SshFileOperations {
                     || JOptionPane.showConfirmDialog(null,
                     "Access denied, try using sudo?", getBundle().getString("use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                if (!mkdirWithPrivilege(folder, text, instance, password)) {
+                if (!mkdirWithPrivilege(folder, text, instance, password.get())) {
                     if (!instance.isSessionClosed()) {
                         JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
                     }

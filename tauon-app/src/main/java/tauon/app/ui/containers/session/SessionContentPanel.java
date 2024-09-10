@@ -502,6 +502,11 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         return remoteSessionInstance.getSshFs();
     }
     
+    public String getSudoPassword() {
+        // TODO assuming password is also sudo, if not, ask user for password
+        return info.getPassword();
+    }
+    
     private class MyPasswordFinder implements PasswordFinder{
         
         @Override

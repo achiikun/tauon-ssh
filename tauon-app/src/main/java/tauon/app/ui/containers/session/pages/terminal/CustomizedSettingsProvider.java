@@ -13,17 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.Settings;
-import tauon.app.settings.SessionInfo;
+import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.util.misc.FontUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 
 import com.jediterm.core.Color;
-
-import static com.jediterm.terminal.ui.UtilKt.isMacOS;
 
 /**
  * @author subhro
@@ -34,13 +30,13 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
     
     private final ColorPalette palette;
     
-    private final SessionInfo info;
+    private final SessionContentPanel session;
     
     /**
      *
      */
-    public CustomizedSettingsProvider(SessionInfo info) {
-        this.info = info;
+    public CustomizedSettingsProvider(SessionContentPanel session) {
+        this.session = session;
         
         Color[] colors = new Color[16];
         int[] colorArr = SettingsService.getSettings().getPalleteColors();
@@ -190,6 +186,6 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
     
     @Override
     public String getSudoPassword() {
-        return info.getSudoPassword();
+        return session.getSudoPassword();
     }
 }

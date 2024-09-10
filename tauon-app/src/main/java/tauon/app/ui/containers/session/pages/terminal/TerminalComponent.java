@@ -44,7 +44,7 @@ public class TerminalComponent extends JPanel implements ClosableTabContent {
         rootPane.setContentPane(contentPane);
         add(rootPane);
         
-        term = new CustomJediterm(new CustomizedSettingsProvider(info));
+        term = new CustomJediterm(new CustomizedSettingsProvider(sessionContentPanel));
 
         addComponentListener(new ComponentAdapter() {
             @Override

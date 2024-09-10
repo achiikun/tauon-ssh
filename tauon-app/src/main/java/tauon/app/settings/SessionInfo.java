@@ -248,11 +248,6 @@ public class SessionInfo extends HopEntry implements Serializable {
                 this.getPassword());
     }
     
-    public String getSudoPassword() {
-        // TODO ask user for password
-        return getPassword();
-    }
-    
     public char[][] getHopPasswords() {
         List<char[]> pass = new ArrayList<>();
         for(HopEntry h: jumpHosts){
