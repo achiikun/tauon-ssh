@@ -14,15 +14,18 @@ public class SessionInputBlocker extends JPanel {
     private static final Logger LOG = LoggerFactory.getLogger(SessionInputBlocker.class);
     
     public static final Color TRANSPARENT = new Color(255, 255, 255, 0);
-    double angle = 0.0;
-    JButton btn = new JButton();
-    AtomicBoolean stopFlag;
-    Color c1 = new Color(3, 155, 229);
-    Stroke basicStroke = new BasicStroke(15);
-    Timer timer;
-    float alpha = 0.65f;
-    AlphaComposite alphaComposite = AlphaComposite.SrcOver.derive(alpha);
-    AlphaComposite alphaComposite1 = AlphaComposite.SrcOver.derive(0.85f);
+    private double angle = 0.0;
+    private final JButton btn = new JButton();
+    private AtomicBoolean stopFlag;
+    private final Color c1 = new Color(3, 155, 229);
+    private final Stroke basicStroke = new BasicStroke(15);
+    private final Timer timer;
+    private final float alpha = 0.65f;
+    private final AlphaComposite alphaComposite = AlphaComposite.SrcOver.derive(alpha);
+    private final AlphaComposite alphaComposite1 = AlphaComposite.SrcOver.derive(0.85f);
+    
+    private final long minTime = 500;
+    private final long opacityDuration = 3000;
     private long time;
     
     private boolean stateHoverBtn;
@@ -77,7 +80,7 @@ public class SessionInputBlocker extends JPanel {
         add(Box.createVerticalGlue());
         add(btn);
         add(Box.createVerticalGlue());
-        int size = 400;
+//        int size = 400;
         timer = new Timer(20, e -> {
             this.time += 20;
             angle += Math.toRadians(5); // 5 degrees per 100 ms = 50
@@ -88,13 +91,13 @@ public class SessionInputBlocker extends JPanel {
             
             setBtnForeground();
             
-            if(time >= 3000){
-                int x = getWidth() / 2 - size / 2;
-                int y = getHeight() / 2 - size / 2;
-                repaint(x, y, size, size);
-            }else{
+//            if(time >= 3000){
+//                int x = getWidth() / 2 - size / 2;
+//                int y = getHeight() / 2 - size / 2;
+//                repaint(x, y, size, size);
+//            }else{
                 repaint();
-            }
+//            }
 
         });
         addMouseListener(new MouseAdapter() {
@@ -113,16 +116,17 @@ public class SessionInputBlocker extends JPanel {
     }
     
     private void setBtnForeground() {
+        btn.setBackground(TRANSPARENT);
         
         if(stopFlag == null)
             return;
         
-        if((stopFlag.get() || time <= 500) && btn.getForeground().getAlpha() == 255) {
+        if((stopFlag.get() || time <= minTime) && btn.getForeground().getAlpha() == 255) {
             btn.setForeground(TRANSPARENT);
             return;
         }
         
-        if(time > 500) {
+        if(time > minTime) {
             if(statePressedBtn){
                 if(btn.getForeground().getAlpha() != 255)
                     btn.setForeground(TRANSPARENT);
@@ -153,15 +157,15 @@ public class SessionInputBlocker extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        if(time < 500)
+        if(time < minTime)
             return;
         
         AlphaComposite alphaComposite = null;
         
-        if(time >= 3000){
+        if(time >= minTime+opacityDuration){
             alphaComposite = this.alphaComposite;
         }else{
-            float customAlpha = alpha * (1 - ((3000-time) / 2500f));
+            float customAlpha = alpha * (1 - ((float) (opacityDuration - (time - minTime)) / opacityDuration));
             alphaComposite = AlphaComposite.SrcOver.derive(customAlpha);
         }
         
@@ -173,7 +177,7 @@ public class SessionInputBlocker extends JPanel {
         
         Rectangle r = g.getClipBounds();
         g2.fillRect(r.x, r.y, r.width, r.height);
-        
+
         g2.setComposite(alphaComposite1);
         g2.setStroke(basicStroke);
         int x = getWidth() / 2 - 70 / 2;
