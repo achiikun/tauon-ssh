@@ -95,6 +95,10 @@ public class AppInputBlocker extends JDialog implements InputBlocker, ActionList
             this.cancellable = null;
             cancelButton.setVisible(false);
             this.setVisible(false);
+            
+            // Fixes issue when the connection fail very fast and the dialog gets painted
+            this.setSize(0,0);
+            this.setLocation(0,0);
         });
     }
     
