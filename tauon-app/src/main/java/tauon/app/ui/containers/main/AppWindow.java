@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.swing.Timer;
+
 import static tauon.app.services.LanguageService.getBundle;
 import static tauon.app.util.misc.Constants.*;
 
@@ -59,6 +61,8 @@ public class AppWindow extends JFrame {
     private final FileTransferManager fileTransferManager;
     
     public final GraphicalHostKeyVerifier hostKeyVerifier;
+
+    private boolean panelVisible = false; // Variável para controlar o estado de visibilidade
     
     /**
      *
@@ -101,7 +105,11 @@ public class AppWindow extends JFrame {
         this.cardPanel = new JPanel(this.sessionCard, true);
         this.cardPanel.setDoubleBuffered(true);
 
-        this.add(createSessionPanel(), BorderLayout.WEST);
+        this.add(createSessionPanel(), BorderLayout.NORTH);
+        
+        sessionListPanel = new SessionListPanel(this);
+
+        this.add(sessionListPanel, BorderLayout.WEST);
         this.add(this.cardPanel);
 
 
@@ -118,6 +126,8 @@ public class AppWindow extends JFrame {
 
         this.fileTransferManager = new FileTransferManager(this, uploadPanel, downloadPanel);
         
+        this.slideSessionListPanel();
+
         new Thread(() -> {
             if (UpdateChecker.isNewUpdateAvailable()) {
                 lblUpdate.setText(FontAwesomeContants.FA_DOWNLOAD);
@@ -135,22 +145,60 @@ public class AppWindow extends JFrame {
             }
             
         } catch (OperationCancelledException ignored) {
-        
         }
+    }    
+
+    public void slideSessionListPanel() {
+        int targetWidth = panelVisible ? 0 : 200; // Define 200 como a largura quando o painel está visível
+
+        // Largura inicial
+        int startWidth = sessionListPanel.getWidth();
+
+        // Define a direção da animação
+        int direction = panelVisible ? -10 : 10; // Ajusta a largura em 10 pixels a cada passo
+
+        Timer timer = new Timer(10, null); // Timer para animar a cada 10 milissegundos
+        timer.addActionListener(e -> {
+            // Calcula o novo tamanho
+            int newWidth = sessionListPanel.getWidth() + direction;
+            
+            // Verifica se a animação terminou
+            if ((direction > 0 && newWidth >= targetWidth) || (direction < 0 && newWidth <= targetWidth)) {
+                newWidth = targetWidth;
+                timer.stop(); // Para o timer quando a animação termina
+            }
+            
+            // Ajusta o tamanho do painel
+            sessionListPanel.setPreferredSize(new Dimension(newWidth, sessionListPanel.getHeight()));
+            sessionListPanel.revalidate();
+            
+            // Quando a animação termina, atualiza o estado de visibilidade
+            if (newWidth == targetWidth) {
+                panelVisible = !panelVisible;
+            }
+        });
+        timer.start(); // Inicia o timer
     }
+
 
     private JPanel createSessionPanel() {
         JLabel lblSession = new JLabel(getBundle().getString("sessions"));
         lblSession.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
         
-        Font font = App.skin.getIconFont().deriveFont(20.0f);
+        Font font = App.skin.getIconFont().deriveFont(14.0f);
         Dimension dimension = new Dimension(30,30);
         
+        JButton btnList = new JButton();
+        btnList.setFont(font);
+        btnList.setText(FontAwesomeContants.FA_BARS);
+        btnList.setMaximumSize(dimension);
+        btnList.addActionListener(e -> this.slideSessionListPanel());
+
+
         JButton btnNew = new JButton(getBundle().getString("add"));
         btnNew.setFont(font);
-        btnNew.setText(FontAwesomeContants.FA_DESKTOP);
+        btnNew.setText(FontAwesomeContants.FA_PLUS);
         btnNew.setMaximumSize(dimension);
-//        btnNew.setFont(App.skin.getDefaultFont().deriveFont(12.0f));
         btnNew.addActionListener(e -> this.createFirstSessionPanel());
 
         JButton btnSettings = new JButton();
@@ -160,20 +208,20 @@ public class AppWindow extends JFrame {
         btnSettings.addActionListener(e -> openSettings(null));
 
         Box topBox = Box.createHorizontalBox();
-        topBox.setBorder(new EmptyBorder(10, 10, 10, 10));
-        topBox.add(lblSession);
-        topBox.add(Box.createRigidArea(new Dimension(50, 0)));
-        topBox.add(Box.createHorizontalGlue());
+        topBox.setBorder(new EmptyBorder(5, 5, 5, 5));
+        topBox.add(btnList);
+        topBox.add(Box.createRigidArea(new Dimension(5, 0)));
         topBox.add(btnNew);
         topBox.add(Box.createRigidArea(new Dimension(5, 0)));
+        topBox.add(lblSession);
+
+        topBox.add(Box.createHorizontalGlue());
+    
         topBox.add(btnSettings);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(new MatteBorder(0, 0, 0, 1, App.skin.getDefaultBorderColor()));
         panel.add(topBox, BorderLayout.NORTH);
-
-        sessionListPanel = new SessionListPanel(this);
-        panel.add(sessionListPanel);
 
         return panel;
 
