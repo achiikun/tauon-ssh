@@ -1,14 +1,9 @@
 package tauon.app.ssh;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import tauon.app.exceptions.OperationCancelledException;
-import tauon.app.services.SessionService;
-import tauon.app.services.SettingsService;
-import tauon.app.settings.PortForwardingRule;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -20,16 +15,24 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.AuthNone;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
-import tauon.app.settings.SessionInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.services.SessionService;
+import tauon.app.services.SettingsService;
 import tauon.app.settings.HopEntry;
+import tauon.app.settings.PortForwardingRule;
+import tauon.app.settings.SessionInfo;
 import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
+import tauon.app.util.misc.ExceptionUtils;
 import tauon.app.util.misc.PlatformUtils;
 import tauon.app.util.ssh.SshUtil;
-import tauon.app.util.misc.ExceptionUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -65,7 +68,7 @@ public class TauonSSHClient {
     private SSHConnectedHop sshConnectedHop;
     private SFTPClient sftp;
     
-    private GraphicalHostKeyVerifier hostKeyVerifier;
+    private final GraphicalHostKeyVerifier hostKeyVerifier;
     
     private final List<UserPassCache> cache = new ArrayList<>();
     private final List<PortForwardingState> portForwardingStates = new ArrayList<>();
@@ -83,12 +86,12 @@ public class TauonSSHClient {
     
     public synchronized boolean connect() throws InterruptedException {
         
+        // TODO add flag to force reconnect, sometimes there are timeouts but this method
+        // stills saying connected
         if(isConnected()) {
             LOG.warn("Client is already connected.");
             return true;
         }
-        
-        LOG.info("Begin connecting client.");
         
         AtomicBoolean cancelled = new AtomicBoolean();
         AtomicReference<Future<Boolean>> future = new AtomicReference<>();
@@ -105,25 +108,42 @@ public class TauonSSHClient {
             if(cancelled.get())
                 return false;
             
+            LOG.info("Disconnect previous connection if exists.");
+            disconnect();
+            
+            LOG.info("Begin connecting client.");
+            
             sftp = null;
             portForwardingStates.clear();
             
             try {
                 sshConnectedHop = new SSHConnectedHop(info);
                 sshConnectedHop.connect(0);
+                sshConnectedHop.sshj.getTransport().setDisconnectListener((disconnectReason, s) -> {
+                    
+                    // Skip programmatically disconnections
+                    if(disconnectReason == DisconnectReason.BY_APPLICATION)
+                        return;
+                    
+                    try {
+                        disconnect();
+                    } catch (IOException | InterruptedException e) {
+                        LOG.error("Exception while disconnecting after notified.", e);
+                    }
+                });
                 
                 if(openPortForwarding) {
                     
                     for (PortForwardingRule r : info.getPortForwardingRules()) {
                         if (r.getType() == PortForwardingRule.PortForwardingType.Local) {
                             try {
-                                forwardLocalPort(r, sshConnectedHop.sshj);
+                                forwardLocalPort(r);
                             } catch (Exception e) {
                                 LOG.error("Local port forwarding failed: {}", r, e);
                             }
                         } else if (r.getType() == PortForwardingRule.PortForwardingType.Remote) {
                             try {
-                                forwardRemotePort(r, sshConnectedHop.sshj);
+                                forwardRemotePort(r);
                             } catch (Exception e) {
                                 LOG.error("Remote port forwarding failed: {}", r, e);
                             }
@@ -134,8 +154,8 @@ public class TauonSSHClient {
                 
                 return true;
             }catch (Exception e){
-                e.printStackTrace();
-                sshConnectedHop.disconnect();
+                LOG.error("Connection failed.", e);
+                TauonSSHClient.this.disconnect();
                 return false;
             }
         }));
@@ -166,21 +186,28 @@ public class TauonSSHClient {
         
         try {
             for (PortForwardingState pf : portForwardingStates) {
-                if (!pf.thread.isAlive())
-                    continue;
-                if (pf.serverSocket != null) {
-                    pf.serverSocket.close();
+                Thread pfThread = pf.thread;
+                if(pfThread != null) {
+                    if (!pfThread.isAlive())
+                        continue;
+                    if (pf.serverSocket != null) {
+                        pf.serverSocket.close();
+                    }
+                    pfThread.interrupt();
                 }
-                pf.thread.interrupt();
             }
             
             for (PortForwardingState pf : portForwardingStates) {
-                if (!pf.thread.isAlive())
-                    continue;
-                pf.thread.join();
+                Thread pfThread = pf.thread;
+                if(pfThread != null) {
+                    if (!pfThread.isAlive())
+                        continue;
+                    pfThread.join(10000); // Wait at most 10 seconds
+                    if (pfThread.isAlive())
+                        LOG.error("Thread {} was not interrupted properly.", pfThread.getName());
+                }
             }
             
-            portForwardingStates.clear();
         }finally {
             portForwardingStates.clear();
         }
@@ -192,9 +219,15 @@ public class TauonSSHClient {
     
     public synchronized void close() throws IOException, InterruptedException {
         
-        if(!closed.getAndSet(true))
+        if(closed.getAndSet(true))
             return;
         
+        disconnect();
+    }
+    
+    private void disconnect() throws IOException, InterruptedException {
+        
+        disconnectPortForwardingStates();
         if(sshConnectedHop != null) {
             sshConnectedHop.disconnect();
             sshConnectedHop = null;
@@ -249,7 +282,7 @@ public class TauonSSHClient {
         return session;
     }
     
-    private void forwardLocalPort(PortForwardingRule r, SSHClient ssh) throws Exception {
+    private void forwardLocalPort(PortForwardingRule r) throws Exception {
         PortForwardingState portForwardingState = new PortForwardingState();
         portForwardingState.rule = r;
         portForwardingStates.add(portForwardingState);
@@ -258,6 +291,7 @@ public class TauonSSHClient {
         portForwardingState.serverSocket.setReuseAddress(true);
         portForwardingState.serverSocket.bind(new InetSocketAddress(r.getLocalHost(), r.getRemotePort()));
         
+        SSHClient ssh = sshConnectedHop.sshj;
         portForwardingState.thread = new Thread(() -> {
             try {
                 ssh.newLocalPortForwarder(
@@ -275,12 +309,14 @@ public class TauonSSHClient {
         
     }
     
-    private void forwardRemotePort(PortForwardingRule r, SSHClient ssh) {
+    private void forwardRemotePort(PortForwardingRule r) {
         PortForwardingState portForwardingState = new PortForwardingState();
         portForwardingState.rule = r;
         portForwardingStates.add(portForwardingState);
         
-        portForwardingState.thread = new Thread(() -> {
+        SSHClient ssh = sshConnectedHop.sshj;
+        // This port is not created on a thread anymore. The example where this was copied from was wrong.
+//        portForwardingState.thread = new Thread(() -> {
             
             /*
              * We make _server_ listen on port 8080, which forwards all connections to us as
@@ -294,7 +330,7 @@ public class TauonSSHClient {
                         new SocketForwardingConnectListener(new InetSocketAddress(r.getLocalHost(), r.getLocalPort())));
                 
                 // Something to hang on to so that the forwarding stays
-                ssh.getTransport().join();
+//                ssh.getTransport().join();
             } catch (ConnectionException | TransportException e) {
                 portForwardingState.thread = null;
                 guiHandle.reportPortForwardingFailed(r, e);
@@ -302,10 +338,10 @@ public class TauonSSHClient {
                 portForwardingState.thread = null;
             }
             
-        });
-        
-        portForwardingState.thread.start();
-        
+//        });
+//
+//        portForwardingState.thread.start();
+    
     }
     
     private class SSHConnectedHop {
@@ -337,6 +373,7 @@ public class TauonSSHClient {
                     defaultConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
                 }
                 this.sshj = new SSHClient(defaultConfig);
+                this.sshj.getConnection().setTimeoutMs(10000); // TODO parametrize
                 
                 if(info.isXForwardingEnabled()){
                     
@@ -448,7 +485,7 @@ public class TauonSSHClient {
                                 }
                                 return; // All right
                             } catch (OperationCancelledException e) {
-                                disconnect();
+                                TauonSSHClient.this.disconnect();
                                 throw e;
                             } catch (Exception e) {
                                 LOG.debug("Error authenticating", e);
@@ -469,7 +506,7 @@ public class TauonSSHClient {
                                 this.authPassword(index, userPassCache.user, isUserRemembered, rememberUser.get());
                                 return; // All right
                             } catch (OperationCancelledException e) {
-                                disconnect();
+                                TauonSSHClient.this.disconnect();
                                 throw e;
                             } catch (Exception e) {
                                 LOG.debug("Error authenticating", e);
@@ -571,7 +608,7 @@ public class TauonSSHClient {
                     if (haveToRememberUser || rememberPassword != null && rememberPassword.get()) {
                         if(haveToRememberUser)
                             info.setUser(user);
-                        if(rememberPassword != null && rememberPassword.get())
+                        if(rememberPassword.get())
                             info.setPassword(svalue);
                         guiHandle.saveInfo(info);
                     }
@@ -586,13 +623,6 @@ public class TauonSSHClient {
         // recursively
         private void tunnelThrough(int index) throws Exception {
             HopEntry ent = info.getJumpHosts().get(index);
-//            SessionInfo hopInfo = new SessionInfo();
-//            assert ent != null;
-//            hopInfo.setHost(ent.getHost());
-//            hopInfo.setPort(ent.getPort());
-//            hopInfo.setUser(ent.getUser());
-//            hopInfo.setPassword(ent.getPassword());
-//            hopInfo.setPrivateKeyFile(ent.getKeypath());
             previousHop = new SSHConnectedHop(ent);
             previousHop.connect(index+1);
         }
@@ -638,9 +668,7 @@ public class TauonSSHClient {
             this.sshj.connect("127.0.0.1", port);
         }
         
-        public void disconnect() throws IOException, InterruptedException {
-            
-            disconnectPortForwardingStates();
+        public void disconnect() {
             
             try {
                 if (sshj != null)

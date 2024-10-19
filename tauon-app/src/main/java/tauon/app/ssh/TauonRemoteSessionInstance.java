@@ -193,7 +193,7 @@ public class TauonRemoteSessionInstance {
      */
     public void close() throws InterruptedException, IOException {
         
-        if(!closed.getAndSet(true))
+        if(closed.getAndSet(true))
             return;
         
         this.sshFs.close();
