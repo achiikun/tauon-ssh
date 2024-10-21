@@ -71,11 +71,11 @@ public class SnippetPanel extends JPanel {
         listView.setCellRenderer(new SnippetListRenderer());
         listView.setBackground(App.skin.getTableBackgroundColor());
 
-        btnAdd = new JButton(getBundle().getString("add"));
+        btnAdd = new JButton(getBundle().getString("general.action.add"));
         btnEdit = new JButton(getBundle().getString("edit"));
-        btnDel = new JButton(getBundle().getString("delete"));
+        btnDel = new JButton(getBundle().getString("app.files.action.delete"));
         btnInsert = new JButton(getBundle().getString("insert"));
-        btnCopy = new JButton(getBundle().getString("copy"));
+        btnCopy = new JButton(getBundle().getString("app.files.action.copy"));
 
         btnAdd.addActionListener(e -> {
             JTextField txtName = new SkinnedTextField(30);

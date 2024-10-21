@@ -12,7 +12,7 @@ public class SearchTableModel extends AbstractTableModel {
     private final List<SearchResult> list = new ArrayList<>();
     private final String[] columns = new String[]{
             getBundle().getString("filename"),
-            getBundle().getString("type"),
+            getBundle().getString("app.files.label.folder_view.type"),
             getBundle().getString("path")};
 
     @Override

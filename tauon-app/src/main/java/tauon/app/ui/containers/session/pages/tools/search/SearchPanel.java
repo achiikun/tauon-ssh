@@ -9,11 +9,8 @@ import tauon.app.App;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
-import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.subpage.Subpage;
 import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.ui.components.misc.FontAwesomeContants;
-import tauon.app.ui.containers.session.pages.files.ssh.PropertiesDialog;
 import tauon.app.util.misc.PathUtils;
 import tauon.app.util.misc.ScriptLoader;
 
@@ -318,7 +315,7 @@ public class SearchPanel extends Subpage {
 
         txtFolder.setText("$HOME");
 
-        JLabel lblSize = new JLabel(getBundle().getString("size"));
+        JLabel lblSize = new JLabel(getBundle().getString("app.files.label.folder_view.size"));
         lblSize.setAlignmentX(LEFT_ALIGNMENT);
 
         txtSize = new SkinnedTextField();
@@ -336,7 +333,7 @@ public class SearchPanel extends Subpage {
                 new Dimension(20, cmbSize.getPreferredSize().height));
         cmbSize.setAlignmentX(LEFT_ALIGNMENT);
 
-        JLabel lblMtime = new JLabel(getBundle().getString("modified"));
+        JLabel lblMtime = new JLabel(getBundle().getString("app.files.label.folder_view.modified"));
         lblMtime.setAlignmentX(LEFT_ALIGNMENT);
 
         ButtonGroup btnGroup1 = new ButtonGroup();
@@ -546,7 +543,7 @@ public class SearchPanel extends Subpage {
                 new MatteBorder(1, 0, 0, 0, App.skin.getDefaultBorderColor()));
 
         btnShowInBrowser = new JButton(getBundle().getString("show_location"));
-        btnCopyPath = new JButton(getBundle().getString("copy_path"));
+        btnCopyPath = new JButton(getBundle().getString("app.files.action.copy_path"));
 
         disableButtons();
 

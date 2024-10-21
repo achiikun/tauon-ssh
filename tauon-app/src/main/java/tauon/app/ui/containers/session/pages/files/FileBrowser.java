@@ -181,7 +181,7 @@ public class FileBrowser extends Page {
                     @Override
                     public void error(String cause, FileTransfer fileTransfer) {
                         if (!holder.isSessionClosed()) {
-                            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                            JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                         }
                     }
         
@@ -228,7 +228,7 @@ public class FileBrowser extends Page {
 
     @Override
     public String getText() {
-        return getBundle().getString("file_browser");
+        return getBundle().getString("app.files.title");
     }
 
     /**

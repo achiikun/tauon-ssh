@@ -10,7 +10,6 @@ import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
-import tauon.app.ui.containers.session.pages.logviewer.LogContent;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -51,8 +50,9 @@ public class NetworkToolsPage extends Subpage {
         cmbHost.setEditable(true);
         cmbPort.setEditable(true);
 
+        // TODO i18n
         cmbDNSTool = new JComboBox<String>(new String[]{"nslookup", "dig",
-                "dig +short", "host", "getent ahostsv4"});
+                "dig +short", "app.connections.label.host", "getent ahostsv4"});
 
         JPanel grid = new JPanel(new GridLayout(1, 4, 10, 10));
         grid.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -64,7 +64,7 @@ public class NetworkToolsPage extends Subpage {
 
         btn1.addActionListener(e -> {
             if (JOptionPane.showOptionDialog(this,
-                    new Object[]{getBundle().getString("host_ping"), cmbHost}, "Ping",
+                    new Object[]{getBundle().getString("app.network_tools.label.host_ping"), cmbHost}, getBundle().getString("app.network_tools.action.ping"),
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
                     null, null, null) == JOptionPane.OK_OPTION) {
                 executeAsync("ping -c 4 " + cmbHost.getSelectedItem());
@@ -73,9 +73,9 @@ public class NetworkToolsPage extends Subpage {
 
         btn2.addActionListener(e -> {
             if (JOptionPane.showOptionDialog(this,
-                    new Object[]{getBundle().getString("host_name"), cmbHost, getBundle().getString("port_number"),
+                    new Object[]{getBundle().getString("app.network_tools.label.host_name"), cmbHost, getBundle().getString("app.network_tools.label.port_number"),
                             cmbPort},
-                    "Port check", JOptionPane.OK_CANCEL_OPTION,
+                    getBundle().getString("app.network_tools.action.port_check"), JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, null,
                     null) == JOptionPane.OK_OPTION) {
                 executeAsync("bash -c 'test cat</dev/tcp/"
@@ -87,7 +87,7 @@ public class NetworkToolsPage extends Subpage {
 
         btn3.addActionListener(e -> {
             if (JOptionPane.showOptionDialog(this,
-                    new Object[]{getBundle().getString("host_name"), cmbHost}, "Traceroute",
+                    new Object[]{getBundle().getString("app.network_tools.label.host_name"), cmbHost}, getBundle().getString("app.network_tools.action.traceroute"),
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
                     null, null, null) == JOptionPane.OK_OPTION) {
                 executeAsync("traceroute " + cmbHost.getSelectedItem());
@@ -96,9 +96,9 @@ public class NetworkToolsPage extends Subpage {
 
         btn4.addActionListener(e -> {
             if (JOptionPane.showOptionDialog(this,
-                    new Object[]{getBundle().getString("host_name"), cmbHost, getBundle().getString("tool_use"),
+                    new Object[]{getBundle().getString("app.network_tools.label.host_name"), cmbHost, getBundle().getString("app.network_tools.label.tool_to_use"),
                             cmbDNSTool},
-                    "DNS lookup", JOptionPane.OK_CANCEL_OPTION,
+                    getBundle().getString("app.network_tools.action.dns_lookup"), JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, null,
                     null) == JOptionPane.OK_OPTION) {
                 executeAsync(cmbDNSTool.getSelectedItem() + " "
@@ -136,7 +136,7 @@ public class NetworkToolsPage extends Subpage {
                 } else {
                     System.err.println(berr.toString(StandardCharsets.UTF_8));
                     JOptionPane.showMessageDialog(this,
-                            getBundle().getString("executed_errors"));
+                            getBundle().getString("general.message.executed_with_errors"));
                 }
             }
 //            catch (Exception e) {

@@ -52,12 +52,11 @@ public class ExternalEditorHandler extends JDialog {
         setSize(400, 200);
 
         progressBar = new JProgressBar();
-        // TODO i18n
-        progressLabel = new JLabel(getBundle().getString("label.transferring"));
+        progressLabel = new JLabel(getBundle().getString("app.external_editor.label.transferring"));
         progressLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
         progressLabel.setFont(App.skin.getDefaultFont().deriveFont(18.0f));
         
-        JButton btnCancel = new JButton(getBundle().getString("cancel"));
+        JButton btnCancel = new JButton(getBundle().getString("general.action.cancel"));
         Box bottomBox = Box.createHorizontalBox();
         bottomBox.add(Box.createHorizontalGlue());
         bottomBox.add(btnCancel);

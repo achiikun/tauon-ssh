@@ -113,7 +113,7 @@ public class SshFileOperations {
                     "Access denied, rename using sudo?", getBundle().getString("use_sudo"),
                     JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                 if (!instance.isSessionClosed()) {
-                    JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                    JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                 }
                 return false;
             }
@@ -124,7 +124,7 @@ public class SshFileOperations {
             }
 
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
         } else {
             return true;
@@ -151,7 +151,7 @@ public class SshFileOperations {
                     new String[]{"Auto rename", "Overwrite"});
             if (JOptionPane.showOptionDialog(null, new Object[]{
                             "Some file with the same name already exists. Please choose an action",
-                            cmbs}, getBundle().getString("action_required"), JOptionPane.YES_NO_OPTION,
+                            cmbs}, getBundle().getString("general.message.action_required"), JOptionPane.YES_NO_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, null,
                     null) == JOptionPane.YES_OPTION) {
                 action = cmbs.getSelectedIndex();
@@ -190,7 +190,7 @@ public class SshFileOperations {
                     "Access denied, copy using sudo?", getBundle().getString("use_sudo"),
                     JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                 if (!instance.isSessionClosed()) {
-                    JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                    JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                 }
                 return false;
             }
@@ -201,7 +201,7 @@ public class SshFileOperations {
             }
 
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
         } else {
             return true;
@@ -247,13 +247,13 @@ public class SshFileOperations {
             }
 
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
             return false;
         } catch (Exception e) {
             e.printStackTrace();
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
             return false;
         }
@@ -267,7 +267,7 @@ public class SshFileOperations {
         int ret = SudoUtils.runSudo(command.toString(), instance, password);
         if (ret == -1) {
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
         }
         return ret == 0;
@@ -305,7 +305,7 @@ public class SshFileOperations {
                 return deletePrivilege(targetList, instance, password.get());
             }
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
             return false;
 
@@ -329,7 +329,7 @@ public class SshFileOperations {
         System.out.println("Invoke sudo: " + sb);
         int ret = SudoUtils.runSudo(sb.toString(), instance, password);
         if (ret == -1) {
-            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+            JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
         }
         return ret == 0;
     }
@@ -366,21 +366,21 @@ public class SshFileOperations {
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 if (!touchWithPrivilege(folder, text, instance, password.get())) {
                     if (!instance.isSessionClosed()) {
-                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                        JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                     }
                     return false;
                 }
                 return true;
             }
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
 
             return false;
         } catch (Exception e1) {
             e1.printStackTrace();
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
         }
         return false;
@@ -395,7 +395,7 @@ public class SshFileOperations {
         int ret = SudoUtils.runSudo(command.toString(), instance, password);
         if (ret == -1) {
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
         }
         return ret == 0;
@@ -435,21 +435,21 @@ public class SshFileOperations {
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 if (!mkdirWithPrivilege(folder, text, instance, password.get())) {
                     if (!instance.isSessionClosed()) {
-                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                        JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                     }
                     return false;
                 }
                 return true;
             }
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
             return false;
 
         } catch (Exception e1) {
             e1.printStackTrace();
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
         }
         return false;
@@ -463,7 +463,7 @@ public class SshFileOperations {
         System.out.println("Invoke sudo: " + command);
         int ret = SudoUtils.runSudo(command.toString(), instance, password);
         if (ret == -1 && !instance.isSessionClosed()) {
-            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+            JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
         }
         return ret == 0;
     }

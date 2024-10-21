@@ -42,7 +42,7 @@ public class FileTransferManager {
             });
             
         }
-            
+        
         fileTransfer.getSession().getFileBrowser().getBackgroundTransferPool().submit(
                 () -> fileTransfer.run(new FileTransferProgress.DelegateToSwing(
                         new FileTransferProgress.Compose(
@@ -52,7 +52,7 @@ public class FileTransferManager {
                                     @Override
                                     public void error(String cause, FileTransfer fileTransfer) {
                                         if (!fileTransfer.getSession().isSessionClosed()) {
-                                            JOptionPane.showMessageDialog(appWindow, getBundle().getString("operation_failed"));
+                                            JOptionPane.showMessageDialog(appWindow, getBundle().getString("general.message.operation_failed"));
                                         }
                                     }
                                     

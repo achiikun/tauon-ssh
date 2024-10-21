@@ -52,9 +52,9 @@ public class SkinnedTextField extends JTextField {
 
     private JPopupMenu createPopup() {
         JPopupMenu popup = new JPopupMenu();
-        JMenuItem mCut = new JMenuItem(getBundle().getString("cut"));
-        JMenuItem mCopy = new JMenuItem(getBundle().getString("copy"));
-        JMenuItem mPaste = new JMenuItem(getBundle().getString("paste"));
+        JMenuItem mCut = new JMenuItem(getBundle().getString("app.files.action.cut"));
+        JMenuItem mCopy = new JMenuItem(getBundle().getString("app.files.action.copy"));
+        JMenuItem mPaste = new JMenuItem(getBundle().getString("app.files.action.paste"));
         JMenuItem mSelect = new JMenuItem(getBundle().getString("select_all"));
 
         popup.add(mCut);

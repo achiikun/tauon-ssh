@@ -5,7 +5,6 @@ package tauon.app.ui.containers.session.pages.tools.keys;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.ui.components.misc.FontItemRenderer;
 import tauon.app.ui.components.misc.TabbedPanel;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
@@ -107,8 +106,8 @@ public class KeyPage extends Subpage {
 //                }
             });
         });
-        tabs.addTab(getBundle().getString("server"), remoteKeyPanel);
-        tabs.addTab(getBundle().getString("local_computer"), localKeyPanel);
+        tabs.addTab(getBundle().getString("app.ssh_keys.label.server"), remoteKeyPanel);
+        tabs.addTab(getBundle().getString("app.ssh_keys.label.local_computer"), localKeyPanel);
         this.add(tabs);
 
         holder.submitSSHOperation(instance -> {

@@ -93,8 +93,8 @@ public class PortForwardingPanel extends JPanel {
 
     private PortForwardingRule addOrEditEntry(PortForwardingRule r) {
         JComboBox<String> cmbPFType = new JComboBox<>(new String[]{
-                getBundle().getString("local"),
-                getBundle().getString("remote")
+                getBundle().getString("app.connections.port_forwarding.label.local"),
+                getBundle().getString("app.connections.port_forwarding.label.remote")
         });
         
         JTextField txtLocalHost = new SkinnedTextField(30);
@@ -116,15 +116,14 @@ public class PortForwardingPanel extends JPanel {
         }
 
         while (JOptionPane.showOptionDialog(this,
-                // TODO i18n
                 new Object[]{
-                        "Port forwarding type", cmbPFType,
-                        "Local Host", txtLocalHost,
-                        "Local Port", spLocalPort,
-                        "Remote Host", txtRemoteHost,
-                        "Remote Port", spRemotePort,
+                        getBundle().getString("app.connections.port_forwarding.label.type"), cmbPFType,
+                        getBundle().getString("app.connections.port_forwarding.label.local_host"), txtLocalHost,
+                        getBundle().getString("app.connections.port_forwarding.label.local_port"), spLocalPort,
+                        getBundle().getString("app.connections.port_forwarding.label.remote_host"), txtRemoteHost,
+                        getBundle().getString("app.connections.port_forwarding.label.remote_port"), spRemotePort,
                 },
-                "Port forwarding rule", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null,
+                getBundle().getString("app.connections.port_forwarding.label.rule"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null,
                 null) == JOptionPane.OK_OPTION) {
 
             String host = txtRemoteHost.getText();
@@ -133,7 +132,7 @@ public class PortForwardingPanel extends JPanel {
             String bindAddress = txtLocalHost.getText();
 
             if (host.isEmpty() || bindAddress.isEmpty() || port1 <= 0 || port2 <= 0) {
-                JOptionPane.showMessageDialog(this, getBundle().getString("invalid_input"));
+                JOptionPane.showMessageDialog(this, getBundle().getString("app.connections.label.invalid_input"));
                 continue;
             }
 
@@ -153,11 +152,11 @@ public class PortForwardingPanel extends JPanel {
     private static class PFTableModel extends AbstractTableModel {
 
         private final String[] columns = {
-                getBundle().getString("type"),
-                getBundle().getString("local_host"),
-                getBundle().getString("local_port"),
-                getBundle().getString("remote_host"),
-                getBundle().getString("remote_port")
+                getBundle().getString("app.connections.port_forwarding.label.type"),
+                getBundle().getString("app.connections.port_forwarding.label.local_host"),
+                getBundle().getString("app.connections.port_forwarding.label.local_port"),
+                getBundle().getString("app.connections.port_forwarding.label.remote_host"),
+                getBundle().getString("app.connections.port_forwarding.label.remote_port"),
         };
         
         private final List<PortForwardingRule> list = new ArrayList<>();

@@ -4,8 +4,6 @@ import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.tablerenderers.ByteCountRenderer;
 import tauon.app.ui.components.tablerenderers.ByteCountValue;
-import tauon.app.ui.components.tablerenderers.PercentageRenderer;
-import tauon.app.ui.components.tablerenderers.PercentageValue;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -88,7 +86,7 @@ public class ProcessListPanel extends JPanel {
         pan.add(jsp);
 
         Box b1 = Box.createHorizontalBox();
-        b1.add(new JLabel(getBundle().getString("processes")));
+        b1.add(new JLabel(getBundle().getString("app.processes.title")));
         b1.add(Box.createHorizontalStrut(10));
         txtFilter = new SkinnedTextField(30);
         txtFilter.addActionListener(e -> {
@@ -114,7 +112,7 @@ public class ProcessListPanel extends JPanel {
             model.fireTableDataChanged();
         });
 
-        JButton btnRefresh = new JButton(getBundle().getString("refresh"));
+        JButton btnRefresh = new JButton(getBundle().getString("general.action.refresh"));
         b1.add(btnRefresh);
         btnRefresh.addActionListener(e -> this.consumer.accept(null, CommandMode.LIST_PROCESS));
 

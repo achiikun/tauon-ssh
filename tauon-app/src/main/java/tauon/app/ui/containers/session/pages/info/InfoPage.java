@@ -32,38 +32,38 @@ public class InfoPage extends SubpagingPage {
 
     @Override
     public String getText() {
-        return getBundle().getString("info");
+        return getBundle().getString("app.info.title");
     }
 
     @Override
     public void onCreateSubpages(SessionContentPanel holder) {
         addSubpage(
                 "SYS_INFO",
-                getBundle().getString("system_info"),
+                getBundle().getString("app.system_info.title"),
                 FontAwesomeContants.FA_LINUX,
                 new SysInfoPanel(holder)
         );
         addSubpage(
                 "SYS_LOAD",
-                getBundle().getString("system_load"),
+                getBundle().getString("app.system_load.title"),
                 FontAwesomeContants.FA_AREA_CHART,
                 new SysLoadPage(holder)
         );
         addSubpage(
                 "SYSTEMD_SERVICES",
-                getBundle().getString("services_systemd"),
+                getBundle().getString("app.services_systemd.title"),
                 FontAwesomeContants.FA_SERVER,
                 new ServicePanel(holder)
         );
         addSubpage(
                 "SYS_PROCESSES",
-                getBundle().getString("processes"),
+                getBundle().getString("app.processes.title"),
                 FontAwesomeContants.FA_COGS,
                 new ProcessViewer(holder)
         );
         addSubpage(
                 "PROC_PORT",
-                getBundle().getString("ports"),
+                getBundle().getString("app.ports.title"),
                 FontAwesomeContants.FA_DATABASE,
                 new PortViewer(holder)
         );

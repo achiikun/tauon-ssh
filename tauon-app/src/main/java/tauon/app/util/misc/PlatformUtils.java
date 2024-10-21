@@ -14,7 +14,6 @@ import com.sun.jna.win32.StdCallLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
-import tauon.app.ui.containers.session.pages.logviewer.PagedLogSearchPanel;
 
 import java.awt.*;
 import java.io.*;
@@ -77,7 +76,7 @@ public class PlatformUtils {
             Shell32 shell32 = Native.load("shell32", Shell32.class);
             WinDef.HWND h = null;
             WString file = new WString(f.getAbsolutePath());
-            shell32.shellExecuteW(h, new WString("open"), file, null, null, 1);
+            shell32.shellExecuteW(h, new WString("general.action.open"), file, null, null, 1);
         } catch (Exception e) {
             e.printStackTrace();
             try {
@@ -146,7 +145,7 @@ public class PlatformUtils {
         }
         try {
             ProcessBuilder pb = new ProcessBuilder();
-            pb.command("open", f.getAbsolutePath());
+            pb.command("general.action.open", f.getAbsolutePath());
             if (pb.start().waitFor() != 0) {
                 throw new FileNotFoundException();
             }
@@ -158,7 +157,7 @@ public class PlatformUtils {
     public static void openMac(String url) {
         try {
             ProcessBuilder pb = new ProcessBuilder();
-            pb.command("open", url);
+            pb.command("general.action.open", url);
             if (pb.start().waitFor() != 0) {
                 throw new FileNotFoundException();
             }

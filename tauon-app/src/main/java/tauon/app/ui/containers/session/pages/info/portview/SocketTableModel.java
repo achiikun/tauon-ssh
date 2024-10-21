@@ -7,7 +7,7 @@ import java.util.List;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class SocketTableModel extends AbstractTableModel {
-    private final String[] columns = {getBundle().getString("processes"), getBundle().getString("pid"), getBundle().getString("host"), getBundle().getString("port")};
+    private final String[] columns = {getBundle().getString("app.processes.title"), getBundle().getString("pid"), getBundle().getString("app.connections.label.host"), getBundle().getString("app.connections.label.port")};
     private final List<SocketEntry> list = new ArrayList<>();
 
     public void addEntry(SocketEntry e) {

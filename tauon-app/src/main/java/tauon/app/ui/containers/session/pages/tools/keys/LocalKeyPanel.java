@@ -27,7 +27,7 @@ public class LocalKeyPanel extends JPanel {
         this.info = info;
         this.callback1 = callback1;
         this.callback2 = callback2;
-        JLabel lblTitle = new JLabel(getBundle().getString("public_key_file"));
+        JLabel lblTitle = new JLabel(getBundle().getString("app.ssh_keys.label.public_key_file"));
         txtKeyFile = new SkinnedTextField(20);
         txtKeyFile.setBackground(App.skin.getDefaultBackground());
         txtKeyFile.setBorder(null);
@@ -45,8 +45,8 @@ public class LocalKeyPanel extends JPanel {
         JScrollPane jScrollPane = new JScrollPane(txtPubKey);
         add(jScrollPane);
 
-        btnGenNewKey = new JButton(getBundle().getString("generate_new_key"));
-        btnRefresh = new JButton(getBundle().getString("refresh"));
+        btnGenNewKey = new JButton(getBundle().getString("app.ssh_keys.action.generate_new_key"));
+        btnRefresh = new JButton(getBundle().getString("general.action.refresh"));
 
         btnGenNewKey.addActionListener(e -> callback1.accept(null));
 

@@ -18,7 +18,6 @@ import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.updater.UpdateChecker;
-import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.PlatformUtils;
 
 import javax.imageio.ImageIO;
@@ -140,13 +139,13 @@ public class AppWindow extends JFrame {
     }
 
     private JPanel createSessionPanel() {
-        JLabel lblSession = new JLabel(getBundle().getString("sessions"));
+        JLabel lblSession = new JLabel(getBundle().getString("app.ui.label.sessions"));
         lblSession.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
         
         Font font = App.skin.getIconFont().deriveFont(20.0f);
         Dimension dimension = new Dimension(30,30);
         
-        JButton btnNew = new JButton(getBundle().getString("add"));
+        JButton btnNew = new JButton(getBundle().getString("general.action.add"));
         btnNew.setFont(font);
         btnNew.setText(FontAwesomeContants.FA_DESKTOP);
         btnNew.setMaximumSize(dimension);
@@ -315,7 +314,7 @@ public class AppWindow extends JFrame {
 
         b1.add(Box.createRigidArea(new Dimension(5, 10)));
 
-        lblUpdateText = new JLabel(getBundle().getString("chk_update"));
+        lblUpdateText = new JLabel(getBundle().getString("app.ui.label.check_updates"));
         lblUpdateText.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblUpdateText.addMouseListener(new MouseAdapter() {
             @Override

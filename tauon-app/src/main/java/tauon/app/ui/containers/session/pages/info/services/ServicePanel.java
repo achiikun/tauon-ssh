@@ -251,13 +251,13 @@ public class ServicePanel extends Subpage {
         btnStart = new JButton(getBundle().getString("start"));
         btnStop = new JButton(getBundle().getString("stop"));
         btnRestart = new JButton(getBundle().getString("restart"));
-        btnReload = new JButton(getBundle().getString("reload"));
+        btnReload = new JButton(getBundle().getString("general.action.reload"));
         btnEnable = new JButton(getBundle().getString("enable"));
         btnDisable = new JButton(getBundle().getString("disable"));
-        btnRefresh = new JButton(getBundle().getString("refresh"));
+        btnRefresh = new JButton(getBundle().getString("general.action.refresh"));
 
         chkRunAsSuperUser = new JCheckBox(
-                getBundle().getString("actions_sudo"));
+                getBundle().getString("app.ui.action.do_using_sudo"));
         box.add(chkRunAsSuperUser);
 
         box.add(Box.createHorizontalGlue());
@@ -360,7 +360,7 @@ public class ServicePanel extends Subpage {
 //                        }
                         if (!holder.isSessionClosed()) {
                             JOptionPane.showMessageDialog(null,
-                                    getBundle().getString("operation_failed"));
+                                    getBundle().getString("general.message.operation_failed"));
                         }
                     } else {
 //                        try {
@@ -374,7 +374,7 @@ public class ServicePanel extends Subpage {
 //                        }
                         if (!holder.isSessionClosed()) {
                             JOptionPane.showMessageDialog(null,
-                                    getBundle().getString("operation_failed"));
+                                    getBundle().getString("general.message.operation_failed"));
                         }
                     }
 //                } catch (Exception e) {

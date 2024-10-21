@@ -8,7 +8,10 @@ import static tauon.app.services.LanguageService.getBundle;
 
 public class EditorTableModel extends AbstractTableModel {
     private final List<EditorEntry> list = new ArrayList<>();
-    private final String[] cols = {getBundle().getString("editor_name"), getBundle().getString("path_executable")};
+    private final String[] cols = {
+            getBundle().getString("app.settings.editor_table_model.name"),
+            getBundle().getString("app.settings.editor_table_model.path_executable")
+    };
 
     @Override
     public int getRowCount() {

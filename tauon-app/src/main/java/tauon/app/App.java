@@ -7,8 +7,6 @@ import tauon.app.exceptions.InitializationException;
 import tauon.app.services.ConfigFilesService;
 import tauon.app.services.SettingsService;
 import tauon.app.ui.containers.main.AppWindow;
-import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
-import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.ui.laf.AppSkin;
 import tauon.app.ui.laf.AppSkinDark;
 import tauon.app.ui.laf.AppSkinLight;
@@ -16,7 +14,6 @@ import tauon.app.util.externaleditor.ExternalEditorHandler;
 import tauon.app.util.misc.PlatformUtils;
 
 import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
@@ -26,7 +23,6 @@ import java.util.concurrent.Executors;
 
 import static tauon.app.services.LanguageService.getBundle;
 import static tauon.app.services.SettingsService.getSettings;
-import static tauon.app.util.misc.Constants.CONFIG_DIR;
 
 /**
  * Hello world!
@@ -111,7 +107,7 @@ public class App {
             int maxKeySize = javax.crypto.Cipher.getMaxAllowedKeyLength("AES");
             LOG.info("maxKeySize: " + maxKeySize);
             if (maxKeySize < Integer.MAX_VALUE) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("unlimited_cryptography"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("app.ui.message.unlimited_cryptography_not_enabled"));
             }
         } catch (NoSuchAlgorithmException e1) {
             LOG.error(e1.getMessage(), e1);

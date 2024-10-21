@@ -16,7 +16,7 @@ public class FolderViewTableModel extends AbstractTableModel implements ListMode
 
     private static final long serialVersionUID = 7212506492710233442L;
     private final List<FileInfo> files = new ArrayList<>();
-    private final String[] columns = {getBundle().getString("name"), getBundle().getString("modified"), getBundle().getString("size"), getBundle().getString("type"), getBundle().getString("permission"), getBundle().getString("owner")};
+    private final String[] columns = {getBundle().getString("app.files.label.folder_view.name"), getBundle().getString("app.files.label.folder_view.modified"), getBundle().getString("app.files.label.folder_view.size"), getBundle().getString("app.files.label.folder_view.type"), getBundle().getString("app.files.label.folder_view.permission"), getBundle().getString("app.files.label.folder_view.owner")};
     protected EventListenerList listenerList = new EventListenerList();
     private boolean local = false;
 

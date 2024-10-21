@@ -61,7 +61,7 @@ public class LogViewer extends Page {
 
     @Override
     public String getText() {
-        return getBundle().getString("server_logs");
+        return getBundle().getString("app.logs.title");
     }
 
     public void openLog(FileInfo remotePath) {

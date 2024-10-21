@@ -5,7 +5,6 @@ package tauon.app.ui.components.misc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.ui.containers.main.SessionListPanel;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
@@ -47,9 +46,9 @@ public class SkinnedTextArea extends JTextArea {
 
     private JPopupMenu createPopup() {
         JPopupMenu popup = new JPopupMenu();
-        JMenuItem mCut = new JMenuItem(getBundle().getString("cut"));
-        JMenuItem mCopy = new JMenuItem(getBundle().getString("copy"));
-        JMenuItem mPaste = new JMenuItem(getBundle().getString("paste"));
+        JMenuItem mCut = new JMenuItem(getBundle().getString("app.files.action.cut"));
+        JMenuItem mCopy = new JMenuItem(getBundle().getString("app.files.action.copy"));
+        JMenuItem mPaste = new JMenuItem(getBundle().getString("app.files.action.paste"));
         JMenuItem mSelect = new JMenuItem(getBundle().getString("select_all"));
 
         popup.add(mCut);

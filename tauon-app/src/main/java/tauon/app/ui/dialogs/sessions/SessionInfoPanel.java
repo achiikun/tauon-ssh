@@ -581,14 +581,14 @@ public class SessionInfoPanel extends JPanel {
         Insets topInset = new Insets(20, 10, 0, 10);
         Insets noInset = new Insets(5, 10, 0, 10);
 
-        lblHost = new JLabel(getBundle().getString("host"));
+        lblHost = new JLabel(getBundle().getString("app.connections.label.host"));
         lblHost.setHorizontalAlignment(JLabel.LEADING);
-        lblPort = new JLabel(getBundle().getString("port"));
-        lblUser = new JLabel(getBundle().getString("user"));
-        lblPass = new JLabel(getBundle().getString("password"));
+        lblPort = new JLabel(getBundle().getString("app.connections.label.port"));
+        lblUser = new JLabel(getBundle().getString("app.connections.label.user"));
+        lblPass = new JLabel(getBundle().getString("app.connections.label.password"));
         lblLocalFolder = new JLabel(getBundle().getString("local_folder"));
         lblRemoteFolder = new JLabel(getBundle().getString("remote_folder"));
-        lblKeyFile = new JLabel(getBundle().getString("private_key_file"));
+        lblKeyFile = new JLabel(getBundle().getString("app.connections.label.private_key_file"));
         lblXForwarding = new JLabel(getBundle().getString("enable_x11_forwarding"));
 
         inpHostName = new SkinnedTextField(10);
@@ -720,7 +720,7 @@ public class SessionInfoPanel extends JPanel {
             ta.setText(inpPassword.getText());
             ta.setEditable(false);
             ta.setLineWrap(false);
-            JOptionPane.showMessageDialog(this, ta, getBundle().getString("password"), JOptionPane.PLAIN_MESSAGE);
+            JOptionPane.showMessageDialog(this, ta, getBundle().getString("app.connections.label.password"), JOptionPane.PLAIN_MESSAGE);
         });
 
         GridBagConstraints c = new GridBagConstraints();

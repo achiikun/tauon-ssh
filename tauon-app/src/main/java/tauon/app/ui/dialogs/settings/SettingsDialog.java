@@ -48,8 +48,8 @@ public class SettingsDialog extends JDialog {
     private final JButton btnReset;
     private final DefaultComboBoxModel<Constants.ConflictAction> conflictOptions = new DefaultComboBoxModel<>(Constants.ConflictAction.values());
     private final DefaultComboBoxModel<Constants.TransferMode> transferModes = new DefaultComboBoxModel<>(Constants.TransferMode.values());
-    private final List<String> conflictOption1 = Arrays.asList(getBundle().getString("overwrite"), getBundle().getString("auto_rename"), getBundle().getString("skip"), getBundle().getString("prompt"));
-    private final List<String> conflictOption2 = Arrays.asList(getBundle().getString("overwrite"), getBundle().getString("auto_rename"), getBundle().getString("skip"));
+    private final List<String> conflictOption1 = Arrays.asList(getBundle().getString("app.files.action.overwrite"), getBundle().getString("auto_rename"), getBundle().getString("app.files.action.skip"), getBundle().getString("app.files.action.prompt"));
+    private final List<String> conflictOption2 = Arrays.asList(getBundle().getString("app.files.action.overwrite"), getBundle().getString("auto_rename"), getBundle().getString("app.files.action.skip"));
     private final CardLayout cardLayout;
     private final JPanel cardPanel;
     private final JList<String> navList;
@@ -81,15 +81,15 @@ public class SettingsDialog extends JDialog {
     public Color[] getIndexColors() {
           return new Color[]{
               new Color(0x000000), //Black
-              new Color(0xcd0000), //Red 
+              new Color(0xcd0000), //Red
               new Color(0x00cd00), //Green
               new Color(0xcdcd00), //Yellow
-              new Color(0x1e90ff), //Blue 
+              new Color(0x1e90ff), //Blue
               new Color(0xcd00cd), //Magenta
               new Color(0x00cdcd), //Cyan
               new Color(0xe5e5e5), //White
               //Bright versions of the ISO colors
-              new Color(0x4c4c4c), //Black 
+              new Color(0x4c4c4c), //Black
               new Color(0xff0000), //Red
               new Color(0x00ff00), //Green
               new Color(0xffff00), //Yellow
@@ -150,9 +150,9 @@ public class SettingsDialog extends JDialog {
         bottomBox.setBorder(new CompoundBorder(new MatteBorder(1, 0, 0, 0, App.skin.getDefaultBorderColor()),
                 new EmptyBorder(10, 10, 10, 10)));
 
-        btnCancel = new JButton(getBundle().getString("cancel"));
+        btnCancel = new JButton(getBundle().getString("general.action.cancel"));
         btnReset = new JButton(getBundle().getString("reset"));
-        btnSave = new JButton(getBundle().getString("save"));
+        btnSave = new JButton(getBundle().getString("general.action.save"));
 
         btnSave.addActionListener(e -> applySettingsAndClose());
 
@@ -772,7 +772,7 @@ public class SettingsDialog extends JDialog {
                 File file = jfc.getSelectedFile();
                 JTextField txt = new SkinnedTextField(30);
                 txt.setText(file.getName());
-                String name = OptionPaneUtils.showInputDialog(this, getBundle().getString("editor_name"), file.getName(), getBundle().getString("add_editor2"));
+                String name = OptionPaneUtils.showInputDialog(this, getBundle().getString("app.settings.editor_table_model.name"), file.getName(), getBundle().getString("add_editor2"));
                 if (name != null) {
                     editorModel.addEntry(new EditorEntry(name, file.getAbsolutePath()));
                 }

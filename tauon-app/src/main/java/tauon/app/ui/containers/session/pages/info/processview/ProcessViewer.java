@@ -4,11 +4,9 @@
 package tauon.app.ui.containers.session.pages.info.processview;
 
 import tauon.app.ssh.TauonRemoteSessionInstance;
-import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.subpage.Subpage;
 import tauon.app.ui.components.tablerenderers.ByteCountValue;
 import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.util.misc.ScriptLoader;
 import tauon.app.util.ssh.SudoUtils;
 
@@ -75,7 +73,7 @@ public class ProcessViewer extends Subpage {
                     if (instance.exec(cmd, stopFlag, new StringBuilder(),
                             new StringBuilder()) != 0) {
                         if (!holder.isSessionClosed()) {
-                            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                            JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                         }
                     } else {
                         updateProcessList(instance, stopFlag);
@@ -86,7 +84,7 @@ public class ProcessViewer extends Subpage {
                 holder.submitSSHOperationStoppable(instance -> {
                     if (SudoUtils.runSudo(cmd, instance, holder.getInfo().getPassword()) != 0) {
                         if (!holder.isSessionClosed()) {
-                            JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                            JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                         }
                     } else {
                         updateProcessList(instance, stopFlag);

@@ -35,7 +35,7 @@ public class RemoteKeyPanel extends JPanel {
         this.info = info;
         this.callback1 = callback1;
         this.callback2 = callback3;
-        JLabel lblTitle = new JLabel(getBundle().getString("public_key_file"));
+        JLabel lblTitle = new JLabel(getBundle().getString("app.ssh_keys.label.public_key_file"));
         txtKeyFile = new SkinnedTextField(20);
         txtKeyFile.setBorder(null);
         txtKeyFile.setBackground(App.skin.getDefaultBackground());
@@ -51,7 +51,7 @@ public class RemoteKeyPanel extends JPanel {
         txtPubKey.setLineWrap(true);
         JScrollPane jScrollPane = new SkinnedScrollPane(txtPubKey);
 
-        btnGenNewKey = new JButton(getBundle().getString("generate_new_key"));
+        btnGenNewKey = new JButton(getBundle().getString("app.ssh_keys.action.generate_new_key"));
         btnRefresh = new JButton(getBundle().getString("generate"));
 
         btnGenNewKey.addActionListener(e -> callback1.accept(null));
@@ -74,7 +74,7 @@ public class RemoteKeyPanel extends JPanel {
         jList = new JList<>(model);
         jList.setBackground(App.skin.getTextFieldBackground());
 
-        btnAdd = new JButton(getBundle().getString("add"));
+        btnAdd = new JButton(getBundle().getString("general.action.add"));
         btnEdit = new JButton(getBundle().getString("edit"));
         btnRemove = new JButton();
 

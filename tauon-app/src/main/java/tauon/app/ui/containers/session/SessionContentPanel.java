@@ -29,11 +29,9 @@ import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.PageHolder;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.containers.main.FileTransferProgress;
-import tauon.app.ui.containers.session.pages.tools.diskspace.DiskspaceAnalyzer;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.info.InfoPage;
 import tauon.app.ui.containers.session.pages.logviewer.LogViewer;
-import tauon.app.ui.containers.session.pages.tools.search.SearchPanel;
 import tauon.app.ui.containers.session.pages.terminal.TerminalHolder;
 import tauon.app.ui.containers.session.pages.tools.ToolsPage;
 import tauon.app.ui.dialogs.sessions.PasswordPromptHelper;
@@ -398,7 +396,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
                     JOptionPane.showOptionDialog(
                             appWindow,
                             new Object[]{"User name", txtUser, chkCacheUser},
-                            getBundle().getString("user"),
+                            getBundle().getString("app.connections.label.user"),
                             JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.PLAIN_MESSAGE,
                             null,

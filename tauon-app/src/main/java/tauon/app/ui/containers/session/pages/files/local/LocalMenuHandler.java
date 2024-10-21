@@ -55,14 +55,14 @@ public class LocalMenuHandler {
     }
     
     private void initMenuItems(InputMap map, ActionMap act) {
-        mOpen = new JMenuItem(getBundle().getString("open"));
+        mOpen = new JMenuItem(getBundle().getString("general.action.open"));
         mOpen.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 open();
             }
         });
-        mOpenInNewTab = new JMenuItem(getBundle().getString("open_new_tab"));
+        mOpenInNewTab = new JMenuItem(getBundle().getString("app.files.action.open_new_tab"));
         mOpenInNewTab.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -70,6 +70,7 @@ public class LocalMenuHandler {
             }
         });
         
+        // TODO i18n
         mOpenInFileExplorer = new JMenuItem(
                 PlatformUtils.IS_WINDOWS ? "Open in Windows Explorer" : (PlatformUtils.IS_MAC ? "Open in Finder" : "Open in File Browser"));
         mOpenInFileExplorer.addActionListener(new ActionListener() {
@@ -91,7 +92,7 @@ public class LocalMenuHandler {
             }
         });
         
-        mRename = new JMenuItem(getBundle().getString("rename"));
+        mRename = new JMenuItem(getBundle().getString("app.files.action.rename"));
         mRename.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -106,14 +107,14 @@ public class LocalMenuHandler {
                 delete(folderView.getSelectedFiles(), fileBrowserView.getCurrentDirectory());
             }
         };
-        mDelete = new JMenuItem(getBundle().getString("delete"));
+        mDelete = new JMenuItem(getBundle().getString("app.files.action.delete"));
         mDelete.addActionListener(aDelete);
         KeyStroke ksDelete = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
         map.put(ksDelete, "ksDelete");
         act.put("ksDelete", aDelete);
         mDelete.setAccelerator(ksDelete);
         
-        mNewFile = new JMenuItem(getBundle().getString("new_file"));
+        mNewFile = new JMenuItem(getBundle().getString("app.files.action.new_file"));
         mNewFile.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -121,7 +122,7 @@ public class LocalMenuHandler {
             }
         });
         
-        mNewFolder = new JMenuItem(getBundle().getString("new_folder"));
+        mNewFolder = new JMenuItem(getBundle().getString("app.files.action.new_folder"));
         mNewFolder.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -129,28 +130,28 @@ public class LocalMenuHandler {
             }
         });
         
-        mCopy = new JMenuItem(getBundle().getString("copy"));
+        mCopy = new JMenuItem(getBundle().getString("app.files.action.copy"));
         mCopy.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
         
-        mPaste = new JMenuItem(getBundle().getString("paste"));
+        mPaste = new JMenuItem(getBundle().getString("app.files.action.paste"));
         mPaste.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
         
-        mCut = new JMenuItem(getBundle().getString("cut"));
+        mCut = new JMenuItem(getBundle().getString("app.files.action.cut"));
         mCut.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             }
         });
         
-        mAddToFav = new JMenuItem(getBundle().getString("bookmark"));
+        mAddToFav = new JMenuItem(getBundle().getString("app.files.action.bookmark"));
         mAddToFav.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -213,7 +214,7 @@ public class LocalMenuHandler {
     }
     
     private void rename(FileInfo info, String baseFolder) {
-        String text = JOptionPane.showInputDialog(getBundle().getString("enter_new_name"), info.getName());
+        String text = JOptionPane.showInputDialog(getBundle().getString("app.files.message.enter_new_name"), info.getName());
         if (text != null && text.length() > 0) {
             renameAsync(info.getPath(), PathUtils.combineUnix(PathUtils.getParent(info.getPath()), text), baseFolder);
         }
@@ -314,10 +315,10 @@ public class LocalMenuHandler {
     
     public JPopupMenu createAddressPopup() {
         JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem mOpenInNewTab = new JMenuItem(getBundle().getString("open_new_tab"));
-        JMenuItem mCopyPath = new JMenuItem(getBundle().getString("copy_path"));
-        JMenuItem mOpenInTerminal = new JMenuItem(getBundle().getString("open_in_terminal"));
-        JMenuItem mBookmark = new JMenuItem(getBundle().getString("bookmark"));
+        JMenuItem mOpenInNewTab = new JMenuItem(getBundle().getString("app.files.action.open_new_tab"));
+        JMenuItem mCopyPath = new JMenuItem(getBundle().getString("app.files.action.copy_path"));
+        JMenuItem mOpenInTerminal = new JMenuItem(getBundle().getString("app.files.action.open_in_terminal"));
+        JMenuItem mBookmark = new JMenuItem(getBundle().getString("app.files.action.bookmark"));
         popupMenu.add(mOpenInNewTab);
         popupMenu.add(mCopyPath);
         popupMenu.add(mOpenInTerminal);

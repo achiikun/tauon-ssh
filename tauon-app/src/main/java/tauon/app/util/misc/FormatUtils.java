@@ -1,7 +1,5 @@
 package tauon.app.util.misc;
 
-import tauon.app.App;
-
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -75,7 +73,7 @@ public class FormatUtils {
             
             String name = null;
             try {
-                name = m.group("name");
+                name = m.group("app.files.label.folder_view.name");
             } catch (Exception e) {
             
             }
@@ -89,7 +87,7 @@ public class FormatUtils {
             
             String type = null;
             try {
-                type = m.group("type");
+                type = m.group("app.files.label.folder_view.type");
             } catch (Exception e) {
             
             }

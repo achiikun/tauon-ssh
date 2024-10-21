@@ -96,7 +96,7 @@ public class SessionExportImport {
                         "In repeated sessions do:",
                         cmbOptionsExistingInfo
                 },
-                getBundle().getString("sessions.import.dialog.title"),
+                getBundle().getString("app.connections.import_dialog.title"),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,

@@ -5,8 +5,6 @@ package tauon.app.ui.components.glasspanes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.App;
-import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +24,7 @@ public class AppInputBlocker extends JDialog implements InputBlocker, ActionList
 
     private final JPanel jPanel = new JPanel(null);
     
-    private final JLabel connectingLabel = new JLabel(getBundle().getString("connecting"));
+    private final JLabel connectingLabel = new JLabel(getBundle().getString("app.ui.status.connecting"));
     
     private final JButton cancelButton = new JButton();
     
@@ -47,7 +45,7 @@ public class AppInputBlocker extends JDialog implements InputBlocker, ActionList
         cancelButton.setRolloverIcon(new Cross(new Color(255, 100, 100)));
         cancelButton.setPressedIcon(new Cross(new Color(255, 150, 150)));
         
-        cancelButton.setToolTipText(getBundle().getString("cancel"));
+        cancelButton.setToolTipText(getBundle().getString("general.action.cancel"));
         cancelButton.setLocation(200 - 25, 5);
         cancelButton.setSize(20, 20);
         cancelButton.setBackground(null);

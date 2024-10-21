@@ -67,8 +67,8 @@ public class Remote2RemoteTransferDialog extends JDialog {
 
         Box bottom = Box.createHorizontalBox();
         JButton btnAddKnown = new JButton(getBundle().getString("add_from_manager"));
-        JButton btnAdd = new JButton(getBundle().getString("add"));
-        JButton btnRemove = new JButton(getBundle().getString("delete"));
+        JButton btnAdd = new JButton(getBundle().getString("general.action.add"));
+        JButton btnRemove = new JButton(getBundle().getString("app.files.action.delete"));
         JButton btnEdit = new JButton(getBundle().getString("edit"));
         JButton btnSend = new JButton(getBundle().getString("send_files"));
 

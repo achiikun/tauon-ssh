@@ -10,7 +10,6 @@ import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
-import tauon.app.util.misc.PlatformUtils;
 import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;
@@ -157,11 +156,11 @@ public class PortViewer extends Subpage {
 
         Box box = Box.createHorizontalBox();
         box.setBorder(new EmptyBorder(10, 0, 0, 0));
-        btnRefresh = new JButton(getBundle().getString("refresh"));
+        btnRefresh = new JButton(getBundle().getString("general.action.refresh"));
         btnRefresh.addActionListener(e -> getListingSockets());
 
         chkRunAsSuperUser = new JCheckBox(
-                getBundle().getString("actions_sudo"));
+                getBundle().getString("app.ui.action.do_using_sudo"));
         box.add(chkRunAsSuperUser);
 
         box.add(Box.createHorizontalGlue());
@@ -206,7 +205,7 @@ public class PortViewer extends Subpage {
                             // TODO LOG.error();
                             ex.printStackTrace();
                             if (!holder.isSessionClosed()) {
-                                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                             }
                             throw new AlreadyFailedException();
                         }
@@ -224,7 +223,7 @@ public class PortViewer extends Subpage {
                             // TODO LOG.error();
                             ex.printStackTrace();
                             if (!holder.isSessionClosed()) {
-                                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                             }
                             throw new AlreadyFailedException();
                         }
