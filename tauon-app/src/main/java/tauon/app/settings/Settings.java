@@ -685,7 +685,7 @@ public class Settings {
     public void setOldFileTransferMode(String s) {
         if (s == null) {
             fileTransferMode = Constants.TransferMode.NORMAL;
-        } else if (s.equalsIgnoreCase("app.files.action.prompt")) {
+        } else if (s.equalsIgnoreCase("prompt")) {
             fileTransferMode = Constants.TransferMode.NORMAL;
         } else {
             fileTransferMode = Constants.TransferMode.valueOf(s);
@@ -696,13 +696,13 @@ public class Settings {
     public void setOldConflictAction(String s) {
 
         switch (s.toLowerCase()) {
-            case "app.files.action.overwrite":
+            case "aoverwrite":
                 conflictAction = Constants.ConflictAction.OVERWRITE;
                 break;
-            case "app.files.action.autorename":
+            case "autorename":
                 conflictAction = Constants.ConflictAction.AUTORENAME;
                 break;
-            case "app.files.action.prompt":
+            case "prompt":
                 conflictAction = Constants.ConflictAction.PROMPT;
                 break;
             default:

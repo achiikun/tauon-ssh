@@ -52,7 +52,7 @@ public class NetworkToolsPage extends Subpage {
 
         // TODO i18n
         cmbDNSTool = new JComboBox<String>(new String[]{"nslookup", "dig",
-                "dig +short", "app.connections.label.host", "getent ahostsv4"});
+                "dig +short", "host", "getent ahostsv4"});
 
         JPanel grid = new JPanel(new GridLayout(1, 4, 10, 10));
         grid.setBorder(new EmptyBorder(10, 10, 10, 10));

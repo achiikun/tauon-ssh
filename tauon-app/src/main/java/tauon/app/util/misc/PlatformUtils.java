@@ -76,7 +76,7 @@ public class PlatformUtils {
             Shell32 shell32 = Native.load("shell32", Shell32.class);
             WinDef.HWND h = null;
             WString file = new WString(f.getAbsolutePath());
-            shell32.shellExecuteW(h, new WString("general.action.open"), file, null, null, 1);
+            shell32.shellExecuteW(h, new WString("open"), file, null, null, 1);
         } catch (Exception e) {
             e.printStackTrace();
             try {
@@ -145,7 +145,7 @@ public class PlatformUtils {
         }
         try {
             ProcessBuilder pb = new ProcessBuilder();
-            pb.command("general.action.open", f.getAbsolutePath());
+            pb.command("open", f.getAbsolutePath());
             if (pb.start().waitFor() != 0) {
                 throw new FileNotFoundException();
             }
@@ -157,7 +157,7 @@ public class PlatformUtils {
     public static void openMac(String url) {
         try {
             ProcessBuilder pb = new ProcessBuilder();
-            pb.command("general.action.open", url);
+            pb.command("open", url);
             if (pb.start().waitFor() != 0) {
                 throw new FileNotFoundException();
             }

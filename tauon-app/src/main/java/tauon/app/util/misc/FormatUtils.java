@@ -73,7 +73,7 @@ public class FormatUtils {
             
             String name = null;
             try {
-                name = m.group("app.files.label.folder_view.name");
+                name = m.group("name");
             } catch (Exception e) {
             
             }
@@ -87,7 +87,7 @@ public class FormatUtils {
             
             String type = null;
             try {
-                type = m.group("app.files.label.folder_view.type");
+                type = m.group("type");
             } catch (Exception e) {
             
             }

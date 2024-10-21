@@ -501,7 +501,7 @@ public class TauonSSHClient {
                             }
                             break;
                         
-                        case "app.connections.label.password":
+                        case "password":
                             try {
                                 this.authPassword(index, userPassCache.user, isUserRemembered, rememberUser.get());
                                 return; // All right

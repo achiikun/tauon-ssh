@@ -18,7 +18,7 @@ import java.util.Map;
 public class LocalFileSystem implements FileSystem {
     private static final Logger LOG = LoggerFactory.getLogger(LocalFileSystem.class);
     
-    public static final String PROTO_LOCAL_FILE = "app.connections.port_forwarding.label.local";
+    public static final String PROTO_LOCAL_FILE = "local";
 
     public void chmod(int perm, String path) throws Exception {
     }
