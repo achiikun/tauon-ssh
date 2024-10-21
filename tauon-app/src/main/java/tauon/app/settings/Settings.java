@@ -696,7 +696,7 @@ public class Settings {
     public void setOldConflictAction(String s) {
 
         switch (s.toLowerCase()) {
-            case "aoverwrite":
+            case "overwrite":
                 conflictAction = Constants.ConflictAction.OVERWRITE;
                 break;
             case "autorename":
