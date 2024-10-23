@@ -51,19 +51,19 @@ public class InfoPage extends SubpagingPage {
         );
         addSubpage(
                 "SYSTEMD_SERVICES",
-                getBundle().getString("app.services_systemd.title"),
+                getBundle().getString("app.info_services_systemd.title"),
                 FontAwesomeContants.FA_SERVER,
                 new ServicePanel(holder)
         );
         addSubpage(
                 "SYS_PROCESSES",
-                getBundle().getString("app.processes.title"),
+                getBundle().getString("app.info_processes.title"),
                 FontAwesomeContants.FA_COGS,
                 new ProcessViewer(holder)
         );
         addSubpage(
                 "PROC_PORT",
-                getBundle().getString("app.ports.title"),
+                getBundle().getString("app.info_ports.title"),
                 FontAwesomeContants.FA_DATABASE,
                 new PortViewer(holder)
         );

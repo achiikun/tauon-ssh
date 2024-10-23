@@ -55,7 +55,7 @@ public class ProcessListPanel extends JPanel {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getColumnModel().getColumn(0).setPreferredWidth(200);
 
-        lblProcessCount = new JLabel(getBundle().getString("total_processes") + " 0");
+        lblProcessCount = new JLabel(getBundle().getString("app.info_processes.label.total_processes") + " 0");
 
         rowFilter = new RowFilter<ProcessTableModel, Integer>() {
             @Override
@@ -86,7 +86,7 @@ public class ProcessListPanel extends JPanel {
         pan.add(jsp);
 
         Box b1 = Box.createHorizontalBox();
-        b1.add(new JLabel(getBundle().getString("app.processes.title")));
+        b1.add(new JLabel(getBundle().getString("app.info_processes.label.processes")));
         b1.add(Box.createHorizontalStrut(10));
         txtFilter = new SkinnedTextField(30);
         txtFilter.addActionListener(e -> {
@@ -95,7 +95,7 @@ public class ProcessListPanel extends JPanel {
         });
         b1.add(txtFilter);
         b1.add(Box.createHorizontalStrut(5));
-        JButton btnFilter = new JButton(getBundle().getString("filter"));
+        JButton btnFilter = new JButton(getBundle().getString("app.info_processes.action.filter"));
         btnFilter.addActionListener(e -> {
             this.filterText = getProcessFilterText();
             model.fireTableDataChanged();
@@ -103,7 +103,7 @@ public class ProcessListPanel extends JPanel {
         b1.add(btnFilter);
         b1.add(Box.createHorizontalStrut(5));
 
-        JButton btnClearFilter = new JButton(getBundle().getString("clear"));
+        JButton btnClearFilter = new JButton(getBundle().getString("app.info_processes.action.clear"));
         b1.add(btnClearFilter);
         b1.add(Box.createHorizontalStrut(5));
         btnClearFilter.addActionListener(e -> {
@@ -118,8 +118,8 @@ public class ProcessListPanel extends JPanel {
 
         killPopup = new JPopupMenu();
 
-        JMenuItem mKill = new JMenuItem(getBundle().getString("kill"));
-        JMenuItem mKillAsRoot = new JMenuItem(getBundle().getString("kill_sudo"));
+        JMenuItem mKill = new JMenuItem(getBundle().getString("app.info_processes.action.kill"));
+        JMenuItem mKillAsRoot = new JMenuItem(getBundle().getString("app.info_processes.action.kill_sudo"));
 
         mKill.addActionListener(e -> {
             int c = table.getSelectedRow();
@@ -153,8 +153,8 @@ public class ProcessListPanel extends JPanel {
         killPopup.pack();
 
         prioPopup = new JPopupMenu();
-        JMenuItem mPrio = new JMenuItem(getBundle().getString("change_priority"));
-        JMenuItem mPrioAsRoot = new JMenuItem(getBundle().getString("change_priority_sudo"));
+        JMenuItem mPrio = new JMenuItem(getBundle().getString("app.info_processes.action.change_priority"));
+        JMenuItem mPrioAsRoot = new JMenuItem(getBundle().getString("app.info_processes.action.change_priority_sudo"));
         prioPopup.add(mPrio);
         prioPopup.add(mPrioAsRoot);
         prioPopup.pack();
@@ -162,7 +162,7 @@ public class ProcessListPanel extends JPanel {
 
         Box b2 = Box.createHorizontalBox();
         b2.add(lblProcessCount);
-        btnCopyArgs = new JButton(getBundle().getString("copy_command"));
+        btnCopyArgs = new JButton(getBundle().getString("app.info_processes.action.copy_command"));
         btnCopyArgs.addActionListener(e -> {
             int c = table.getSelectedRow();
             if (c != -1) {
@@ -173,7 +173,7 @@ public class ProcessListPanel extends JPanel {
             }
         });
 
-        btnKill = new JButton(getBundle().getString("kill_process"));
+        btnKill = new JButton(getBundle().getString("app.info_processes.action.kill_process"));
         btnKill.addActionListener(e -> {
             Dimension d = killPopup.getPreferredSize();
             killPopup.show(btnKill, 0, -d.height);
@@ -197,8 +197,8 @@ public class ProcessListPanel extends JPanel {
     }
 
     public void setProcessList(List<ProcessTableEntry> list) {
-        lblProcessCount.setText(getBundle().getString("total_processes") + " " + list.size()
-                + ", " + getBundle().getString("last_updated") + " " + LocalDateTime.now().format(
+        lblProcessCount.setText(getBundle().getString("app.info_processes.label.total_processes") + " " + list.size()
+                + ", " + getBundle().getString("app.info_processes.label.last_updated") + " " + LocalDateTime.now().format(
                 DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)));
         int x = table.getSelectedRow();
         int selectedPid = -1;

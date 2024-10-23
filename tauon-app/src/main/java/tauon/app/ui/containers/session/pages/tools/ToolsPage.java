@@ -38,25 +38,25 @@ public class ToolsPage extends SubpagingPage {
     public void onCreateSubpages(SessionContentPanel holder) {
         addSubpage(
                 "SSH_KEYS",
-                getBundle().getString("app.ssh_keys.title"),
+                getBundle().getString("app.tools_ssh_keys.title"),
                 FontAwesomeContants.FA_KEY,
                 new KeyPage(holder)
         );
         addSubpage(
                 "NET_TOOLS",
-                getBundle().getString("app.network_tools.title"),
+                getBundle().getString("app.tools_network.title"),
                 FontAwesomeContants.FA_WRENCH,
                 new NetworkToolsPage(holder)
         );
         addSubpage(
                 "FILE_SEARCH",
-                getBundle().getString("app.file_search.title"),
+                getBundle().getString("app.tools_file_search.title"),
                 FontAwesomeContants.FA_SEARCH,
                 new SearchPanel(holder)
         );
         addSubpage(
                 "DISKSPACE",
-                getBundle().getString("app.diskspace.title"),
+                getBundle().getString("app.tools_diskspace.title"),
                 FontAwesomeContants.FA_PIE_CHART,
                 new DiskspaceAnalyzer(holder)
         );

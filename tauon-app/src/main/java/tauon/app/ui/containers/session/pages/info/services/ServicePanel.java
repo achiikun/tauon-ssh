@@ -228,10 +228,10 @@ public class ServicePanel extends Subpage {
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFillsViewportHeight(true);
 
-        JLabel lbl1 = new JLabel(getBundle().getString("search"));
+        JLabel lbl1 = new JLabel(getBundle().getString("app.info_services_systemd.action.search"));
         txtFilter = new SkinnedTextField(30);
         txtFilter.addActionListener(e -> filter());
-        btnFilter = new JButton(getBundle().getString("search"));
+        btnFilter = new JButton(getBundle().getString("app.info_services_systemd.action.search"));
 
         Box b1 = Box.createHorizontalBox();
         b1.add(lbl1);
@@ -248,13 +248,13 @@ public class ServicePanel extends Subpage {
 
         Box box = Box.createHorizontalBox();
 
-        btnStart = new JButton(getBundle().getString("start"));
-        btnStop = new JButton(getBundle().getString("stop"));
-        btnRestart = new JButton(getBundle().getString("restart"));
-        btnReload = new JButton(getBundle().getString("general.action.reload"));
-        btnEnable = new JButton(getBundle().getString("enable"));
-        btnDisable = new JButton(getBundle().getString("disable"));
-        btnRefresh = new JButton(getBundle().getString("general.action.refresh"));
+        btnStart = new JButton(getBundle().getString("app.info_services_systemd.action.start"));
+        btnStop = new JButton(getBundle().getString("app.info_services_systemd.action.stop"));
+        btnRestart = new JButton(getBundle().getString("app.info_services_systemd.action.restart"));
+        btnReload = new JButton(getBundle().getString("app.info_services_systemd.action.reload"));
+        btnEnable = new JButton(getBundle().getString("app.info_services_systemd.action.enable"));
+        btnDisable = new JButton(getBundle().getString("app.info_services_systemd.action.disable"));
+        btnRefresh = new JButton(getBundle().getString("app.info_services_systemd.action.refresh"));
 
         chkRunAsSuperUser = new JCheckBox(
                 getBundle().getString("app.ui.action.do_using_sudo"));

@@ -14,7 +14,12 @@ import static tauon.app.services.LanguageService.getBundle;
  *
  */
 public class ServiceTableModel extends AbstractTableModel {
-    private final String[] columns = {getBundle().getString("app.files.label.folder_view.name"), getBundle().getString("status"), getBundle().getString("state"), getBundle().getString("description")};
+    private final String[] columns = {
+            getBundle().getString("app.info_services_systemd.label.name"),
+            getBundle().getString("app.info_services_systemd.label.status"),
+            getBundle().getString("app.info_services_systemd.label.state"),
+            getBundle().getString("app.info_services_systemd.label.description")
+    };
     private final List<ServiceEntry> list = new ArrayList<>();
 
     public void addEntry(ServiceEntry e) {

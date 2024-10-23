@@ -106,8 +106,8 @@ public class KeyPage extends Subpage {
 //                }
             });
         });
-        tabs.addTab(getBundle().getString("app.ssh_keys.label.server"), remoteKeyPanel);
-        tabs.addTab(getBundle().getString("app.ssh_keys.label.local_computer"), localKeyPanel);
+        tabs.addTab(getBundle().getString("app.tools_ssh_keys.label.server"), remoteKeyPanel);
+        tabs.addTab(getBundle().getString("app.tools_ssh_keys.label.local_computer"), localKeyPanel);
         this.add(tabs);
 
         holder.submitSSHOperation(instance -> {

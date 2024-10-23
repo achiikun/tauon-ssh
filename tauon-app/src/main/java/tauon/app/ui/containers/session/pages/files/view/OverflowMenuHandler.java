@@ -48,7 +48,7 @@ public class OverflowMenuHandler {
         });
         mShowHiddenFiles.setAccelerator(ksHideShow);
 
-        this.favouriteLocations = new JMenu(getBundle().getString("bookmarks"));
+        this.favouriteLocations = new JMenu(getBundle().getString("app.files.label.bookmarks"));
 
         popup = new JPopupMenu();
 

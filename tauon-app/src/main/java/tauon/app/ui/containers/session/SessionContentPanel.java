@@ -329,7 +329,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         JPasswordField passwordField = new JPasswordField(30);
         int ret;
         if(rememberPassword != null) {
-            JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("remember_password"));
+            JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("app.connections.action.remember_password"));
             // TODO i18n
             ret = JOptionPane.showOptionDialog(
                     appWindow,
@@ -389,14 +389,14 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     public String promptUser(HopEntry info, AtomicBoolean remember) {
         
         JTextField txtUser = new SkinnedTextField(30);
-        JCheckBox chkCacheUser = new JCheckBox(getBundle().getString("remember_username"));
+        JCheckBox chkCacheUser = new JCheckBox(getBundle().getString("app.ui.action.remember_username"));
         // TODO i18n
         try {
             int ret = UIUtil.invokeAndWaitIfNeeded(() ->
                     JOptionPane.showOptionDialog(
                             appWindow,
                             new Object[]{"User name", txtUser, chkCacheUser},
-                            getBundle().getString("app.connections.label.user"),
+                            getBundle().getString("app.ui.label.user"),
                             JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.PLAIN_MESSAGE,
                             null,

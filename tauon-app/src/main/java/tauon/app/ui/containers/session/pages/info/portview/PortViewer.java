@@ -137,9 +137,9 @@ public class PortViewer extends Subpage {
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFillsViewportHeight(true);
 
-        JLabel lbl1 = new JLabel(getBundle().getString("search"));
+        JLabel lbl1 = new JLabel(getBundle().getString("app.info_ports.action.search"));
         txtFilter = new SkinnedTextField(30);
-        btnFilter = new JButton(getBundle().getString("search"));
+        btnFilter = new JButton(getBundle().getString("app.info_ports.action.search"));
 
         Box b1 = Box.createHorizontalBox();
         b1.add(lbl1);

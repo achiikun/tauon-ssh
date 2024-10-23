@@ -5,10 +5,8 @@ package tauon.app.ui.containers.main;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.ui.components.glasspanes.SessionInputBlocker;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.App;
-import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.settings.SessionInfo;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.FontAwesomeContants;
@@ -123,7 +121,7 @@ public class SessionListPanel extends JPanel {
     }
 
     public void removeSession(int index) {
-        if (JOptionPane.showConfirmDialog(window, getBundle().getString("disconnect_session")) == JOptionPane.YES_OPTION) {
+        if (JOptionPane.showConfirmDialog(window, getBundle().getString("app.connections.action.disconnect_session")) == JOptionPane.YES_OPTION) {
             SessionContentPanel sessionContentPanel = sessionListModel.get(index);
             sessionContentPanel.close();
             window.removeSession(sessionContentPanel);
