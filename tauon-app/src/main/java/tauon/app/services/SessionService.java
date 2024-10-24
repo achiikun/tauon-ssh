@@ -63,7 +63,7 @@ public class SessionService {
                             });
                         }else{
                             SessionFolder rootFolder = new SessionFolder();
-                            rootFolder.setName(getBundle().getString("app.connections.label.default_root_folder_name"));
+                            rootFolder.setName(getBundle().getString("app.sites.label.default_root_folder_name"));
                             tempSessionTree = new SavedSessionTree();
                             tempSessionTree.setFolder(rootFolder);
                         }
@@ -128,7 +128,7 @@ public class SessionService {
             
             if(!success){
                 SessionFolder rootFolder = new SessionFolder();
-                rootFolder.setName(getBundle().getString("app.connections.label.default_root_folder_name"));
+                rootFolder.setName(getBundle().getString("app.sites.label.default_root_folder_name"));
                 savedSessionTree = new SavedSessionTree();
                 savedSessionTree.setFolder(rootFolder);
                 passwordMap = new HashMap<>();

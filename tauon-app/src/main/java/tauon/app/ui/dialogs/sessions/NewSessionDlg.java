@@ -84,7 +84,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
             }
         });
 
-        setTitle(getBundle().getString("app.connections.title"));
+        setTitle(getBundle().getString("app.sites.title"));
 
         treeModel = new DefaultTreeModel(null, true);
         treeModel.addTreeModelListener(this);
@@ -110,20 +110,20 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
         jsp = new JScrollPane(tree);
         jsp.setBorder(new LineBorder(App.skin.getDefaultBorderColor(), 1));
 
-        btnNewHost = new JButton(getBundle().getString("app.connections.action.new_site"));
+        btnNewHost = new JButton(getBundle().getString("app.sites.action.new_site"));
         btnNewHost.addActionListener(this);
         btnNewHost.putClientProperty("button.name", "btnNewHost");
-        btnNewFolder = new JButton(getBundle().getString("app.connections.action.new_folder"));
+        btnNewFolder = new JButton(getBundle().getString("app.sites.action.new_folder"));
         btnNewFolder.addActionListener(this);
         btnNewFolder.putClientProperty("button.name", "btnNewFolder");
-        btnDel = new JButton(getBundle().getString("app.connections.action.remove"));
+        btnDel = new JButton(getBundle().getString("app.sites.action.remove"));
         btnDel.addActionListener(this);
         btnDel.putClientProperty("button.name", "btnDel");
-        btnDup = new JButton(getBundle().getString("app.connections.action.duplicate"));
+        btnDup = new JButton(getBundle().getString("app.sites.action.duplicate"));
         btnDup.addActionListener(this);
         btnDup.putClientProperty("button.name", "btnDup");
 
-        btnConnect = new JButton(getBundle().getString("app.connections.action.connect"));
+        btnConnect = new JButton(getBundle().getString("app.sites.action.connect"));
         btnConnect.addActionListener(this);
         btnConnect.putClientProperty("button.name", "btnSaveAndConnect");
 
@@ -135,11 +135,11 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
         btnSaveAndClose.addActionListener(this);
         btnSaveAndClose.putClientProperty("button.name", "btnSaveAndClose");
 
-        btnExport = new JButton(getBundle().getString("app.connections.action.export"));
+        btnExport = new JButton(getBundle().getString("app.sites.action.export"));
         btnExport.addActionListener(this);
         btnExport.putClientProperty("button.name", "btnExport");
 
-        btnImport = new JButton(getBundle().getString("app.connections.action.import"));
+        btnImport = new JButton(getBundle().getString("app.sites.action.import"));
         btnImport.addActionListener(this);
         btnImport.putClientProperty("button.name", "btnImport");
 
@@ -195,7 +195,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
 
         namePanel.setBorder(new EmptyBorder(10, 0, 0, 10));
 
-        lblName = new JLabel(getBundle().getString("app.connections.label.name"));
+        lblName = new JLabel(getBundle().getString("app.sites.label.name"));
         lblName.setAlignmentX(Component.LEFT_ALIGNMENT);
         lblName.setHorizontalAlignment(JLabel.LEADING);
         lblName.setBorder(new EmptyBorder(0, 0, 5, 0));
@@ -269,7 +269,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
                 n = findFirstInfoNode(rootNode);
                 if (n == null) {
                     SessionInfo sessionInfo = new SessionInfo();
-                    sessionInfo.setName(getBundle().getString("app.connections.action.new_site"));
+                    sessionInfo.setName(getBundle().getString("app.sites.action.new_site"));
                     sessionInfo.setId(UUID.randomUUID().toString());
                     DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(sessionInfo);
                     childNode.setUserObject(sessionInfo);
@@ -338,7 +338,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
                     obj = parentNode.getUserObject();
                 }
                 SessionInfo sessionInfo = new SessionInfo();
-                sessionInfo.setName(getBundle().getString("app.connections.action.new_site"));
+                sessionInfo.setName(getBundle().getString("app.sites.action.new_site"));
                 sessionInfo.setId(UUID.randomUUID().toString());
                 DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(sessionInfo);
                 childNode.setUserObject(sessionInfo);
@@ -358,7 +358,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
                     objFolder = parentNode.getUserObject();
                 }
                 SessionFolder folder = new SessionFolder();
-                folder.setName(getBundle().getString("app.connections.action.new_folder"));
+                folder.setName(getBundle().getString("app.sites.action.new_folder"));
                 DefaultMutableTreeNode childNode1 = new DefaultMutableTreeNode(folder);
                 treeModel.insertNodeInto(childNode1, parentNode, parentNode.getChildCount());
                 tree.scrollPathToVisible(new TreePath(childNode1.getPath()));
@@ -436,10 +436,10 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
 
                 if (JOptionPane.showOptionDialog(this,
                         new Object[]{
-                                getBundle().getString("import_from"),
+                                getBundle().getString("app.sites.action.import_from"),
                                 cmbImports
                         },
-                        getBundle().getString("app.connections.import_dialog.title"),
+                        getBundle().getString("app.sites.import_dialog.title"),
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.PLAIN_MESSAGE,
                         null,
@@ -482,7 +482,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
                         AlertDialogUtils.showSuccess(
                                 this,
                                 FormatUtils.$$(
-                                        getBundle().getString("app.connections.message.export_done"),
+                                        getBundle().getString("app.sites.message.export_done"),
                                         Map.of("file", file.getName())
                                 )
                         );
@@ -490,7 +490,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
                         AlertDialogUtils.showError(
                                 this,
                                 FormatUtils.$$(
-                                        getBundle().getString("app.connections.message.export_error"),
+                                        getBundle().getString("app.sites.message.export_error"),
                                         Map.of("file", file.getName())
                                 )
                         );
@@ -510,7 +510,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
             
             this.info = (SessionInfo) selectedInfo;
             if (this.info.getHost() == null || this.info.getHost().isEmpty()) {
-                JOptionPane.showMessageDialog(this, getBundle().getString("app.connections.message.no_hostname"));
+                JOptionPane.showMessageDialog(this, getBundle().getString("app.sites.message.no_hostname"));
                 this.info = null;
             } else {
                 buttonTriggeredClosing = true;
@@ -573,7 +573,7 @@ public class NewSessionDlg extends JDialog implements ActionListener, TreeSelect
                 selectedId,
                 new PasswordPromptHelper(this)
         )){
-            AlertDialogUtils.showError(this, getBundle().getString("app.connections.message.save_failed"));
+            AlertDialogUtils.showError(this, getBundle().getString("app.sites.message.save_failed"));
             throw new AlreadyFailedException();
         }
     }

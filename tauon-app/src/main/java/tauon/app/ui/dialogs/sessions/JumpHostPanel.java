@@ -171,7 +171,7 @@ public class JumpHostPanel extends JPanel {
         });
 
         while (JOptionPane.showOptionDialog(this,
-                new Object[]{getBundle().getString("app.connections.label.host"), txtHost, getBundle().getString("app.connections.label.port"), spPort, getBundle().getString("app.connections.label.user"), txtUser, getBundle().getString("app.connections.label.password"), txtPassword, getBundle().getString("app.connections.label.private_key_file"),
+                new Object[]{getBundle().getString("app.sites.label.host"), txtHost, getBundle().getString("app.sites.label.port"), spPort, getBundle().getString("app.sites.label.user"), txtUser, getBundle().getString("app.sites.label.password"), txtPassword, getBundle().getString("app.sites.label.private_key_file"),
                         txtKeyFile},
                 "Hop entry", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null,
                 null) == JOptionPane.OK_OPTION) {
@@ -181,7 +181,7 @@ public class JumpHostPanel extends JPanel {
             String path = txtKeyFile.getText();
             int port = (Integer) spPort.getValue();
             if (host.length() < 1 || user.length() < 1 || port <= 0) {
-                JOptionPane.showMessageDialog(this, getBundle().getString("app.connections.label.invalid_input"));
+                JOptionPane.showMessageDialog(this, getBundle().getString("app.sites.label.invalid_input"));
                 continue;
             }
 

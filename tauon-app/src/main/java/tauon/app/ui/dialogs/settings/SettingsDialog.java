@@ -26,9 +26,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.io.File;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import com.jediterm.core.Color;
 
@@ -48,8 +46,8 @@ public class SettingsDialog extends JDialog {
     private final JButton btnReset;
     private final DefaultComboBoxModel<Constants.ConflictAction> conflictOptions = new DefaultComboBoxModel<>(Constants.ConflictAction.values());
     private final DefaultComboBoxModel<Constants.TransferMode> transferModes = new DefaultComboBoxModel<>(Constants.TransferMode.values());
-    private final List<String> conflictOption1 = Arrays.asList(getBundle().getString("app.files.action.overwrite"), getBundle().getString("auto_rename"), getBundle().getString("app.files.action.skip"), getBundle().getString("app.files.action.prompt"));
-    private final List<String> conflictOption2 = Arrays.asList(getBundle().getString("app.files.action.overwrite"), getBundle().getString("auto_rename"), getBundle().getString("app.files.action.skip"));
+//    private final List<String> conflictOption1 = Arrays.asList(getBundle().getString("app.files.action.overwrite"), getBundle().getString("auto_rename"), getBundle().getString("app.files.action.skip"), getBundle().getString("app.files.action.prompt"));
+//    private final List<String> conflictOption2 = Arrays.asList(getBundle().getString("app.files.action.overwrite"), getBundle().getString("auto_rename"), getBundle().getString("app.files.action.skip"));
     private final CardLayout cardLayout;
     private final JPanel cardPanel;
     private final JList<String> navList;
@@ -224,7 +222,7 @@ public class SettingsDialog extends JDialog {
         resizeNumericSpinner(spFontSize);
 
         Component boxTermSize = createRow(new JLabel(getBundle().getString("app.settings.terminal.label.columns")), Box.createRigidArea(new Dimension(10, 10)),
-                spTermWidth, Box.createRigidArea(new Dimension(20, 10)), new JLabel(getBundle().getString("rows")),
+                spTermWidth, Box.createRigidArea(new Dimension(20, 10)), new JLabel(getBundle().getString("app.settings.terminal.label.rows")),
                 Box.createRigidArea(new Dimension(10, 10)), spTermHeight, Box.createHorizontalGlue(),
                 new JButton(getBundle().getString("general.action.reset")));
 
@@ -758,8 +756,8 @@ public class SettingsDialog extends JDialog {
         editorTable = new JTable(editorModel);
         panel.add(new SkinnedScrollPane(editorTable));
         Box box = Box.createHorizontalBox();
-        JButton btnAddEditor = new JButton(getBundle().getString("add_editor"));
-        JButton btnDelEditor = new JButton(getBundle().getString("remove_editor"));
+        JButton btnAddEditor = new JButton(getBundle().getString("app.settings.editor.action.add_editor"));
+        JButton btnDelEditor = new JButton(getBundle().getString("app.settings.editor.action.remove_editor"));
         box.add(Box.createHorizontalGlue());
         box.add(btnAddEditor);
         box.add(Box.createHorizontalStrut(10));
@@ -772,7 +770,11 @@ public class SettingsDialog extends JDialog {
                 File file = jfc.getSelectedFile();
                 JTextField txt = new SkinnedTextField(30);
                 txt.setText(file.getName());
-                String name = OptionPaneUtils.showInputDialog(this, getBundle().getString("app.settings.editor_table_model.name"), file.getName(), getBundle().getString("add_editor2"));
+                String name = OptionPaneUtils.showInputDialog(this,
+                        getBundle().getString("app.settings.add_editor_dialog.label.name"),
+                        file.getName(),
+                        getBundle().getString("app.settings.add_editor_dialog.title")
+                );
                 if (name != null) {
                     editorModel.addEntry(new EditorEntry(name, file.getAbsolutePath()));
                 }
@@ -791,18 +793,18 @@ public class SettingsDialog extends JDialog {
     private Component createMiscPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        chkUseManualScaling = new JCheckBox(getBundle().getString("zoom_text"));
+        chkUseManualScaling = new JCheckBox(getBundle().getString("app.settings.misc.label.zoom_text"));
         spScaleValue = new JSpinner(new SpinnerNumberModel(1.0, 0.5, 100.0, 0.01));
         resizeNumericSpinner(spScaleValue);
 
-        chkUseGlobalDarkTheme = new JCheckBox(getBundle().getString("global_dark_theme"));
+        chkUseGlobalDarkTheme = new JCheckBox(getBundle().getString("app.settings.misc.label.global_dark_theme"));
         chkUseGlobalDarkTheme.setAlignmentX(Box.LEFT_ALIGNMENT);
 
         Box vbox = Box.createVerticalBox();
         chkUseManualScaling.setAlignmentX(Box.LEFT_ALIGNMENT);
         vbox.add(chkUseManualScaling);
         vbox.add(Box.createRigidArea(new Dimension(10, 10)));
-        vbox.add(createRow(new JLabel(getBundle().getString("zoom_percentage")), Box.createHorizontalGlue(), spScaleValue));
+        vbox.add(createRow(new JLabel(getBundle().getString("app.settings.misc.label.zoom_percentage")), Box.createHorizontalGlue(), spScaleValue));
         vbox.add(Box.createRigidArea(new Dimension(10, 10)));
         vbox.add(chkUseGlobalDarkTheme);
         vbox.setBorder(new EmptyBorder(30, 10, 10, 10));
@@ -815,8 +817,8 @@ public class SettingsDialog extends JDialog {
     private Component createSecurityPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        chkUseMasterPassword = new JCheckBox(getBundle().getString("use_master_password"));
-        btnChangeMasterPassword = new JButton(getBundle().getString("change_master_password"));
+        chkUseMasterPassword = new JCheckBox(getBundle().getString("app.settings.security.label.use_master_password"));
+        btnChangeMasterPassword = new JButton(getBundle().getString("app.settings.security.action.change_master_password"));
 
         chkUseMasterPassword.addActionListener(e -> {
             if (chkUseMasterPassword.isSelected()) {
@@ -827,6 +829,8 @@ public class SettingsDialog extends JDialog {
                             true, false
                     );
                 } catch (OperationCancelledException ex) {
+                    chkUseMasterPassword.setSelected(false);
+                    btnChangeMasterPassword.setEnabled(false);
                     return;
                 }
                 
@@ -843,7 +847,7 @@ public class SettingsDialog extends JDialog {
                     )) {
                         AlertDialogUtils.showError(
                                 this,
-                                getBundle().getString("dialog.master_password.change_failed")
+                                getBundle().getString("app.settings.security.dialog_master_password.message.change_failed")
                         );
                         chkUseMasterPassword.setSelected(false);
                         btnChangeMasterPassword.setEnabled(false);
@@ -857,7 +861,7 @@ public class SettingsDialog extends JDialog {
                     LOG.error("Error while changing password.", e1);
                     AlertDialogUtils.showError(
                             this,
-                            getBundle().getString("error_operation")
+                            getBundle().getString("general.message.error_operation")
                     );
                     chkUseMasterPassword.setSelected(false);
                     btnChangeMasterPassword.setEnabled(false);
@@ -868,7 +872,7 @@ public class SettingsDialog extends JDialog {
                         settings -> settings.setUsingMasterPassword(true)
                 );
                 
-                AlertDialogUtils.showSuccess(this, getBundle().getString("password_aes"));
+                AlertDialogUtils.showSuccess(this, getBundle().getString("app.settings.security.message.password_aes"));
                 btnChangeMasterPassword.setEnabled(true);
                 
             } else {
@@ -880,7 +884,7 @@ public class SettingsDialog extends JDialog {
                     )) {
                         AlertDialogUtils.showError(
                                 this,
-                                getBundle().getString("dialog.master_password.change_failed")
+                                getBundle().getString("app.settings.security.dialog_master_password.message.change_failed")
                         );
                         chkUseMasterPassword.setSelected(true);
                         btnChangeMasterPassword.setEnabled(true);
@@ -894,7 +898,7 @@ public class SettingsDialog extends JDialog {
                     LOG.error("Error while changing password.", e1);
                     AlertDialogUtils.showError(
                             this,
-                            getBundle().getString("error_operation")
+                            getBundle().getString("general.message.error_operation")
                     );
                     chkUseMasterPassword.setSelected(true);
                     btnChangeMasterPassword.setEnabled(true);
@@ -905,7 +909,7 @@ public class SettingsDialog extends JDialog {
                         settings -> settings.setUsingMasterPassword(false)
                 );
                 
-                AlertDialogUtils.showSuccess(this, getBundle().getString("password_unprotected"));
+                AlertDialogUtils.showSuccess(this, getBundle().getString("app.settings.security.dialog_master_password.message.password_unprotected"));
                 btnChangeMasterPassword.setEnabled(false);
                 
             }
@@ -929,7 +933,7 @@ public class SettingsDialog extends JDialog {
                     )) {
                         AlertDialogUtils.showError(
                                 this,
-                                getBundle().getString("dialog.master_password.change_failed")
+                                getBundle().getString("app.settings.security.dialog_master_password.message.change_failed")
                         );
                         return;
                     }
@@ -939,13 +943,13 @@ public class SettingsDialog extends JDialog {
                     LOG.error("Error while changing password.", e1);
                     AlertDialogUtils.showError(
                             this,
-                            getBundle().getString("error_operation")
+                            getBundle().getString("general.message.error_operation")
                     );
                     return;
                 }
                 
                 
-                AlertDialogUtils.showSuccess(this, getBundle().getString("password_aes"));
+                AlertDialogUtils.showSuccess(this, getBundle().getString("app.settings.security.message.password_aes"));
             
         });
 

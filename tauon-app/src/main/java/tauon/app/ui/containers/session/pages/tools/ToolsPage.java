@@ -31,7 +31,7 @@ public class ToolsPage extends SubpagingPage {
 
     @Override
     public String getText() {
-        return getBundle().getString("app.toolbox.title");
+        return getBundle().getString("app.tools.title");
     }
 
     @Override

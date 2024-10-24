@@ -55,7 +55,7 @@ public class StartPage extends JPanel {
         JScrollPane jsp = new SkinnedScrollPane(pinnedLogList);
         jsp.setBorder(new EmptyBorder(0, 10, 0, 10));
         this.add(jsp);
-        JButton btnAddLog = new JButton(getBundle().getString("add_log"));
+        JButton btnAddLog = new JButton(getBundle().getString("app.files.action.add_log"));
         JButton btnDelLog = new JButton(getBundle().getString("app.files.action.delete"));
         btnAddLog.addActionListener(e -> {
             String logPath = promptLogPath();

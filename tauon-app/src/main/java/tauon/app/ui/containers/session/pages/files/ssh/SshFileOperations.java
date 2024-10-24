@@ -103,14 +103,14 @@ public class SshFileOperations {
         System.out.println("Move: " + command);
         if (instance.exec(command.toString(), new AtomicBoolean(false)) != 0) {
             if (!SettingsService.getSettings().isUseSudo()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("access_denied"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.access_denied"));
                 return false;
             }
             
             // TODO i18n
             if (!SettingsService.getSettings().isPromptForSudo()
                     || JOptionPane.showConfirmDialog(null,
-                    "Access denied, rename using sudo?", getBundle().getString("use_sudo"),
+                    "Access denied, rename using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                 if (!instance.isSessionClosed()) {
                     JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
@@ -187,7 +187,7 @@ public class SshFileOperations {
             }
             if (!SettingsService.getSettings().isPromptForSudo()
                     || JOptionPane.showConfirmDialog(null,
-                    "Access denied, copy using sudo?", getBundle().getString("use_sudo"),
+                    "Access denied, copy using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                 if (!instance.isSessionClosed()) {
                     JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
@@ -234,14 +234,14 @@ public class SshFileOperations {
             e.printStackTrace();
 
             if (!SettingsService.getSettings().isUseSudo()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("access_denied"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.access_denied"));
                 return false;
             }
             
             // TODO i18n
             if (!SettingsService.getSettings().isPromptForSudo()
                     || JOptionPane.showConfirmDialog(null,
-                    "Access denied, rename using sudo?", getBundle().getString("use_sudo"),
+                    "Access denied, rename using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 return renameWithPrivilege(oldName, newName, instance, password.get());
             }
@@ -295,12 +295,12 @@ public class SshFileOperations {
         } catch (FileNotFoundException | AccessDeniedException e) {
             e.printStackTrace();
             if (!SettingsService.getSettings().isUseSudo()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("access_denied"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.access_denied"));
                 return false;
             }
             if (!SettingsService.getSettings().isPromptForSudo()
                     || JOptionPane.showConfirmDialog(null,
-                    "Access denied, delete using sudo?", getBundle().getString("use_sudo"),
+                    "Access denied, delete using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 return deletePrivilege(targetList, instance, password.get());
             }
@@ -312,7 +312,7 @@ public class SshFileOperations {
         } catch (Exception e) {
             e.printStackTrace();
             if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("error_delete_file"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("app.files.message.error_delete_file"));
             }
 
             return false;
@@ -348,7 +348,7 @@ public class SshFileOperations {
             }
         }
         if (alreadyExists) {
-            JOptionPane.showMessageDialog(null, getBundle().getString("file_exists"));
+            JOptionPane.showMessageDialog(null, getBundle().getString("app.files.message.file_exists"));
             return false;
         }
         try {
@@ -357,12 +357,12 @@ public class SshFileOperations {
         } catch (AccessDeniedException e1) {
             e1.printStackTrace();
             if (!SettingsService.getSettings().isUseSudo()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("access_denied"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.access_denied"));
                 return false;
             }
             if (!SettingsService.getSettings().isPromptForSudo()
                     || JOptionPane.showConfirmDialog(null,
-                    "Access denied, new file using sudo?", getBundle().getString("use_sudo"),
+                    "Access denied, new file using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 if (!touchWithPrivilege(folder, text, instance, password.get())) {
                     if (!instance.isSessionClosed()) {
@@ -426,12 +426,12 @@ public class SshFileOperations {
         } catch (AccessDeniedException e1) {
             e1.printStackTrace();
             if (!SettingsService.getSettings().isUseSudo()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("access_denied"));
+                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.access_denied"));
                 return false;
             }
             if (!SettingsService.getSettings().isPromptForSudo()
                     || JOptionPane.showConfirmDialog(null,
-                    "Access denied, try using sudo?", getBundle().getString("use_sudo"),
+                    "Access denied, try using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 if (!mkdirWithPrivilege(folder, text, instance, password.get())) {
                     if (!instance.isSessionClosed()) {

@@ -113,9 +113,6 @@ public class TauonSSHClient {
             
             LOG.info("Begin connecting client.");
             
-            sftp = null;
-            portForwardingStates.clear();
-            
             try {
                 sshConnectedHop = new SSHConnectedHop(info);
                 sshConnectedHop.connect(0);
@@ -231,6 +228,7 @@ public class TauonSSHClient {
         if(sshConnectedHop != null) {
             sshConnectedHop.disconnect();
             sshConnectedHop = null;
+            sftp = null;
         }
         
     }

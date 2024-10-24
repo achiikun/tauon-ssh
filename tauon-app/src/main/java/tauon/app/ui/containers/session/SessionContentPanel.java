@@ -329,7 +329,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         JPasswordField passwordField = new JPasswordField(30);
         int ret;
         if(rememberPassword != null) {
-            JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("app.connections.action.remember_password"));
+            JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("app.sites.action.remember_password"));
             // TODO i18n
             ret = JOptionPane.showOptionDialog(
                     appWindow,

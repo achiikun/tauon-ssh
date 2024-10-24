@@ -121,7 +121,7 @@ public class SessionListPanel extends JPanel {
     }
 
     public void removeSession(int index) {
-        if (JOptionPane.showConfirmDialog(window, getBundle().getString("app.connections.action.disconnect_session")) == JOptionPane.YES_OPTION) {
+        if (JOptionPane.showConfirmDialog(window, getBundle().getString("app.session.action.disconnect_session")) == JOptionPane.YES_OPTION) {
             SessionContentPanel sessionContentPanel = sessionListModel.get(index);
             sessionContentPanel.close();
             window.removeSession(sessionContentPanel);

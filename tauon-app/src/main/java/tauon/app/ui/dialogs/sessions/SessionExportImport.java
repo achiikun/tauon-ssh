@@ -42,7 +42,7 @@ public class SessionExportImport {
         File f = jfc.getSelectedFile();
         
         if (JOptionPane.showConfirmDialog(parent,
-                getBundle().getString("app.connections.import_dialog.alert_data_will_be_replaced")
+                getBundle().getString("app.sites.import_dialog.alert_data_will_be_replaced")
         ) != JOptionPane.YES_OPTION) {
             throw new OperationCancelledException();
         }
@@ -63,7 +63,7 @@ public class SessionExportImport {
             }
         } catch (IOException e) {
             LOG.error("Error while importing zip.", e);
-            AlertDialogUtils.showError(parent, getBundle().getString("app.connections.import_dialog.error_generic"));
+            AlertDialogUtils.showError(parent, getBundle().getString("app.sites.import_dialog.error_generic"));
             throw new AlreadyFailedException();
         }
     }
@@ -76,7 +76,7 @@ public class SessionExportImport {
         File f = jfc.getSelectedFile();
         
         if(f == null || !f.canRead()){
-            AlertDialogUtils.showError(parent, getBundle().getString("app.connections.import_dialog.error_file_not_found"));
+            AlertDialogUtils.showError(parent, getBundle().getString("app.sites.import_dialog.error_file_not_found"));
             throw new AlreadyFailedException();
         }
 
@@ -96,7 +96,7 @@ public class SessionExportImport {
                         "In repeated sessions do:",
                         cmbOptionsExistingInfo
                 },
-                getBundle().getString("app.connections.import_dialog.title"),
+                getBundle().getString("app.sites.import_dialog.title"),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
@@ -116,7 +116,7 @@ public class SessionExportImport {
             sessions = SSHConfigImporter.getSessionFromFile(f);
         } catch (FileNotFoundException e) {
             LOG.error("Error while importing sessions.", e);
-            AlertDialogUtils.showError(parent, getBundle().getString("app.connections.import_dialog.error_file_not_found"));
+            AlertDialogUtils.showError(parent, getBundle().getString("app.sites.import_dialog.error_file_not_found"));
             throw new AlreadyFailedException();
         }
         
@@ -168,7 +168,7 @@ public class SessionExportImport {
             
             JOptionPane.showMessageDialog(parent,
                     FormatUtils.$$(
-                            getBundle().getString("app.connections.import_dialog.result.content"),
+                            getBundle().getString("app.sites.import_dialog.result.content"),
                             Map.of(
                                     "total", total,
                                     "imported", imported,
@@ -176,7 +176,7 @@ public class SessionExportImport {
                                     "overwritten", overwritten
                             )
                     ),
-                    getBundle().getString("app.connections.import_dialog.result.title"),
+                    getBundle().getString("app.sites.import_dialog.result.title"),
                     JOptionPane.INFORMATION_MESSAGE
             );
             

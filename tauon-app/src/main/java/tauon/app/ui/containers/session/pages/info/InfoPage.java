@@ -39,13 +39,13 @@ public class InfoPage extends SubpagingPage {
     public void onCreateSubpages(SessionContentPanel holder) {
         addSubpage(
                 "SYS_INFO",
-                getBundle().getString("app.system_info.title"),
+                getBundle().getString("app.info_system_info.title"),
                 FontAwesomeContants.FA_LINUX,
                 new SysInfoPanel(holder)
         );
         addSubpage(
                 "SYS_LOAD",
-                getBundle().getString("app.system_load.title"),
+                getBundle().getString("app.info_system_load.title"),
                 FontAwesomeContants.FA_AREA_CHART,
                 new SysLoadPage(holder)
         );
