@@ -3,6 +3,9 @@
  */
 package tauon.app.ui.containers.session.pages.info.processview;
 
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.page.subpage.Subpage;
 import tauon.app.ui.components.tablerenderers.ByteCountValue;
@@ -37,9 +40,7 @@ public class ProcessViewer extends Subpage {
      *
      */
     public void createUI() {
-        processListPanel = new ProcessListPanel((cmd, mode) -> {
-            this.runCommand(cmd, mode);
-        });
+        processListPanel = new ProcessListPanel(this::runCommand);
         processListPanel.setMinimumSize(new Dimension(10, 10));
         this.add(processListPanel);
     }
@@ -57,7 +58,7 @@ public class ProcessViewer extends Subpage {
     
     }
     
-    private void updateProcessList(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws Exception {
+    private void updateProcessList(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         List<ProcessTableEntry> list = getProcessList(instance, stopFlag);
         SwingUtilities.invokeLater(() -> {
             // update ui ps
@@ -70,8 +71,7 @@ public class ProcessViewer extends Subpage {
         switch (mode) {
             case KILL_AS_USER:
                 holder.submitSSHOperationStoppable(instance -> {
-                    if (instance.exec(cmd, stopFlag, new StringBuilder(),
-                            new StringBuilder()) != 0) {
+                    if (instance.exec(cmd, stopFlag, null, null) != 0) {
                         if (!holder.isSessionClosed()) {
                             JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                         }
@@ -82,7 +82,7 @@ public class ProcessViewer extends Subpage {
                 break;
             case KILL_AS_ROOT:
                 holder.submitSSHOperationStoppable(instance -> {
-                    if (SudoUtils.runSudo(cmd, instance, holder.getInfo().getPassword()) != 0) {
+                    if (SudoUtils.runSudo(cmd, instance) != 0) {
                         if (!holder.isSessionClosed()) {
                             JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                         }
@@ -99,7 +99,7 @@ public class ProcessViewer extends Subpage {
         }
     }
 
-    public List<ProcessTableEntry> getProcessList(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws Exception {
+    public List<ProcessTableEntry> getProcessList(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         StringBuilder out = new StringBuilder();
         StringBuilder err = new StringBuilder();
         int ret = instance.exec(ScriptLoader.loadShellScript("/scripts/ps.sh"),
@@ -107,7 +107,7 @@ public class ProcessViewer extends Subpage {
                 // --sort pid",
                 stopFlag, out, err);
         if (ret != 0)
-            throw new Exception("Error while getting metrics");
+            throw new RemoteOperationException.ErrorReturnCode("ps.sh", ret, "Error while getting metrics");
         return parseProcessList(out.toString());
     }
 

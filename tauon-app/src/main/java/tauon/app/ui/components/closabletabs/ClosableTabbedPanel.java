@@ -110,10 +110,8 @@ public class ClosableTabbedPanel extends JPanel {
                     ClosableTabContent closableTabContent = (ClosableTabContent) body;
                     if (closableTabContent.close()) {
                         System.out.println("Closing...");
-                        for (int i = 0; i < tabHolder
-                                .getComponentCount(); i++) {
-                            JComponent c = (JComponent) tabHolder
-                                    .getComponent(i);
+                        for (int i = 0; i < tabHolder.getComponentCount(); i++) {
+                            JComponent c = (JComponent) tabHolder.getComponent(i);
                             if (c == titleComponent) {
                                 removeTabAt(i, c.getName(), titleComponent);
                                 break;

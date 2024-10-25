@@ -3,6 +3,8 @@ package tauon.app.ui.containers.session.pages.files.ssh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.exceptions.LocalOperationException;
+import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
@@ -350,6 +352,8 @@ public class SshMenuHandler {
                 uploadFiles();
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } catch (LocalOperationException ex) {
+                ex.printStackTrace();
             }
         });
     }
@@ -554,8 +558,7 @@ public class SshMenuHandler {
     private void renameAsync(String oldName, String newName, String baseFolder) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.rename(oldName, newName, fileBrowserView.getFileSystem(),
-                    instance, fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.rename(oldName, newName, fileBrowserView.getFileSystem(), instance)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -585,8 +588,7 @@ public class SshMenuHandler {
             return;
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.delete(targetList, fileBrowserView.getFileSystem(),
-                    instance, fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.delete(targetList, fileBrowserView.getFileSystem(), instance)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -611,8 +613,7 @@ public class SshMenuHandler {
     public void newFile(String baseFolder, FileInfo[] files) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.newFile(files, fileBrowserView.getFileSystem(), baseFolder,
-                    instance, fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.newFile(files, fileBrowserView.getFileSystem(), baseFolder, instance)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -637,8 +638,7 @@ public class SshMenuHandler {
     public void newFolder(String baseFolder, FileInfo[] files) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.newFolder(files, baseFolder, fileBrowserView.getFileSystem(),
-                    instance, fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.newFolder(files, baseFolder, fileBrowserView.getFileSystem(), instance)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -717,8 +717,7 @@ public class SshMenuHandler {
     public void copy(List<FileInfo> files, String targetFolder) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.copyTo(instance, files, targetFolder,
-                    fileBrowserView.getFileSystem(), fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.copyTo(instance, files, targetFolder, fileBrowserView.getFileSystem())) {
                 fileBrowserView.render(targetFolder);
             }
         });
@@ -741,8 +740,7 @@ public class SshMenuHandler {
     public void move(List<FileInfo> files, String targetFolder) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.moveTo(instance, files, targetFolder,
-                    fileBrowserView.getFileSystem(), fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.moveTo(instance, files, targetFolder, fileBrowserView.getFileSystem())) {
                 fileBrowserView.render(targetFolder);
             }
         });
@@ -818,8 +816,10 @@ public class SshMenuHandler {
     private void openRunInBackground(String folder, String file) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.runScriptInBackground(instance,
-                    "cd \"" + folder + "\"; nohup \"" + file + "\" &", new AtomicBoolean())) {
+            String cmd;
+            int ret = instance.exec(cmd = "cd \"" + folder + "\"; nohup \"" + file + "\" &", new AtomicBoolean(), new StringBuilder());
+            if (ret != 0) {
+                throw new RemoteOperationException.ErrorReturnCode(cmd, ret);
             }
         });
         
@@ -895,7 +895,7 @@ public class SshMenuHandler {
         throw new RuntimeException("Not implemented");
     }
 
-    private void uploadFiles() throws IOException {
+    private void uploadFiles() throws IOException, LocalOperationException {
         NativeFileChooser jfc = new NativeFileChooser();
         jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         jfc.setMultiSelectionEnabled(true);

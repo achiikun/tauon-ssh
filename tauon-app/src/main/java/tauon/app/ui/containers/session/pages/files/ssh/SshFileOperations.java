@@ -2,6 +2,10 @@ package tauon.app.ui.containers.session.pages.files.ssh;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
+import tauon.app.exceptions.TauonOperationException;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.FileInfo;
@@ -28,34 +32,21 @@ public class SshFileOperations {
     public SshFileOperations() {
     }
 
-    public static void delete(List<FileInfo> files,
-                              TauonRemoteSessionInstance instance) throws Exception {
+    public static void deleteUsingRMRF(List<FileInfo> files, TauonRemoteSessionInstance instance) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
 
         StringBuilder sb = new StringBuilder("rm -rf ");
 
         for (FileInfo file : files) {
             sb.append("\"").append(file.getPath()).append("\" ");
         }
-
-        System.out.println("Delete command1: " + sb);
-
-        if (instance.exec(sb.toString(), new AtomicBoolean(false)) != 0) {
-            throw new FileNotFoundException("Operation failed");
+        
+        int ret;
+        if ((ret = instance.exec(sb.toString(), new AtomicBoolean(false))) != 0) {
+            throw new RemoteOperationException.ErrorReturnCode(sb.toString(), ret);
         }
     }
 
-    public boolean runScriptInBackground(TauonRemoteSessionInstance instance,
-                                         String command, AtomicBoolean stopFlag) throws Exception {
-        System.out.println("Invoke command: " + command);
-        StringBuilder output = new StringBuilder();
-        boolean ret = instance.exec(command, stopFlag, output,
-                new StringBuilder()) == 0;
-        System.out.println("output: " + output);
-        return ret;
-    }
-
-    public boolean moveTo(TauonRemoteSessionInstance instance, List<FileInfo> files,
-                          String targetFolder, FileSystem fs, Supplier<String> password) throws Exception {
+    public boolean moveTo(TauonRemoteSessionInstance instance, List<FileInfo> files, String targetFolder, FileSystem fs) throws OperationCancelledException, TauonOperationException, InterruptedException, SessionClosedException {
         List<FileInfo> fileList = fs.list(targetFolder);
         List<FileInfo> dupList = new ArrayList<>();
         for (FileInfo file : files) {
@@ -118,7 +109,7 @@ public class SshFileOperations {
                 return false;
             }
 
-            int ret = SudoUtils.runSudo(command.toString(), instance, password.get());
+            int ret = SudoUtils.runSudo(command.toString(), instance);
             if (ret != -1) {
                 return ret == 0;
             }
@@ -132,8 +123,12 @@ public class SshFileOperations {
         return false;
     }
 
-    public boolean copyTo(TauonRemoteSessionInstance instance, List<FileInfo> files,
-                          String targetFolder, FileSystem fs, Supplier<String> password) throws Exception {
+    public boolean copyTo(
+            TauonRemoteSessionInstance instance,
+            List<FileInfo> files,
+            String targetFolder,
+            FileSystem fs
+    ) throws OperationCancelledException, TauonOperationException, InterruptedException, SessionClosedException {
         List<FileInfo> fileList = fs.list(targetFolder);
         List<FileInfo> dupList = new ArrayList<>();
         for (FileInfo file : files) {
@@ -195,7 +190,7 @@ public class SshFileOperations {
                 return false;
             }
 
-            int ret = SudoUtils.runSudo(command.toString(), instance, password.get());
+            int ret = SudoUtils.runSudo(command.toString(), instance);
             if (ret != -1) {
                 return ret == 0;
             }
@@ -226,13 +221,11 @@ public class SshFileOperations {
     }
 
     public boolean rename(String oldName, String newName, FileSystem fs,
-                          TauonRemoteSessionInstance instance, Supplier<String> password) {
+                          TauonRemoteSessionInstance instance) throws TauonOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
         try {
             fs.rename(oldName, newName);
             return true;
-        } catch (AccessDeniedException e) {
-            e.printStackTrace();
-
+        } catch (RemoteOperationException.PermissionDenied e) {
             if (!SettingsService.getSettings().isUseSudo()) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("general.message.access_denied"));
                 return false;
@@ -243,28 +236,29 @@ public class SshFileOperations {
                     || JOptionPane.showConfirmDialog(null,
                     "Access denied, rename using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                return renameWithPrivilege(oldName, newName, instance, password.get());
+                return renameWithPrivilege(oldName, newName, instance);
             }
 
-            if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
-            }
-            return false;
-        } catch (Exception e) {
-            e.printStackTrace();
             if (!instance.isSessionClosed()) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
             return false;
         }
+//        catch (Exception e) {
+//            e.printStackTrace();
+//            if (!instance.isSessionClosed()) {
+//                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
+//            }
+//            return false;
+//        }
     }
 
     private boolean renameWithPrivilege(String oldName, String newName,
-                                        TauonRemoteSessionInstance instance, String password) {
+                                        TauonRemoteSessionInstance instance) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         StringBuilder command = new StringBuilder();
         command.append("mv \"").append(oldName).append("\" \"").append(newName).append("\"");
         System.out.println("Invoke sudo: " + command);
-        int ret = SudoUtils.runSudo(command.toString(), instance, password);
+        int ret = SudoUtils.runSudo(command.toString(), instance);
         if (ret == -1) {
             if (!instance.isSessionClosed()) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
@@ -273,27 +267,24 @@ public class SshFileOperations {
         return ret == 0;
     }
 
-    public boolean delete(FileInfo[] targetList, FileSystem fs,
-                          TauonRemoteSessionInstance instance, Supplier<String> password) {
+    public boolean delete(FileInfo[] targetList, FileSystem fs, TauonRemoteSessionInstance instance) throws TauonOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
         try {
             try {
                 // Try to remove it using "rm -rf" because it's faster than sftp
-                delete(Arrays.asList(targetList), instance);
+                deleteUsingRMRF(Arrays.asList(targetList), instance);
                 return true;
-            } catch (FileNotFoundException e) {
-                System.out.println("delete: file not found");
-                e.printStackTrace();
-                throw e;
-            } catch (Exception e) {
-                e.printStackTrace();
+//            } catch (FileNotFoundException e) {
+//                System.out.println("delete: file not found");
+//                e.printStackTrace();
+//                throw e;
+            } catch (RemoteOperationException e) {
                 // Fallback to sftp
                 for (FileInfo s : targetList) {
                     fs.delete(s);
                 }
                 return true;
             }
-        } catch (FileNotFoundException | AccessDeniedException e) {
-            e.printStackTrace();
+        } catch (RemoteOperationException.FileNotFound | RemoteOperationException.PermissionDenied e) {
             if (!SettingsService.getSettings().isUseSudo()) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("general.message.access_denied"));
                 return false;
@@ -302,42 +293,33 @@ public class SshFileOperations {
                     || JOptionPane.showConfirmDialog(null,
                     "Access denied, delete using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                return deletePrivilege(targetList, instance, password.get());
+                return deletePrivilege(targetList, instance);
             }
             if (!instance.isSessionClosed()) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
             }
             return false;
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (!instance.isSessionClosed()) {
-                JOptionPane.showMessageDialog(null, getBundle().getString("app.files.message.error_delete_file"));
-            }
-
-            return false;
         }
     }
 
-    private boolean deletePrivilege(FileInfo[] targetList,
-                                    TauonRemoteSessionInstance instance, String password) {
+    private boolean deletePrivilege(FileInfo[] targetList, TauonRemoteSessionInstance instance) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         StringBuilder sb = new StringBuilder("rm -rf ");
         for (FileInfo file : targetList) {
             sb.append("\"").append(file.getPath()).append("\" ");
         }
 
         System.out.println("Invoke sudo: " + sb);
-        int ret = SudoUtils.runSudo(sb.toString(), instance, password);
+        int ret = SudoUtils.runSudo(sb.toString(), instance);
         if (ret == -1) {
             JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
         }
         return ret == 0;
     }
 
-    public boolean newFile(FileInfo[] files, FileSystem fs, String folder,
-                           TauonRemoteSessionInstance instance, Supplier<String> password) {
+    public boolean newFile(FileInfo[] files, FileSystem fs, String folder, TauonRemoteSessionInstance instance) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         String text = JOptionPane.showInputDialog("New file");
-        if (text == null || text.length() < 1) {
+        if (text == null || text.isEmpty()) {
             return false;
         }
         boolean alreadyExists = false;
@@ -354,7 +336,7 @@ public class SshFileOperations {
         try {
             fs.createFile(PathUtils.combineUnix(folder, text));
             return true;
-        } catch (AccessDeniedException e1) {
+        } catch (RemoteOperationException.PermissionDenied e1) {
             e1.printStackTrace();
             if (!SettingsService.getSettings().isUseSudo()) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("general.message.access_denied"));
@@ -364,7 +346,7 @@ public class SshFileOperations {
                     || JOptionPane.showConfirmDialog(null,
                     "Access denied, new file using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                if (!touchWithPrivilege(folder, text, instance, password.get())) {
+                if (!touchWithPrivilege(folder, text, instance)) {
                     if (!instance.isSessionClosed()) {
                         JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                     }
@@ -386,13 +368,12 @@ public class SshFileOperations {
         return false;
     }
 
-    private boolean touchWithPrivilege(String path, String newFile,
-                                       TauonRemoteSessionInstance instance, String password) {
+    private boolean touchWithPrivilege(String path, String newFile, TauonRemoteSessionInstance instance) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         String file = PathUtils.combineUnix(path, newFile);
         StringBuilder command = new StringBuilder();
         command.append("touch \"").append(file).append("\"");
         System.out.println("Invoke sudo: " + command);
-        int ret = SudoUtils.runSudo(command.toString(), instance, password);
+        int ret = SudoUtils.runSudo(command.toString(), instance);
         if (ret == -1) {
             if (!instance.isSessionClosed()) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
@@ -401,8 +382,7 @@ public class SshFileOperations {
         return ret == 0;
     }
 
-    public boolean newFolder(FileInfo[] files, String folder, FileSystem fs,
-                             TauonRemoteSessionInstance instance, Supplier<String> password) {
+    public boolean newFolder(FileInfo[] files, String folder, FileSystem fs, TauonRemoteSessionInstance instance) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         String text = JOptionPane.showInputDialog("New folder name");
         if (text == null || text.length() < 1) {
             return false;
@@ -423,7 +403,7 @@ public class SshFileOperations {
         try {
             fs.mkdir(PathUtils.combineUnix(folder, text));
             return true;
-        } catch (AccessDeniedException e1) {
+        } catch (RemoteOperationException.PermissionDenied e1) {
             e1.printStackTrace();
             if (!SettingsService.getSettings().isUseSudo()) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("general.message.access_denied"));
@@ -433,7 +413,7 @@ public class SshFileOperations {
                     || JOptionPane.showConfirmDialog(null,
                     "Access denied, try using sudo?", getBundle().getString("general.message.ask_use_sudo"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                if (!mkdirWithPrivilege(folder, text, instance, password.get())) {
+                if (!mkdirWithPrivilege(folder, text, instance)) {
                     if (!instance.isSessionClosed()) {
                         JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                     }
@@ -455,13 +435,12 @@ public class SshFileOperations {
         return false;
     }
 
-    private boolean mkdirWithPrivilege(String path, String newFolder,
-                                       TauonRemoteSessionInstance instance, String password) {
+    private boolean mkdirWithPrivilege(String path, String newFolder, TauonRemoteSessionInstance instance) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         String file = PathUtils.combineUnix(path, newFolder);
         StringBuilder command = new StringBuilder();
         command.append("mkdir \"").append(file).append("\"");
         System.out.println("Invoke sudo: " + command);
-        int ret = SudoUtils.runSudo(command.toString(), instance, password);
+        int ret = SudoUtils.runSudo(command.toString(), instance);
         if (ret == -1 && !instance.isSessionClosed()) {
             JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
         }

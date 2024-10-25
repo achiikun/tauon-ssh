@@ -1,5 +1,6 @@
 package tauon.app.ui.containers.session.pages.files.local;
 
+import tauon.app.exceptions.LocalOperationException;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
@@ -239,12 +240,7 @@ public class LocalMenuHandler {
     private void delete(FileInfo[] selectedFiles, String baseFolder) {
         fileBrowser.getHolder().submitLocalOperation(() -> {
             for (FileInfo f : selectedFiles) {
-                try {
-                    new LocalFileSystem().delete(f);
-                } catch (Exception e) {
-                    // TODO
-                    e.printStackTrace();
-                }
+                new LocalFileSystem().delete(f);
             }
             fileBrowserView.render(baseFolder);
         });
@@ -298,19 +294,21 @@ public class LocalMenuHandler {
     }
     
     private void addToFavourites() {
-        FileInfo[] arr = folderView.getSelectedFiles();
-        
-        if (arr.length > 0) {
-            BookmarkManager.getInstance().addEntry(null,
-                    Arrays.asList(arr).stream()
-                            .filter(a -> a.getType() == FileType.DIR_LINK || a.getType() == FileType.DIR)
-                            .map(a -> a.getPath()).collect(Collectors.toList()));
-        } else if (arr.length == 0) {
-            BookmarkManager.getInstance().addEntry(null, fileBrowserView.getCurrentDirectory());
-        }
-        
-        this.fileBrowserView.getOverflowMenuHandler().loadFavourites();
-        
+//        throw new LocalOperationException.NotImplemented("addToFavourites()");
+        throw new UnsupportedOperationException();
+//        FileInfo[] arr = folderView.getSelectedFiles();
+//
+//        if (arr.length > 0) {
+//            BookmarkManager.getInstance().addEntry(null,
+//                    Arrays.asList(arr).stream()
+//                            .filter(a -> a.getType() == FileType.DIR_LINK || a.getType() == FileType.DIR)
+//                            .map(a -> a.getPath()).collect(Collectors.toList()));
+//        } else if (arr.length == 0) {
+//            BookmarkManager.getInstance().addEntry(null, fileBrowserView.getCurrentDirectory());
+//        }
+//
+//        this.fileBrowserView.getOverflowMenuHandler().loadFavourites();
+    
     }
     
     public JPopupMenu createAddressPopup() {

@@ -155,7 +155,7 @@ public class SessionInfoPanel extends JPanel {
     }
     
     private void showError(String msg) {
-        JOptionPane.showMessageDialog(this, msg, getBundle().getString("general.message.error"), JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, msg, getBundle().getString("general.message.error.title"), JOptionPane.ERROR_MESSAGE);
     }
 
     private void setJumpHostDetails(boolean useJumpHosts, JumpType jumpType, List<HopEntry> jumpHosts) {

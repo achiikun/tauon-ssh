@@ -3,6 +3,8 @@ package tauon.app.ssh.filesystem;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.LocalOperationException;
+import tauon.app.exceptions.TauonOperationException;
 import tauon.app.util.misc.PathUtils;
 
 import java.io.*;
@@ -20,25 +22,31 @@ public class LocalFileSystem implements FileSystem {
     
     public static final String PROTO_LOCAL_FILE = "local";
 
-    public void chmod(int perm, String path) throws Exception {
+    @Override
+    public void chmod(int perm, String path) {
     }
 
     @Override
-    public FileInfo getInfo(String path) throws IOException {
+    public FileInfo getInfo(String path) throws LocalOperationException {
         File f = new File(path);
         if (!f.exists()) {
-            throw new FileNotFoundException(path);
+            throw new LocalOperationException(new FileNotFoundException(path));
         }
         
         return getFileInfo(f);
     }
     
     @NotNull
-    private static FileInfo getFileInfo(File f) throws IOException {
+    private static FileInfo getFileInfo(File f) throws LocalOperationException {
         Path p = f.toPath();
         
         // TODO follow links to get parameters of the real file (note that the real file may not exist)
-        BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        BasicFileAttributes attrs = null;
+        try {
+            attrs = Files.readAttributes(p, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        } catch (IOException e) {
+            throw new LocalOperationException(e);
+        }
         
         FileType type = Files.isSymbolicLink(p) ?
                 (f.isDirectory() ? FileType.DIR_LINK : FileType.FILE_LINK) :
@@ -50,12 +58,12 @@ public class LocalFileSystem implements FileSystem {
     }
     
     @Override
-    public String getHome() throws IOException {
+    public String getHome() {
         return System.getProperty("user.home");
     }
 
     @Override
-    public List<FileInfo> list(String path) throws Exception {
+    public List<FileInfo> list(String path) throws LocalOperationException {
         if (path == null || path.length() < 1) {
             path = System.getProperty("user.home");
         }
@@ -68,11 +76,7 @@ public class LocalFileSystem implements FileSystem {
             return list;
         }
         for (File f : childs) {
-            try {
-                list.add(getFileInfo(f));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            list.add(getFileInfo(f));
         }
         return list;
     }
@@ -82,25 +86,34 @@ public class LocalFileSystem implements FileSystem {
         return true;
     }
 
-    public InputStream getInputStream(String file, long offset) throws Exception {
-        FileInputStream fout = new FileInputStream(file);
-        fout.skip(offset);
+    public InputStream getInputStream(String file, long offset) throws LocalOperationException {
+        FileInputStream fout = null;
+        try {
+            fout = new FileInputStream(file);
+            fout.skip(offset);
+        } catch (IOException e) {
+            throw new LocalOperationException(e);
+        }
         return fout;
     }
 
-    public OutputStream getOutputStream(String file) throws Exception {
-        return new FileOutputStream(file);
-    }
-
-    @Override
-    public void rename(String oldName, String newName) throws Exception {
-        System.out.println("Renaming from " + oldName + " to: " + newName);
-        if (!new File(oldName).renameTo(new File(newName))) {
-            throw new FileNotFoundException();
+    public OutputStream getOutputStream(String file) throws LocalOperationException {
+        try {
+            return new FileOutputStream(file);
+        } catch (FileNotFoundException e) {
+            throw new LocalOperationException(e);
         }
     }
 
-    public synchronized void delete(FileInfo f) throws Exception {
+    @Override
+    public void rename(String oldName, String newName) throws LocalOperationException {
+//        System.out.println("Renaming from " + oldName + " to: " + newName);
+        if (!new File(oldName).renameTo(new File(newName))) {
+            throw new LocalOperationException.FileNotFound(null, oldName);
+        }
+    }
+
+    public synchronized void delete(FileInfo f) throws LocalOperationException {
         if (f.getType() == FileType.DIR) {
             List<FileInfo> list = list(f.getPath());
             if (list != null && list.size() > 0) {
@@ -115,7 +128,7 @@ public class LocalFileSystem implements FileSystem {
     }
 
     @Override
-    public void mkdir(String path) throws Exception {
+    public void mkdir(String path) {
         System.out.println("Creating folder: " + path);
         new File(path).mkdirs();
     }
@@ -130,7 +143,7 @@ public class LocalFileSystem implements FileSystem {
     }
 
     @Override
-    public boolean mkdirs(String absPath) throws Exception {
+    public boolean mkdirs(String absPath) {
         return new File(absPath).mkdirs();
     }
 
@@ -162,7 +175,7 @@ public class LocalFileSystem implements FileSystem {
      * @see nixexplorer.core.FileSystemProvider#deleteFile(java.lang.String)
      */
     @Override
-    public void deleteFile(String f) throws Exception {
+    public void deleteFile(String f) {
         new File(f).delete();
     }
 
@@ -177,12 +190,16 @@ public class LocalFileSystem implements FileSystem {
      * @see nixexplorer.core.FileSystemProvider#createFile(java.lang.String)
      */
     @Override
-    public void createFile(String path) throws Exception {
-        Files.createFile(Paths.get(path));
+    public void createFile(String path) throws LocalOperationException {
+        try {
+            Files.createFile(Paths.get(path));
+        } catch (IOException e) {
+            throw new LocalOperationException(e);
+        }
     }
 
-    public void createLink(String src, String dst, boolean hardLink) throws Exception {
-
+    public void createLink(String src, String dst, boolean hardLink) {
+        // TODO
     }
 
     @Override
@@ -191,7 +208,7 @@ public class LocalFileSystem implements FileSystem {
     }
 
     @Override
-    public String[] getRoots() throws Exception {
+    public String[] getRoots() {
         File[] roots = File.listRoots();
         String[] arr = new String[roots.length];
         int i = 0;
@@ -201,11 +218,15 @@ public class LocalFileSystem implements FileSystem {
         return arr;
     }
 
-    public InputTransferChannel inputTransferChannel() throws Exception {
+    public InputTransferChannel inputTransferChannel() {
         return new InputTransferChannel() {
             @Override
-            public InputStream getInputStream(String path) throws Exception {
-                return new FileInputStream(path);
+            public InputStream getInputStream(String path) throws TauonOperationException {
+                try {
+                    return new FileInputStream(path);
+                } catch (FileNotFoundException e) {
+                    throw new LocalOperationException.FileNotFound(e, path);
+                }
             }
 
             @Override
@@ -221,11 +242,15 @@ public class LocalFileSystem implements FileSystem {
         };
     }
 
-    public OutputTransferChannel outputTransferChannel() throws Exception {
+    public OutputTransferChannel outputTransferChannel() {
         return new OutputTransferChannel() {
             @Override
-            public OutputStream getOutputStream(String path) throws Exception {
-                return new FileOutputStream(path);
+            public OutputStream getOutputStream(String path) throws LocalOperationException.FileNotFound {
+                try {
+                    return new FileOutputStream(path);
+                } catch (FileNotFoundException e) {
+                    throw new LocalOperationException.FileNotFound(e, path);
+                }
             }
 
             @Override

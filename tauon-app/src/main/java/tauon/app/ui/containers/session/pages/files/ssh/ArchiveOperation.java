@@ -2,6 +2,9 @@ package tauon.app.ui.containers.session.pages.files.ssh;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.glasspanes.AppInputBlocker;
 import tauon.app.util.misc.PathUtils;
@@ -87,9 +90,7 @@ public class ArchiveOperation {
         }
     }
 
-    public boolean extractArchive(TauonRemoteSessionInstance client,
-                                  String archivePath, String targetFolder, AtomicBoolean stopFlag)
-            throws Exception {
+    public boolean extractArchive(TauonRemoteSessionInstance client, String archivePath, String targetFolder, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         String command = getExtractCommand(archivePath);
         if (command == null) {
             LOG.error("Unsupported file type: {}", archivePath);
@@ -113,8 +114,7 @@ public class ArchiveOperation {
         return ret;
     }
 
-    public boolean createArchive(TauonRemoteSessionInstance client,
-                                 List<String> files, String targetFolder, AtomicBoolean stopFlag) throws Exception {
+    public boolean createArchive(TauonRemoteSessionInstance client, List<String> files, String targetFolder, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         String text = files.size() > 1 ? PathUtils.getFileName(targetFolder)
                 : files.get(0);
         JTextField txtFileName = new JTextField(text);

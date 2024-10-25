@@ -5,17 +5,19 @@ package tauon.app.ui.containers.session.pages.logviewer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tukaani.xz.XZInputStream;
 import tauon.app.App;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.TauonRemoteSessionInstance;
-import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.ui.components.closabletabs.ClosableTabContent;
+import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.components.misc.TextGutter;
 import tauon.app.ui.containers.session.SessionContentPanel;
-import org.tukaani.xz.XZInputStream;
-import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.util.misc.LayoutUtilities;
 
 import javax.swing.*;
@@ -26,6 +28,7 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.Locale;
@@ -54,7 +57,7 @@ public class LogContent extends JPanel implements ClosableTabContent {
     private final Highlighter.HighlightPainter painter;
     private final TextGutter gutter;
     private final StartPage startPage;
-    private final Consumer<String> callback;
+    private final Consumer<String> onCloseListener;
     private File indexFile;
     private RandomAccessFile raf;
     private long totalLines;
@@ -64,10 +67,10 @@ public class LogContent extends JPanel implements ClosableTabContent {
     /**
      *
      */
-    public LogContent(SessionContentPanel holder, String remoteLogFile, StartPage startPage, Consumer<String> callback) {
+    public LogContent(SessionContentPanel holder, String remoteLogFile, StartPage startPage, Consumer<String> onCloseListener) {
         super(new BorderLayout(), true);
         this.holder = holder;
-        this.callback = callback;
+        this.onCloseListener = onCloseListener;
         this.startPage = startPage;
         this.remoteFile = remoteLogFile;
         lblCurrentPage = new JLabel();
@@ -149,14 +152,16 @@ public class LogContent extends JPanel implements ClosableTabContent {
         btnReload.setText(FontAwesomeContants.FA_UNDO);
         btnReload.addActionListener(e -> {
             try {
-                raf.close();
-            } catch (Exception ex) {
-                ex.printStackTrace();
+                if (raf != null) {
+                    raf.close();
+                }
+            } catch (IOException ex) {
+                LOG.error("Exception while rendering results.", ex);
             }
             try {
                 Files.delete(this.indexFile.toPath());
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOG.error("Exception while rendering results.", ex);
             }
             this.currentPage = 0;
             initPages();
@@ -195,11 +200,14 @@ public class LogContent extends JPanel implements ClosableTabContent {
             public void search(String text) {
                 AtomicBoolean stopFlag = new AtomicBoolean(false);
                 holder.submitSSHOperationStoppable(instance -> {
-                    RandomAccessFile searchIndex = LogContent.this.search(instance, text, stopFlag);
-                    long len = searchIndex.length();
-                    SwingUtilities.invokeLater(() -> logSearchPanel.setResults(searchIndex, len));
+                    try (RandomAccessFile searchIndex = LogContent.this.search(instance, text, stopFlag)) {
+                        long len = searchIndex.length();
+                        SwingUtilities.invokeAndWait(() -> logSearchPanel.setResults(searchIndex, len));
+                    } catch (InvocationTargetException e) {
+                        LOG.error("Exception while rendering results.", e);
+                    }
                 }, stopFlag);
-                
+
 //                holder.disableUi(stopFlag);
 //                holder.executor.execute(() -> {
 //                    try {
@@ -247,37 +255,42 @@ public class LogContent extends JPanel implements ClosableTabContent {
     private void initPages() {
         AtomicBoolean stopFlag = new AtomicBoolean(false);
         holder.submitSSHOperationStoppable(instance -> {
-            if ((indexFile(instance, true, stopFlag)) || (indexFile(instance, false, stopFlag))) {
-                this.totalLines = this.raf.length() / 16;
-                System.out.println("Total lines: " + this.totalLines);
-                if (this.totalLines > 0) {
-                    this.pageCount = (long) Math.ceil((double) totalLines / LINE_PER_PAGE);
-                    System.out.println("Number of pages: " + this.pageCount);
-                    if (this.currentPage > this.pageCount) {
-                        this.currentPage = this.pageCount;
-                    }
-                    String pageText = getPageText(instance, this.currentPage, stopFlag);
-                    SwingUtilities.invokeLater(() -> {
-                        
-                        this.lblTotalPage.setText(String.format("/ %d ", this.pageCount));
-                        this.lblCurrentPage.setText((this.currentPage + 1) + "");
-                        
-                        LayoutUtilities.equalizeSize(this.lblTotalPage, this.lblCurrentPage);
-                        
-                        this.textArea.setText(pageText);
-                        if (pageText.length() > 0) {
-                            this.textArea.setCaretPosition(0);
+            try {
+                if ((indexFile(instance, true, stopFlag)) || (indexFile(instance, false, stopFlag))) {
+                    this.totalLines = this.raf.length() / 16;
+                    LOG.debug("Total lines: {}", this.totalLines);
+                    if (this.totalLines > 0) {
+                        this.pageCount = (long) Math.ceil((double) totalLines / LINE_PER_PAGE);
+                        System.out.println("Number of pages: " + this.pageCount);
+                        if (this.currentPage > this.pageCount) {
+                            this.currentPage = this.pageCount;
                         }
+                        String pageText = getPageText(instance, this.currentPage, stopFlag);
+                        SwingUtilities.invokeAndWait(() -> {
+                            
+                            this.lblTotalPage.setText(String.format("/ %d ", this.pageCount));
+                            this.lblCurrentPage.setText((this.currentPage + 1) + "");
+                            
+                            LayoutUtilities.equalizeSize(this.lblTotalPage, this.lblCurrentPage);
+                            
+                            this.textArea.setText(pageText);
+                            if (!pageText.isEmpty()) {
+                                this.textArea.setCaretPosition(0);
+                            }
+                            
+                            gutter.setLineStart(1);
+                            
+                            this.revalidate();
+                            this.repaint();
+                        });
                         
-                        gutter.setLineStart(1);
-                        
-                        this.revalidate();
-                        this.repaint();
-                    });
+                    }
                 }
+            } catch (InvocationTargetException e) {
+                LOG.error("Exception while rendering results.", e);
             }
         }, stopFlag);
-        
+
 //        holder.disableUi(stopFlag);
 //        holder.executor.execute(() -> {
 //            try {
@@ -290,7 +303,7 @@ public class LogContent extends JPanel implements ClosableTabContent {
 //        });
     }
     
-    private String getPageText(TauonRemoteSessionInstance instance, long page, AtomicBoolean stopFlag) throws Exception {
+    private String getPageText(TauonRemoteSessionInstance instance, long page, AtomicBoolean stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException {
         long lineStart = page * LINE_PER_PAGE;
         long lineEnd = lineStart + LINE_PER_PAGE - 1;
         
@@ -299,7 +312,7 @@ public class LogContent extends JPanel implements ClosableTabContent {
         raf.seek(lineStart * 16);
         byte[] longBytes = new byte[8];
         if (raf.read(longBytes) != 8) {
-            throw new Exception("EOF found");
+            throw new IOException("EOF found");
         }
         
         long startOffset = ByteBuffer.wrap(longBytes).getLong();
@@ -323,7 +336,7 @@ public class LogContent extends JPanel implements ClosableTabContent {
         long byteRange = endOffset - startOffset;
         
         if (startOffset < 8192) {
-            command.append("dd if=\"" + this.remoteFile + "\" ibs=1 skip=" + startOffset + " count=" + byteRange + " 2>/dev/null | sed -ne '1," + LINE_PER_PAGE + "p;" + (LINE_PER_PAGE + 1) + "q'");
+            command.append("dd if=\"").append(this.remoteFile).append("\" ibs=1 skip=").append(startOffset).append(" count=").append(byteRange).append(" 2>/dev/null | sed -ne '1,").append(LINE_PER_PAGE).append("p;").append(LINE_PER_PAGE + 1).append("q'");
         } else {
             long blockToSkip = startOffset / 8192;
             long bytesToSkip = startOffset % 8192;
@@ -339,45 +352,51 @@ public class LogContent extends JPanel implements ClosableTabContent {
         System.out.println("Command: " + command);
         StringBuilder output = new StringBuilder();
         
-        if (instance.exec(command.toString(), stopFlag, output) == 0) {
+        int ret;
+        if ((ret = instance.exec(command.toString(), stopFlag, output)) == 0) {
             return output.toString();
+        } else {
+            throw new RemoteOperationException.ErrorReturnCode(command.toString(), ret);
         }
-        return null;
     }
     
-    private boolean indexFile(TauonRemoteSessionInstance instance, boolean xz, AtomicBoolean stopFlag) {
-        try {
-            File tempFile = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
-            System.out.println("Temp file: " + tempFile);
-            try (OutputStream outputStream = new FileOutputStream(tempFile)) {
-                String command = "LANG=C awk '{len=length($0); print len; }' \"" + remoteFile + "\" | " + (xz ? "xz" : "gzip") + " |cat";
-                System.out.println("Command: " + command);
+    private boolean indexFile(TauonRemoteSessionInstance instance, boolean xz, AtomicBoolean stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException {
+        File tempFile = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
+        System.out.println("Temp file: " + tempFile);
+        try (OutputStream outputStream = new FileOutputStream(tempFile)) {
+            String command = "LANG=C awk '{len=length($0); print len; }' \"" + remoteFile + "\" | " + (xz ? "xz" : "gzip") + " |cat";
+            if (instance.execBin(command, stopFlag, outputStream, null) == 0) {
                 
-                if (instance.execBin(command, stopFlag, outputStream, null) == 0) {
-                    
-                    try (InputStream inputStream = new FileInputStream(tempFile); InputStream gzIn = xz ? new XZInputStream(inputStream) : new GZIPInputStream(inputStream)) {
-                        this.indexFile = createIndexFile(gzIn);
-                        this.raf = new RandomAccessFile(this.indexFile, "r");
-                        return true;
-                    }
+                try (
+                        InputStream inputStream = new FileInputStream(tempFile);
+                        InputStream gzIn = xz ? new XZInputStream(inputStream) : new GZIPInputStream(inputStream)
+                ) {
+                    this.indexFile = createIndexFile(gzIn);
+                    this.raf = new RandomAccessFile(this.indexFile, "r");
+                    return true;
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return false;
     }
     
-    private File createIndexFile(InputStream inputStream) throws Exception {
+    private static File createIndexFile(InputStream inputStream) throws IOException {
         byte[] longBytes = new byte[8];
         long offset = 0;
         File tempFile = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
-        try (OutputStream outputStream = new FileOutputStream(tempFile); BufferedReader br = new BufferedReader(new InputStreamReader(inputStream)); BufferedOutputStream bout = new BufferedOutputStream(outputStream)) {
+        try (
+                OutputStream outputStream = new FileOutputStream(tempFile);
+                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+                BufferedOutputStream bout = new BufferedOutputStream(outputStream)
+        ) {
             while (true) {
+                
                 String line = br.readLine();
                 if (line == null) break;
+                
                 line = line.trim();
-                if (line.length() < 1) continue;
+                if (line.isEmpty()) continue;
+                
                 toByteArray(offset, longBytes);
                 bout.write(longBytes);
                 long len = Long.parseLong(line);
@@ -422,20 +441,24 @@ public class LogContent extends JPanel implements ClosableTabContent {
     public void loadPage(int line) {
         AtomicBoolean stopFlag = new AtomicBoolean(false);
         holder.submitSSHOperationStoppable(instance -> {
-            String pageText = getPageText(instance, this.currentPage, stopFlag);
-            SwingUtilities.invokeLater(() -> {
-                this.textArea.setText(pageText);
-                if (pageText.length() > 0) {
-                    this.textArea.setCaretPosition(0);
-                }
-                this.lblCurrentPage.setText((this.currentPage + 1) + "");
-                LayoutUtilities.equalizeSize(this.lblTotalPage, this.lblCurrentPage);
-                if (line < textArea.getLineCount() && line != -1) {
-                    highlightLine(line);
-                }
-                long lineStart = this.currentPage * LINE_PER_PAGE;
-                gutter.setLineStart(lineStart + 1);
-            });
+            try{
+                String pageText = getPageText(instance, this.currentPage, stopFlag);
+                SwingUtilities.invokeAndWait(() -> {
+                    this.textArea.setText(pageText);
+                    if (pageText.length() > 0) {
+                        this.textArea.setCaretPosition(0);
+                    }
+                    this.lblCurrentPage.setText((this.currentPage + 1) + "");
+                    LayoutUtilities.equalizeSize(this.lblTotalPage, this.lblCurrentPage);
+                    if (line < textArea.getLineCount() && line != -1) {
+                        highlightLine(line);
+                    }
+                    long lineStart = this.currentPage * LINE_PER_PAGE;
+                    gutter.setLineStart(lineStart + 1);
+                });
+            } catch (InvocationTargetException e) {
+                LOG.error("Exception while rendering results.", e);
+            }
         }, stopFlag);
 //        holder.disableUi(stopFlag);
 //        holder.executor.execute(() -> {
@@ -456,41 +479,52 @@ public class LogContent extends JPanel implements ClosableTabContent {
                 raf.close();
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LOG.error("Exception while rendering results.", ex);
         }
         try {
             Files.delete(this.indexFile.toPath());
         } catch (Exception ex) {
+            LOG.error("Exception while rendering results.", ex);
         }
-        callback.accept(remoteFile);
+        onCloseListener.accept(remoteFile);
         return true;
     }
     
-    private RandomAccessFile search(TauonRemoteSessionInstance instance, String text, AtomicBoolean stopFlag) throws Exception {
+    private RandomAccessFile search(TauonRemoteSessionInstance instance, String text, AtomicBoolean stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException {
         byte[] longBytes = new byte[8];
         File tempFile = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
         StringBuilder command = new StringBuilder();
-        command.append("awk '{if(index(tolower($0),\"" + text.toLowerCase(Locale.ENGLISH) + "\")){ print NR}}' \"" + this.remoteFile + "\"");
+        command.append("awk '{if(index(tolower($0),\"").append(text.toLowerCase(Locale.ENGLISH)).append("\")){ print NR}}' \"").append(this.remoteFile).append("\"");
         System.out.println("Command: " + command);
         try (OutputStream outputStream = new FileOutputStream(tempFile)) {
             
             File searchIndexes = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
-            if (instance.execBin(command.toString(), stopFlag, outputStream, null) == 0) {
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(tempFile))); OutputStream out = new FileOutputStream(searchIndexes); BufferedOutputStream bout = new BufferedOutputStream(out)) {
+            int ret;
+            if ((ret = instance.execBin(command.toString(), stopFlag, outputStream, null)) == 0) {
+                try (
+                        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(tempFile)));
+                        OutputStream out = new FileOutputStream(searchIndexes);
+                        BufferedOutputStream bout = new BufferedOutputStream(out)
+                ) {
                     while (true) {
+                        
                         String line = br.readLine();
                         if (line == null) break;
+                        
                         line = line.trim();
-                        if (line.length() < 1) continue;
+                        if (line.isEmpty()) continue;
+                        
                         long lineNo = Long.parseLong(line);
                         toByteArray(lineNo, longBytes);
                         bout.write(longBytes);
+                        
                     }
                     return new RandomAccessFile(searchIndexes, "r");
                 }
+            } else {
+                throw new RemoteOperationException.ErrorReturnCode(command.toString(), ret);
             }
         }
-        return null;
     }
     
     private void highlightLine(int lineNumber) {

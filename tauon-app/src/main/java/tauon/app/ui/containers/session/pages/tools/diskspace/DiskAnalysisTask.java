@@ -1,7 +1,6 @@
 package tauon.app.ui.containers.session.pages.tools.diskspace;
 
 import tauon.app.ssh.TauonRemoteSessionInstance;
-import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.util.ssh.SudoUtils;
 
 import java.util.Arrays;
@@ -16,16 +15,13 @@ public class DiskAnalysisTask implements Runnable {
     private final AtomicBoolean stopFlag;
     private final Consumer<DiskUsageEntry> callback;
     private final boolean sudo;
-    private final SessionContentPanel holder;
     
-    public DiskAnalysisTask(String folder, boolean sudo, AtomicBoolean stopFlag,
-                            Consumer<DiskUsageEntry> callback, TauonRemoteSessionInstance client, SessionContentPanel holder) {
+    public DiskAnalysisTask(String folder, boolean sudo, AtomicBoolean stopFlag, Consumer<DiskUsageEntry> callback, TauonRemoteSessionInstance client) {
         this.callback = callback;
         this.folder = folder;
         this.stopFlag = stopFlag;
         this.client = client;
         this.sudo = sudo;
-        this.holder = holder;
     }
 
     public void run() {
@@ -34,8 +30,10 @@ public class DiskAnalysisTask implements Runnable {
             StringBuilder output = new StringBuilder();
             if(sudo){
                 SudoUtils.runSudoWithOutput(
-                        "export POSIXLY_CORRECT=1;", "du '" + folder + "'",
-                        client, output, null, holder.getSudoPassword()
+                        "export POSIXLY_CORRECT=1;",
+                        "du '" + folder + "'",
+                        stopFlag,
+                        client, output, null
                 );
             }else{
                 client.exec("export POSIXLY_CORRECT=1; " + "du '" + folder + "'", stopFlag, output);

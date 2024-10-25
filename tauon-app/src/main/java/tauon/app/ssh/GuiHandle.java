@@ -1,5 +1,6 @@
 package tauon.app.ssh;
 
+import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.settings.PortForwardingRule;
 import tauon.app.settings.HopEntry;
 import tauon.app.settings.SessionInfo;
@@ -19,7 +20,9 @@ public interface GuiHandle<C> {
     
     boolean promptReconnect(String name, String host);
     
-    char[] promptPassword(HopEntry info, String user, AtomicBoolean remember, boolean isRetrying);
+    char[] promptPassword(HopEntry info, String user, AtomicBoolean remember, boolean isRetrying) throws OperationCancelledException;
+    
+    char[] getSUDOPassword(boolean isRetrying) throws OperationCancelledException;
     
     void showMessage(String name, String instruction);
     
@@ -35,7 +38,7 @@ public interface GuiHandle<C> {
         void userCancelled(BlockHandle blockHandle);
     }
     
-    abstract class Delegate<C> implements GuiHandle<C>{
+    abstract class Delegate<C> implements GuiHandle<C> {
         
         private final GuiHandle<?> delagator;
         
@@ -57,8 +60,13 @@ public interface GuiHandle<C> {
             return delagator.promptReconnect(name, host);
         }
         
-        public char[] promptPassword(HopEntry info, String user, AtomicBoolean remember, boolean isRetrying) {
+        public char[] promptPassword(HopEntry info, String user, AtomicBoolean remember, boolean isRetrying) throws OperationCancelledException {
             return delagator.promptPassword(info, user, remember, isRetrying);
+        }
+        
+        @Override
+        public char[] getSUDOPassword(boolean isRetrying) throws OperationCancelledException {
+            return delagator.getSUDOPassword(isRetrying);
         }
         
         public void reportPortForwardingFailed(PortForwardingRule portForwardingState, IOException e) {

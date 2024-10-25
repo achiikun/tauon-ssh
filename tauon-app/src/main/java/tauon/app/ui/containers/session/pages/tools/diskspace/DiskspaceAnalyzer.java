@@ -188,9 +188,7 @@ public class DiskspaceAnalyzer extends Subpage {
             }
         });
 
-        btnBack.addActionListener(e -> {
-            cardLayout.show(this, "firstPanel");
-        });
+        btnBack.addActionListener(e -> cardLayout.show(this, "firstPanel"));
         
         btnReload.addActionListener(e -> {
             // TODO
@@ -280,15 +278,13 @@ public class DiskspaceAnalyzer extends Subpage {
                         treeModel.setRoot(root);
                     }
                 });
-            }, instance, holder);
+            }, instance);
             task.run();
         }, stopFlag);
     }
 
     private void createTree(DefaultMutableTreeNode treeNode, DiskUsageEntry entry) {
-        Collections.sort(entry.getChildren(), (a, b) -> {
-            return a.getSize() < b.getSize() ? 1 : (a.getSize() > b.getSize() ? -1 : 0);
-        });
+        entry.getChildren().sort((a, b) -> Long.compare(b.getSize(), a.getSize()));
         for (DiskUsageEntry ent : entry.getChildren()) {
             DefaultMutableTreeNode child = new DefaultMutableTreeNode(ent, true);
             child.setAllowsChildren(true);

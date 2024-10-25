@@ -140,7 +140,7 @@ public class ExternalEditorHandler extends JDialog {
      * @param totalBytes
      * @return
      */
-    private Long saveRemoteFile(FileModificationInfo info, long total, long totalBytes) throws Exception {
+    private Long saveRemoteFile(FileModificationInfo info, long total, long totalBytes) {
         LOG.trace("Transferring file: {}", info);
         
         SessionContentPanel scp = info.activeSessionId;
@@ -175,6 +175,10 @@ public class ExternalEditorHandler extends JDialog {
                         progressBar.setValue(progress);
                     });
                 }
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         });
         

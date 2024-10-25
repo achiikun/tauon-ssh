@@ -3,6 +3,12 @@
  */
 package tauon.app.ui.containers.session.pages.info.services;
 
+import com.jediterm.terminal.TerminalMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
@@ -14,6 +20,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,6 +33,8 @@ import static tauon.app.services.LanguageService.getBundle;
  * @author subhro
  */
 public class ServicePanel extends Subpage {
+    private static final Logger LOG = LoggerFactory.getLogger(ServicePanel.class);
+    
     private static final Pattern SERVICE_PATTERN = Pattern
             .compile("(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+([\\S]+.*)");
     private static final Pattern UNIT_PATTERN = Pattern
@@ -131,7 +140,7 @@ public class ServicePanel extends Subpage {
     private void filter() {
         String text = txtFilter.getText();
         model.clear();
-        if (text.length() > 0) {
+        if (!text.isEmpty()) {
             List<ServiceEntry> filteredList = new ArrayList<>();
             for (ServiceEntry entry : list) {
                 if (entry.getName().contains(text)
@@ -350,32 +359,30 @@ public class ServicePanel extends Subpage {
 //                try {
                     if (elevated) {
 //                        try {
-                            if (this.runCommandWithSudo(instance, stopFlag,
-                                    cmd, holder.getInfo().getPassword())) {
+                            if (this.runCommandWithSudo(instance, cmd)) {
                                 updateView(instance, stopFlag);
                                 return;
                             }
 //                        } catch (Exception ex) {
 //                            ex.printStackTrace();
 //                        }
-                        if (!holder.isSessionClosed()) {
-                            JOptionPane.showMessageDialog(null,
-                                    getBundle().getString("general.message.operation_failed"));
-                        }
+//                        if (!holder.isSessionClosed()) {
+//                            JOptionPane.showMessageDialog(null,
+//                                    getBundle().getString("general.message.operation_failed"));
+//                        }
                     } else {
 //                        try {
-                            if (this.runCommand(instance, stopFlag,
-                                    cmd)) {
+                            if (this.runCommand(instance, stopFlag, cmd)) {
                                 updateView(instance, stopFlag);
                                 return;
                             }
 //                        } catch (Exception ex) {
 //                            ex.printStackTrace();
 //                        }
-                        if (!holder.isSessionClosed()) {
-                            JOptionPane.showMessageDialog(null,
-                                    getBundle().getString("general.message.operation_failed"));
-                        }
+//                        if (!holder.isSessionClosed()) {
+//                            JOptionPane.showMessageDialog(null,
+//                                    getBundle().getString("general.message.operation_failed"));
+//                        }
                     }
 //                } catch (Exception e) {
 //                    e.printStackTrace();
@@ -386,27 +393,27 @@ public class ServicePanel extends Subpage {
         }
     }
 
-    public boolean runCommandWithSudo(TauonRemoteSessionInstance client,
-                                      AtomicBoolean stopFlag, String command, String password) throws Exception {
-        return SudoUtils.runSudo(command, client, password) == 0;
+    public boolean runCommandWithSudo(TauonRemoteSessionInstance client, String command) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
+        return SudoUtils.runSudo(command, client) == 0;
     }
 
-    public boolean runCommand(TauonRemoteSessionInstance client,
-                              AtomicBoolean stopFlag, String command) throws Exception {
+    public boolean runCommand(TauonRemoteSessionInstance client, AtomicBoolean stopFlag, String command) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
         StringBuilder output = new StringBuilder();
-        return client.exec(command, new AtomicBoolean(false), output) == 0;
+        return client.exec(command, stopFlag, output) == 0;
     }
 
-    private void updateView(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws Exception {
+    private void updateView(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
 //        try {
             StringBuilder output = new StringBuilder();
-            int ret = instance.exec(SYSTEMD_COMMAND,
-                    stopFlag, output);
+            int ret = instance.exec(SYSTEMD_COMMAND, stopFlag, output);
             if (ret == 0) {
-                List<ServiceEntry> list = ServicePanel
-                        .parseServiceEntries(output);
+                List<ServiceEntry> list = ServicePanel.parseServiceEntries(output);
                 // TODO test invoke later
-                SwingUtilities.invokeAndWait(() -> setServiceData(list));
+                try {
+                    SwingUtilities.invokeAndWait(() -> setServiceData(list));
+                } catch (InvocationTargetException e) {
+                    LOG.error("Exception while rendering service data.", e);
+                }
             }
 //        } catch (Exception e) {
 //            e.printStackTrace();

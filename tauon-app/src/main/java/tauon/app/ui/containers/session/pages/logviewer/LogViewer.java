@@ -79,8 +79,7 @@ public class LogViewer extends Page {
                 index++;
             }
         }
-        LogContent logContent = new LogContent(sessionContent, remotePath,
-                startPage, e -> openLogs.remove(remotePath));
+        LogContent logContent = new LogContent(sessionContent, remotePath, startPage, e -> openLogs.remove(remotePath));
         TabTitle title = new TabTitle();
         tabs.addTab(title, logContent);
         title.getCallback().accept(PathUtils.getFileName(remotePath));

@@ -21,7 +21,7 @@ public class SSHJInteractiveResponseProvider implements ChallengeResponseProvide
     
     private boolean retry = true;
     
-    private GuiHandle<?> guiHandle;
+    private final GuiHandle<?> guiHandle;
     
     public SSHJInteractiveResponseProvider(GuiHandle<?> guiHandle) {
         this.guiHandle = guiHandle;

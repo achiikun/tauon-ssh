@@ -1,9 +1,14 @@
 package tauon.app.ui.containers.session.pages.tools.keys;
 
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.KeyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
+import tauon.app.exceptions.TauonOperationException;
 import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.ssh.filesystem.InputTransferChannel;
 import tauon.app.ssh.filesystem.OutputTransferChannel;
@@ -27,7 +32,7 @@ public class SshKeyManager {
     
     private static final Logger LOG = LoggerFactory.getLogger(SshKeyManager.class);
     
-    public static SshKeyHolder getKeyDetails(SessionContentPanel content, TauonRemoteSessionInstance instance) throws Exception {
+    public static SshKeyHolder getKeyDetails(SessionContentPanel content, TauonRemoteSessionInstance instance) throws OperationCancelledException, TauonOperationException, InterruptedException, SessionClosedException {
         SshKeyHolder holder = new SshKeyHolder();
         loadLocalKey(getPubKeyPath(content.getInfo()), holder);
         loadRemoteKeys(holder, instance.getSshFs());
@@ -50,44 +55,33 @@ public class SshKeyManager {
         }
     }
 
-    private static void loadRemoteKeys(SshKeyHolder holder, SshFileSystem fileSystem) throws Exception {
+    private static void loadRemoteKeys(SshKeyHolder holder, SshFileSystem fileSystem) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         String path = fileSystem.getHome() + "/.ssh/id_rsa.pub";
-        try {
-            InputTransferChannel itc = fileSystem.inputTransferChannel();
-            try (InputStream in = itc.getInputStream(path)) {
-                byte[] bytes = in.readAllBytes();
-                out.write(bytes);
-            }
-
-            holder.setRemotePubKeyFile(path);
-            holder.setRemotePublicKey(out.toString(StandardCharsets.UTF_8));
-        } catch (SFTPException e) {
-            if (e.getStatusCode() != Response.StatusCode.NO_SUCH_FILE
-                    && e.getStatusCode() != Response.StatusCode.NO_SUCH_PATH) {
-                throw e;
-            }
+        
+        try (InputStream in = fileSystem.inputTransferChannel().getInputStream(path)) {
+            byte[] bytes = in.readAllBytes();
+            out.write(bytes);
+        } catch (IOException e) {
+            throw new RemoteOperationException.RealIOException(e);
         }
+        
+        holder.setRemotePubKeyFile(path);
+        holder.setRemotePublicKey(out.toString(StandardCharsets.UTF_8));
+        
         out = new ByteArrayOutputStream();
         path = fileSystem.getHome() + "/.ssh/authorized_keys";
-        try {
-            InputTransferChannel itc = fileSystem.inputTransferChannel();
-            try (InputStream in = itc.getInputStream(path)) {
-                byte[] bytes = in.readAllBytes();
-                out.write(bytes);
-            }
-
-            holder.setRemoteAuthorizedKeys(out.toString(StandardCharsets.UTF_8));
-        } catch (SFTPException e) {
-            if (e.getStatusCode() != Response.StatusCode.NO_SUCH_FILE
-                    && e.getStatusCode() != Response.StatusCode.NO_SUCH_PATH) {
-                throw e;
-            }
+        try (InputStream in = fileSystem.inputTransferChannel().getInputStream(path)) {
+            byte[] bytes = in.readAllBytes();
+            out.write(bytes);
+        } catch (IOException e) {
+            throw new RemoteOperationException.RealIOException(e);
         }
+        
+        holder.setRemoteAuthorizedKeys(out.toString(StandardCharsets.UTF_8));
     }
 
-    public static void generateKeys(SshKeyHolder holder, TauonRemoteSessionInstance instance, boolean local)
-            throws Exception {
+    public static void generateKeys(SshKeyHolder holder, TauonRemoteSessionInstance instance, boolean local) throws TauonOperationException, IOException, OperationCancelledException, InterruptedException, SessionClosedException {
         if (holder.getLocalPublicKey() != null && JOptionPane.showConfirmDialog(null,
                 "WARNING: This will overwrite the existing SSH key"
                         + "\n\nIf the key was being used to connect to other servers," + "\nconnection will fail."
@@ -116,15 +110,20 @@ public class SshKeyManager {
         }
     }
 
-    public static void generateLocalKeys(SshKeyHolder holder, String passPhrase) throws Exception {
+    public static void generateLocalKeys(SshKeyHolder holder, String passPhrase) throws IOException, RemoteOperationException {
         Path sshDir = Paths.get(System.getProperty("user.home"), ".ssh");
         Path pubKeyPath = Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa.pub").toAbsolutePath();
         Path keyPath = Paths.get(System.getProperty("user.home"), ".ssh", "id_rsa").toAbsolutePath();
         // TODO get rid of jsch, copy the functionality
         JSch jsch = new JSch();
-        KeyPair kpair = KeyPair.genKeyPair(jsch, KeyPair.RSA);
+        KeyPair kpair = null;
+        try {
+            kpair = KeyPair.genKeyPair(jsch, KeyPair.RSA);
+        } catch (JSchException e) {
+            throw new RemoteOperationException(e);
+        }
         Files.createDirectories(sshDir);
-        if (passPhrase.length() > 0) {
+        if (!passPhrase.isEmpty()) {
             kpair.writePrivateKey(keyPath.toString(), passPhrase.getBytes(StandardCharsets.UTF_8));
         } else {
             kpair.writePrivateKey(keyPath.toString());
@@ -135,41 +134,33 @@ public class SshKeyManager {
     }
 
     public static void generateRemoteKeys(TauonRemoteSessionInstance instance, SshKeyHolder holder, String passPhrase)
-            throws Exception {
-        String path1 = "$HOME/.ssh/id_rsa";
+            throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
+        String path1 = "$HOME/.ssh/id_rsa"; // TODO not hardcode this
         String path = path1 + ".pub";
 
+        // Deleting $HOME/.ssh/id_rsa
+        instance.getSshFs().deleteFile(path1);
+
+        // Deleting $HOME/.ssh/id_rsa.pub
+        instance.getSshFs().deleteFile(path);
+        
         String cmd = "ssh-keygen -q -N \"" + passPhrase + "\" -f \"" + path1 + "\"";
-
-        try {
-            instance.getSshFs().deleteFile(path1);
-        } catch (SFTPException e) {
-            if (e.getStatusCode() != Response.StatusCode.NO_SUCH_FILE
-                    && e.getStatusCode() != Response.StatusCode.NO_SUCH_PATH) {
-                throw new Exception(e);
-            }
-        }
-
-        try {
-            instance.getSshFs().deleteFile(path);
-        } catch (SFTPException e) {
-            if (e.getStatusCode() != Response.StatusCode.NO_SUCH_FILE
-                    && e.getStatusCode() != Response.StatusCode.NO_SUCH_PATH) {
-                throw new Exception(e);
-            }
-        }
-
+        
         StringBuilder output = new StringBuilder();
-        if (instance.exec(cmd, new AtomicBoolean(false), output) != 0) {
-            throw new Exception();
+        int ret;
+        if ((ret = instance.exec(cmd, new AtomicBoolean(false), output)) != 0) {
+            throw new RemoteOperationException.ErrorReturnCode(cmd, ret);
         }
         loadRemoteKeys(holder, instance.getSshFs());
     }
 
     private static String getPubKeyPath(SessionInfo info) {
-        if (info.getPrivateKeyFile() != null && info.getPrivateKeyFile().length() > 0) {
-            String path = PathUtils.combine(PathUtils.getParent(info.getPrivateKeyFile()),
-                    PathUtils.getFileName(info.getPrivateKeyFile()) + ".pub", File.separator);
+        if (info.getPrivateKeyFile() != null && !info.getPrivateKeyFile().isEmpty()) {
+            String path = PathUtils.combine(
+                    PathUtils.getParent(info.getPrivateKeyFile()),
+                    PathUtils.getFileName(info.getPrivateKeyFile()) + ".pub",
+                    File.separator
+            );
             if (new File(path).exists()) {
                 return path;
             }
@@ -177,19 +168,15 @@ public class SshKeyManager {
         return null;
     }
 
-    public static void saveAuthorizedKeysFile(String authorizedKeys, SshFileSystem fileSystem) throws Exception {
-        boolean found = false;
+    public static void saveAuthorizedKeysFile(String authorizedKeys, SshFileSystem fileSystem) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException, IOException {
         try {
             fileSystem.getInfo(PathUtils.combineUnix(fileSystem.getHome(), ".ssh"));
-            found = true;
-        } catch (Exception e) {
-        }
-        if (!found) {
+        } catch (Exception ignored) {
+            // Ignoring exception, create folder .ssh in server if not exists
             fileSystem.mkdir(PathUtils.combineUnix(fileSystem.getHome(), ".ssh"));
         }
         OutputTransferChannel otc = fileSystem.outputTransferChannel();
-        try (OutputStream out = otc
-                .getOutputStream(PathUtils.combineUnix(fileSystem.getHome(), "/.ssh/authorized_keys"))) {
+        try (OutputStream out = otc.getOutputStream(PathUtils.combineUnix(fileSystem.getHome(), "/.ssh/authorized_keys"))) {
             out.write(authorizedKeys.getBytes(StandardCharsets.UTF_8));
         }
     }

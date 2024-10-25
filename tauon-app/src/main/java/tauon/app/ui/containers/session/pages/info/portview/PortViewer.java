@@ -194,8 +194,7 @@ public class PortViewer extends Subpage {
                     StringBuilder output = new StringBuilder();
                     if (elevated) {
                         try {
-                            if (SudoUtils.runSudoWithOutput(cmd,instance, output,
-                                    new StringBuilder(),holder.getInfo().getPassword()) == 0) {
+                            if (SudoUtils.runSudoWithOutput(cmd, stopFlag, instance, output, new StringBuilder()) == 0) {
                                 java.util.List<SocketEntry> list = this
                                         .parseSocketList(output.toString());
                                 SwingUtilities.invokeAndWait(() -> setSocketData(list));
