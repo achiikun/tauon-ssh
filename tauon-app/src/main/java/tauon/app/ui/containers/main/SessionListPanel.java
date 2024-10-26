@@ -12,7 +12,11 @@ import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.MatteBorder;
+import javax.swing.event.ListDataEvent;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -32,7 +36,10 @@ public class SessionListPanel extends JPanel {
     private final DefaultListModel<SessionContentPanel> sessionListModel;
     private final JList<SessionContentPanel> sessionList;
     private final AppWindow window;
-
+    private boolean collapsed;
+    
+    private CollapsedPopup collapsedPopup;
+    
     /**
      *
      */
@@ -45,6 +52,8 @@ public class SessionListPanel extends JPanel {
 
         SessionListRenderer r = new SessionListRenderer();
         sessionList.setCellRenderer(r);
+        
+        collapsedPopup = new CollapsedPopup(sessionList);
 
         JScrollPane scrollPane = new SkinnedScrollPane(sessionList);
         this.add(scrollPane);
@@ -59,7 +68,7 @@ public class SessionListPanel extends JPanel {
                         int x = e.getPoint().x;
                         int y = e.getPoint().y;
 
-                        if (x > r.x + r.width - 30 && x < r.x + r.width && y > r.y + 10 && y < r.y + r.height - 10) {
+                        if (isMouseOnEjectButton(r, x, y)) {
                             System.out.println("Clicked on: " + index);
                             removeSession(index);
                         }
@@ -70,6 +79,7 @@ public class SessionListPanel extends JPanel {
             @Override
             public void mouseExited(MouseEvent e) {
                 sessionList.setCursor(DEFAULT_CURSOR);
+                collapsedPopup.setVisible(false);
             }
         });
 
@@ -83,14 +93,25 @@ public class SessionListPanel extends JPanel {
                         int x = e.getPoint().x;
                         int y = e.getPoint().y;
 
-                        if (x > r.x + r.width - 30 && x < r.x + r.width && y > r.y + 10 && y < r.y + r.height - 10) {
+                        Rectangle absolute = new Rectangle(r);
+//                        Point listLocationOnScreen = sessionList.getLocationOnScreen();
+//                        absolute.translate(listLocationOnScreen.x, listLocationOnScreen.y);
+                        
+                        if(collapsed){
+                            collapsedPopup.showOn(sessionListModel.get(index), absolute);
+                        }
+                        
+                        if (isMouseOnEjectButton(r, x, y)) {
                             sessionList.setCursor(HAND_CURSOR);
                             return;
                         }
+                    }else{
+                        collapsedPopup.setVisible(false);
                     }
                 }
                 sessionList.setCursor(DEFAULT_CURSOR);
             }
+            
         });
 
         sessionList.addListSelectionListener(e -> {
@@ -104,7 +125,21 @@ public class SessionListPanel extends JPanel {
             }
         });
     }
-
+    
+    private boolean isMouseOnEjectButton(Rectangle cellBounds, int mouseX, int mouseY) {
+        if(collapsed){
+            return mouseX > cellBounds.x + cellBounds.width - 25
+                    && mouseX < cellBounds.x + cellBounds.width
+                    && mouseY > cellBounds.y + cellBounds.height - 25
+                    && mouseY < cellBounds.y + cellBounds.height - 5;
+        }else{
+            return mouseX > cellBounds.x + cellBounds.width - 30
+                    && mouseX < cellBounds.x + cellBounds.width
+                    && mouseY > cellBounds.y + 10
+                    && mouseY < cellBounds.y + cellBounds.height - 10;
+        }
+    }
+    
     public void createSession(SessionInfo info) {
         SessionContentPanel panel = new SessionContentPanel(info, window);
         sessionListModel.insertElementAt(panel, 0);
@@ -147,34 +182,112 @@ public class SessionListPanel extends JPanel {
         return null;
     }
     
-    public static final class SessionListRenderer implements ListCellRenderer<SessionContentPanel> {
+    public void collapsed(boolean collapsed) {
+        this.collapsed = collapsed;
+        
+        // Hack to trigger the whole rendering of the list
+        sessionListModel.getListDataListeners()[0].contentsChanged(new ListDataEvent(sessionListModel, ListDataEvent.CONTENTS_CHANGED, 0, sessionListModel.size()));
+    }
+    
+    public final class CollapsedPopup extends JPopupMenu{
+        
+        private final JPanel panel;
+        private final JLabel lblText;
+        private final JLabel lblHost;
+        private final Component owner;
+        
+        public CollapsedPopup(Component owner) {
+            this.owner = owner;
+            setLayout(new BorderLayout());
+            setBorder(new EmptyBorder(0,0,0,0));
+            
+//            setModal(false);
+//            setUndecorated(true);
+//            setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+//            setAlwaysOnTop(true);
+            
+            lblText = new JLabel();
+            lblHost = new JLabel();
+            
+            lblText.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
+            lblHost.setFont(App.skin.getDefaultFont().deriveFont(12.0f));
+            
+            lblText.setText("Sample server");
+            lblHost.setText("server host");
+            
+            lblText.setVerticalAlignment(SwingConstants.BOTTOM);
+            
+            panel = new JPanel(new BorderLayout(5, 0));
+            panel.setBorder(new CompoundBorder(
+                    new MatteBorder(2, 0, 2, 2, Color.LIGHT_GRAY),
+                    new EmptyBorder(4,10,4,4)
+            ));
+            panel.setOpaque(false);
+            panel.add(lblText);
+            panel.add(lblHost, BorderLayout.SOUTH);
+            
+            add(panel);
+            pack();
+            
+        }
+        
+        public void showOn(SessionContentPanel sessionContentPanel, Rectangle cellRectangle) {
+            
+            SessionInfo info = sessionContentPanel.getInfo();
+            
+            lblText.setText(info.getName());
+            lblHost.setText(info.getHost());
+            
+            Dimension d = new Dimension(150, (int) cellRectangle.getHeight());
+            panel.setPreferredSize(d);
+            panel.setMaximumSize(d);
+            
+//            collapsedPopup.setLocation(new Point((int) cellRectangle.getMaxX(), (int) cellRectangle.getY()));
+            collapsedPopup.show(owner, (int) cellRectangle.getMaxX(), (int) cellRectangle.getY());
+        }
+    }
+    
+    public final class SessionListRenderer implements ListCellRenderer<SessionContentPanel> {
 
         private final JPanel panel;
         private final JLabel lblIcon;
         private final JLabel lblText;
+        private final JLabel lblIconCollapsed;
         private final JLabel lblHost;
         private final JLabel lblClose;
-
+        private final JLabel lblCloseCollapsed;
+        private final JPanel textHolder;
+        private final JPanel collapsedPanel;
+        
         /**
          *
          */
         public SessionListRenderer() {
             lblIcon = new JLabel();
+            lblIconCollapsed = new JLabel();
             lblText = new JLabel();
             lblHost = new JLabel();
             lblClose = new JLabel();
+            lblCloseCollapsed = new JLabel();
 
             lblIcon.setFont(App.skin.getIconFont().deriveFont(24.0f));
+            lblIconCollapsed.setFont(App.skin.getIconFont().deriveFont(18.0f));
             lblText.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
             lblHost.setFont(App.skin.getDefaultFont().deriveFont(12.0f));
             lblClose.setFont(App.skin.getIconFont().deriveFont(16.0f));
+            lblCloseCollapsed.setFont(App.skin.getIconFont().deriveFont(12.0f));
 
             lblText.setText("Sample server");
             lblHost.setText("server host");
             lblIcon.setText(FontAwesomeContants.FA_CUBE);
+            lblIconCollapsed.setText(FontAwesomeContants.FA_CUBE);
             lblClose.setText(FontAwesomeContants.FA_EJECT);
+            lblCloseCollapsed.setText(FontAwesomeContants.FA_EJECT);
+            
+            lblCloseCollapsed.setLocation(-10, 0);
+            lblCloseCollapsed.setHorizontalAlignment(SwingConstants.RIGHT);
 
-            JPanel textHolder = new JPanel(new BorderLayout(5, 0));
+            textHolder = new JPanel(new BorderLayout(5, 0));
             textHolder.setOpaque(false);
             textHolder.add(lblText);
             textHolder.add(lblHost, BorderLayout.SOUTH);
@@ -191,6 +304,18 @@ public class SessionListPanel extends JPanel {
             Dimension d = panel.getPreferredSize();
             panel.setPreferredSize(d);
             panel.setMaximumSize(d);
+            
+            collapsedPanel = new JPanel(new BorderLayout(0, 0));
+            collapsedPanel.add(lblIconCollapsed, BorderLayout.NORTH);
+            collapsedPanel.add(lblCloseCollapsed, BorderLayout.SOUTH);
+            
+            collapsedPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+            collapsedPanel.setBackground(App.skin.getDefaultBackground());
+            collapsedPanel.setOpaque(true);
+            
+            d = collapsedPanel.getPreferredSize();
+            collapsedPanel.setPreferredSize(d);
+            collapsedPanel.setMaximumSize(d);
         }
 
         @Override
@@ -198,25 +323,43 @@ public class SessionListPanel extends JPanel {
                                                       SessionContentPanel value, int index, boolean isSelected, boolean cellHasFocus) {
 
             SessionInfo info = value.getInfo();
-
-
+            
             lblText.setText(info.getName());
             lblHost.setText(info.getHost());
-            lblIcon.setText(FontAwesomeContants.FA_CUBE);
-            lblClose.setText(FontAwesomeContants.FA_EJECT);
-
+//            lblIcon.setText(FontAwesomeContants.FA_CUBE);
+//            lblClose.setText(FontAwesomeContants.FA_EJECT);
+            
+            JPanel myPanel;
+            if (collapsed) {
+//                panel.removeAll();
+//                collapsedPanel.removeAll();
+//                collapsedPanel.add(lblIcon, BorderLayout.NORTH);
+//                collapsedPanel.add(lblClose, BorderLayout.SOUTH);
+//                panel.add(textHolder);
+                myPanel = collapsedPanel;
+            } else {
+//                panel.removeAll();
+//                collapsedPanel.removeAll();
+//                panel.add(lblIcon, BorderLayout.WEST);
+//                panel.add(lblClose, BorderLayout.EAST);
+//                panel.add(textHolder);
+                myPanel = panel;
+            }
+            
             if (isSelected) {
-                panel.setBackground(App.skin.getDefaultSelectionBackground());
+                myPanel.setBackground(App.skin.getDefaultSelectionBackground());
                 lblText.setForeground(App.skin.getDefaultSelectionForeground());
                 lblHost.setForeground(App.skin.getDefaultSelectionForeground());
                 lblIcon.setForeground(App.skin.getDefaultSelectionForeground());
+                lblIconCollapsed.setForeground(App.skin.getDefaultSelectionForeground());
             } else {
-                panel.setBackground(App.skin.getDefaultBackground());
+                myPanel.setBackground(App.skin.getDefaultBackground());
                 lblText.setForeground(App.skin.getDefaultForeground());
                 lblHost.setForeground(App.skin.getInfoTextForeground());
                 lblIcon.setForeground(App.skin.getDefaultForeground());
+                lblIconCollapsed.setForeground(App.skin.getDefaultForeground());
             }
-            return panel;
+            return myPanel;
         }
     }
 }

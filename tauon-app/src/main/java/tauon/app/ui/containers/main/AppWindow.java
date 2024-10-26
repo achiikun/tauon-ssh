@@ -47,12 +47,17 @@ import static tauon.app.util.misc.Constants.*;
  */
 public class AppWindow extends JFrame {
     private static final Logger LOG = LoggerFactory.getLogger(AppWindow.class);
+    public static final int SESSION_LIST_PANEL_SIZE = 200;
     
     private final CardLayout sessionCard;
     private final JPanel cardPanel;
     private final BackgroundTransferPanel uploadPanel;
     private final BackgroundTransferPanel downloadPanel;
     private final Component bottomPanel;
+    
+    private final Component sessionPanelTop;
+    private final Component collapedSessionPanelTop;
+    
     private SessionListPanel sessionListPanel;
     private JLabel lblUploadCount, lblDownloadCount;
     private JPopupMenu popup;
@@ -63,7 +68,8 @@ public class AppWindow extends JFrame {
     
     public final GraphicalHostKeyVerifier hostKeyVerifier;
 
-    private boolean panelVisible = false; // Variável para controlar o estado de visibilidade
+    private boolean desiredPanelVisible = true; // Variável para controlar o estado de visibilidade
+    private boolean panelVisible = true; // Variável para controlar o estado de visibilidade
     
     /**
      *
@@ -105,11 +111,14 @@ public class AppWindow extends JFrame {
         this.sessionCard = new CardLayout();
         this.cardPanel = new JPanel(this.sessionCard, true);
         this.cardPanel.setDoubleBuffered(true);
-
-        this.add(createSessionPanel(), BorderLayout.NORTH);
+        
+        collapedSessionPanelTop = createCollapsedSessionPanelTop();
+        sessionPanelTop = createSessionPanelTop();
         
         sessionListPanel = new SessionListPanel(this);
-
+        sessionListPanel.add(sessionPanelTop, BorderLayout.NORTH);
+        sessionListPanel.setPreferredSize(new Dimension(SESSION_LIST_PANEL_SIZE, sessionListPanel.getHeight()));
+        
         this.add(sessionListPanel, BorderLayout.WEST);
         this.add(this.cardPanel);
 
@@ -124,10 +133,8 @@ public class AppWindow extends JFrame {
         this.downloadPanel = new BackgroundTransferPanel(count ->
                 SwingUtilities.invokeLater(() ->
                         lblDownloadCount.setText(count + "")));
-
-        this.fileTransferManager = new FileTransferManager(this, uploadPanel, downloadPanel);
         
-        this.slideSessionListPanel();
+        this.fileTransferManager = new FileTransferManager(this, uploadPanel, downloadPanel);
         
     }
 
@@ -145,10 +152,26 @@ public class AppWindow extends JFrame {
     }
     
     public void slideSessionListPanel() {
-        int targetWidth = panelVisible ? 0 : 200; // Define 200 como a largura quando o painel está visível
         
-        // Largura inicial
-        int startWidth = sessionListPanel.getWidth();
+        if(desiredPanelVisible != panelVisible){
+            // Wait until animation ends
+            return;
+        }
+        
+        desiredPanelVisible = !desiredPanelVisible;
+        
+        if(desiredPanelVisible){
+            sessionListPanel.remove(collapedSessionPanelTop);
+            sessionListPanel.add(sessionPanelTop, BorderLayout.NORTH);
+            sessionListPanel.collapsed(false);
+        }else{
+            sessionListPanel.remove(sessionPanelTop);
+            sessionListPanel.add(collapedSessionPanelTop, BorderLayout.NORTH);
+            sessionListPanel.collapsed(true);
+        }
+        
+        int minWidth = (int) sessionListPanel.getMinimumSize().getWidth();
+        int targetWidth = desiredPanelVisible ? SESSION_LIST_PANEL_SIZE : minWidth; // Define 200 como a largura quando o painel está visível
         
         // Define a direção da animação
         int direction = panelVisible ? -10 : 10; // Ajusta a largura em 10 pixels a cada passo
@@ -176,24 +199,24 @@ public class AppWindow extends JFrame {
         timer.start(); // Inicia o timer
     }
 
-    private JPanel createSessionPanel() {
+    private Component createSessionPanelTop() {
         JLabel lblSession = new JLabel(getBundle().getString("app.ui.label.sessions"));
         lblSession.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
         
         Font font = App.skin.getIconFont().deriveFont(14.0f);
         Dimension dimension = new Dimension(30,30);
         
-        JButton btnNew = new JButton(getBundle().getString("general.action.add"));
+        JButton btnList = new JButton();
+        btnList.setFont(font);
+        btnList.setText(FontAwesomeContants.FA_BARS);
+        btnList.setMaximumSize(dimension);
+        btnList.addActionListener(e -> this.slideSessionListPanel());
+        
+        JButton btnNew = new JButton();
         btnNew.setFont(font);
         btnNew.setText(FontAwesomeContants.FA_PLUS);
         btnNew.setMaximumSize(dimension);
         btnNew.addActionListener(e -> this.createFirstSessionPanel());
-
-        JButton btnSettings = new JButton();
-        btnSettings.setFont(font);
-        btnSettings.setText(FontAwesomeContants.FA_COG);
-        btnSettings.setMaximumSize(dimension);
-        btnSettings.addActionListener(e -> openSettings(null));
 
         Box topBox = Box.createHorizontalBox();
         topBox.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -205,14 +228,46 @@ public class AppWindow extends JFrame {
 
         topBox.add(Box.createHorizontalGlue());
     
-        topBox.add(btnSettings);
+        return topBox;
 
+    }
+    
+    private Component createCollapsedSessionPanelTop() {
+        
+        JLabel lblSession = new JLabel(getBundle().getString("app.ui.label.sessions"));
+        lblSession.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
+        
+        Font font = App.skin.getIconFont().deriveFont(14.0f);
+        Dimension dimension = new Dimension(30,30);
+        
+        JButton btnList = new JButton();
+        btnList.setFont(font);
+        btnList.setText(FontAwesomeContants.FA_BARS);
+        btnList.setMaximumSize(dimension);
+        btnList.addActionListener(e -> this.slideSessionListPanel());
+        
+        JButton btnNew = new JButton();
+        btnNew.setFont(font);
+        btnNew.setText(FontAwesomeContants.FA_PLUS);
+        btnNew.setMaximumSize(dimension);
+        btnNew.addActionListener(e -> this.createFirstSessionPanel());
+        
+        Box listBox = Box.createHorizontalBox();
+        listBox.setBorder(new EmptyBorder(5, 5, 5, 5));
+        listBox.add(btnList);
+        listBox.add(Box.createGlue());
+        
+        Box newBox = Box.createHorizontalBox();
+        newBox.setBorder(new EmptyBorder(0, 5, 5, 5));
+        newBox.add(btnNew);
+        newBox.add(Box.createGlue());
+        
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(new MatteBorder(0, 0, 0, 1, App.skin.getDefaultBorderColor()));
-        panel.add(topBox, BorderLayout.NORTH);
-
+        panel.add(listBox, BorderLayout.NORTH);
+        panel.add(newBox, BorderLayout.SOUTH);
+        
         return panel;
-
+        
     }
 
     /**
@@ -374,18 +429,30 @@ public class AppWindow extends JFrame {
 
         JLabel lblHelp = new JLabel();
         lblHelp.setFont(App.skin.getIconFont().deriveFont(16.0f));
-
         lblHelp.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 PlatformUtils.openWeb(HELP_URL);
             }
         });
-
         lblHelp.setText(FontAwesomeContants.FA_QUESTION_CIRCLE);
         lblHelp.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblHelp.setToolTipText(getBundle().getString("app.ui.help.tooltip"));
         b1.add(lblHelp);
+        
+        b1.add(Box.createRigidArea(new Dimension(30, 10)));
+        
+        JLabel btnSettings = new JLabel();
+        btnSettings.setFont(App.skin.getIconFont().deriveFont(16.0f));
+        btnSettings.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                openSettings(null);
+            }
+        });
+        btnSettings.setText(FontAwesomeContants.FA_COG);
+        btnSettings.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        b1.add(btnSettings);
         b1.add(Box.createRigidArea(new Dimension(10, 10)));
 
 //        lblUpdate = new JLabel();

@@ -60,7 +60,7 @@ public class SettingsDialog extends JDialog {
             defaultFoundBg;
     private JCheckBox chkConfirmBeforeDelete, chkConfirmBeforeMoveOrCopy, chkShowHiddenFilesByDefault, chkFirstFileBrowserView,
             chkUseSudo, chkPromptForSudo, chkListViewEnabled, chkTransferTemporaryDirectory,
-            chkDirectoryCache, chkShowPathBar, chkConfirmBeforeTerminalClosing, chkShowMessagePrompt, chkStartMaximized, chkShowActualDateOnlyHour,
+            chkDirectoryCache, chkShowPathBar, chkConfirmBeforeTerminalClosing, chkStartMaximized, chkShowActualDateOnlyHour,
             chkUseGlobalDarkTheme, spConnectionKeepAlive;
     private KeyShortcutComponent[] kcc;
     private JCheckBox chkLogWrap;
@@ -438,7 +438,6 @@ public class SettingsDialog extends JDialog {
         chkTransferTemporaryDirectory = new JCheckBox(getBundle().getString("app.settings.general.label.transfer_temporary_directory"));
         chkDirectoryCache = new JCheckBox(getBundle().getString("app.settings.general.label.directory_caching"));
         chkShowPathBar = new JCheckBox(getBundle().getString("app.settings.general.label.current_folder"));
-        chkShowMessagePrompt = new JCheckBox(getBundle().getString("app.settings.general.label.show_banner"));
 
         chkStartMaximized = new JCheckBox(getBundle().getString("app.settings.general.label.start_maximized"));
         chkShowActualDateOnlyHour = new JCheckBox("show actual date in hours"); //TODO i18n
@@ -483,7 +482,6 @@ public class SettingsDialog extends JDialog {
         chkPromptForSudo.setAlignmentX(Box.LEFT_ALIGNMENT);
         chkDirectoryCache.setAlignmentX(Box.LEFT_ALIGNMENT);
         chkShowPathBar.setAlignmentX(Box.LEFT_ALIGNMENT);
-        chkShowMessagePrompt.setAlignmentX(Box.LEFT_ALIGNMENT);
 
         chkStartMaximized.setAlignmentX(Box.LEFT_ALIGNMENT);
         chkShowActualDateOnlyHour.setAlignmentX(Box.LEFT_ALIGNMENT);
@@ -514,8 +512,6 @@ public class SettingsDialog extends JDialog {
         vbox.add(chkDirectoryCache);
         vbox.add(Box.createRigidArea(new Dimension(10, 10)));
         vbox.add(chkShowPathBar);
-        vbox.add(Box.createRigidArea(new Dimension(10, 10)));
-        vbox.add(chkShowMessagePrompt);
         vbox.add(Box.createRigidArea(new Dimension(10, 20)));
         vbox.add(chkStartMaximized);
         vbox.add(Box.createRigidArea(new Dimension(10, 20)));
@@ -607,7 +603,6 @@ public class SettingsDialog extends JDialog {
             settings.setPromptForSudo(chkPromptForSudo.isSelected());
             settings.setDirectoryCache(chkDirectoryCache.isSelected());
             settings.setShowPathBar(chkShowPathBar.isSelected());
-            settings.setShowMessagePrompt(chkShowMessagePrompt.isSelected());
             settings.setUseGlobalDarkTheme(chkUseGlobalDarkTheme.isSelected());
     
             settings.setStartMaximized(chkStartMaximized.isSelected());
@@ -703,7 +698,6 @@ public class SettingsDialog extends JDialog {
         }
         chkDirectoryCache.setSelected(settings.isDirectoryCache());
         chkShowPathBar.setSelected(settings.isShowPathBar());
-        chkShowMessagePrompt.setSelected(settings.isShowMessagePrompt());
         chkUseGlobalDarkTheme.setSelected(settings.isUseGlobalDarkTheme());
 
         chkStartMaximized.setSelected(settings.isStartMaximized());

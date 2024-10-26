@@ -377,7 +377,7 @@ public class TauonSSHClient {
                 ///////
                 
                 DefaultConfig defaultConfig = new DefaultConfig();
-                if (SettingsService.getSettings().isShowMessagePrompt()) {
+                if (SettingsService.getSettings().isConnectionKeepAlive()) {
                     System.out.println("enabled KeepAliveProvider");
                     defaultConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
                 }

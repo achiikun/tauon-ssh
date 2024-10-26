@@ -4,6 +4,7 @@ import com.jediterm.terminal.Questioner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
 import tauon.app.ui.containers.session.SessionContentPanel;
@@ -90,7 +91,8 @@ public class SshTtyConnector implements DisposableTtyConnector {
             isInitiated.set(true);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            if(!(e instanceof OperationCancelledException))
+                LOG.error("Exception while initializing tty connector.", e);
             isInitiated.set(false);
             isCancelled.set(true);
             return false;

@@ -38,7 +38,6 @@ public class Settings {
     private boolean directoryCache = true;
     private boolean showPathBar = true;
     private boolean useDarkThemeForTerminal = false;
-    private boolean showMessagePrompt = false;
     private boolean useGlobalDarkTheme = true;
     private int connectionTimeout = 60;
     private boolean connectionKeepAlive = false;
@@ -181,14 +180,6 @@ public class Settings {
 
     public void setUseDarkThemeForTerminal(boolean useDarkThemeForTerminal) {
         this.useDarkThemeForTerminal = useDarkThemeForTerminal;
-    }
-
-    public boolean isShowMessagePrompt() {
-        return showMessagePrompt;
-    }
-
-    public void setShowMessagePrompt(boolean showMessagePrompt) {
-        this.showMessagePrompt = showMessagePrompt;
     }
 
     public boolean isConnectionKeepAlive() {
