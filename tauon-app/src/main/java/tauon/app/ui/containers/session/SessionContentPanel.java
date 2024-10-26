@@ -34,6 +34,7 @@ import tauon.app.ui.containers.session.pages.terminal.TerminalHolder;
 import tauon.app.ui.containers.session.pages.tools.ToolsPage;
 import tauon.app.ui.dialogs.sessions.PasswordPromptHelper;
 import tauon.app.ui.utils.AlertDialogUtils;
+import tauon.app.util.misc.FormatUtils;
 import tauon.app.util.misc.LayoutUtilities;
 
 import javax.swing.*;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -315,12 +317,15 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     
     @Override
     public boolean promptReconnect(String name, String host) {
-        // TODO i18n
         return JOptionPane.showConfirmDialog(appWindow,
-                "Unable to connect to server " + name + " at "
-                        + host
-//                                    + (e.getMessage() != null ? "\n\nReason: " + e.getMessage() : "\n")
-                        + "\n\nDo you want to retry?") != JOptionPane.YES_OPTION;
+                FormatUtils.$$(
+                        getBundle().getString("app.session.message.unable_to_connect_retry"),
+                        Map.of(
+                                "SERVER_NAME", name,
+                                "SERVER_HOST", host
+                        )
+                )
+        ) != JOptionPane.YES_OPTION;
     }
     
     @Override
@@ -328,16 +333,20 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         JPasswordField passwordField = new JPasswordField(30);
         int ret;
         if(rememberPassword != null) {
-            JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("app.sites.action.remember_password"));
-            // TODO i18n
+            JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("app.session.action.remember_password"));
             ret = JOptionPane.showOptionDialog(
                     appWindow,
                     new Object[]{
-                            "Type the password for user '" + user + "'",
+                            FormatUtils.$$(
+                                    getBundle().getString("app.session.type_password_for_user.message"),
+                                    Map.of(
+                                            "USER", user
+                                    )
+                            ),
                             passwordField,
                             rememberCheckBox
                     },
-                    "Input", // TODO i18n
+                    getBundle().getString("app.session.type_password_for_user.title"),
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE,
                     null,
@@ -346,14 +355,18 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
             );
             rememberPassword.set(rememberCheckBox.isSelected());
         }else{
-            // TODO i18n
             ret = JOptionPane.showOptionDialog(
                     appWindow,
                     new Object[]{
-                            "Type the password for user '" + user + "'",
+                            FormatUtils.$$(
+                                    getBundle().getString("app.session.type_password_for_user.message"),
+                                    Map.of(
+                                            "USER", user
+                                    )
+                            ),
                             passwordField
                     },
-                    "Input", // TODO i18n
+                    getBundle().getString("app.session.type_password_for_user.title"),
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE,
                     null,
@@ -398,13 +411,12 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     public String promptUser(HopEntry info, AtomicBoolean remember) {
         
         JTextField txtUser = new SkinnedTextField(30);
-        JCheckBox chkCacheUser = new JCheckBox(getBundle().getString("app.ui.action.remember_username"));
-        // TODO i18n
+        JCheckBox chkCacheUser = new JCheckBox(getBundle().getString("app.session.action.remember_username"));
         try {
             int ret = UIUtil.invokeAndWaitIfNeeded(() ->
                     JOptionPane.showOptionDialog(
                             appWindow,
-                            new Object[]{"User name", txtUser, chkCacheUser},
+                            new Object[]{getBundle().getString("app.ui.label.username"), txtUser, chkCacheUser},
                             getBundle().getString("app.ui.label.user"),
                             JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.PLAIN_MESSAGE,

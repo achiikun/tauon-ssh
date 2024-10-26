@@ -65,16 +65,18 @@ public class AppInputBlocker extends JDialog implements InputBlocker, ActionList
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setSize(200, 100);
     }
-
+    
     @Override
     public void blockInput(Runnable cancellable) {
         SwingUtilities.invokeLater(() -> {
             LOG.trace("Making dialog visible and blocking input.");
             
+            this.remove(jPanel);
+            
+            setSize(200, 100);
             this.setLocationRelativeTo(window);
             connectingLabel.setHorizontalAlignment(SwingConstants.CENTER);
             
-            this.remove(jPanel);
             this.add(jPanel);
             
             this.cancellable = cancellable;
