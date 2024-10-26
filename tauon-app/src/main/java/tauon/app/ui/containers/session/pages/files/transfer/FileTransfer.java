@@ -8,7 +8,6 @@ import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
 import tauon.app.ssh.filesystem.*;
 import tauon.app.ui.containers.main.FileTransferProgress;
 import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.ui.containers.session.pages.tools.diskspace.DiskspaceAnalyzer;
 import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.Constants.ConflictAction;
 import tauon.app.util.misc.PathUtils;
@@ -132,8 +131,8 @@ public class FileTransfer implements AutoCloseable {
                     
                     if (!SettingsService.getSettings().isPromptForSudo() ||
                             JOptionPane.showConfirmDialog(null,
-                                    "Permission denied, do you want to copy files from the temporary folder to destination with sudo?",
-                                    getBundle().getString("insufficient_permissions"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                                    getBundle().getString("app.files.message.copy_denied_ask_for_temp"),
+                                    getBundle().getString("general.message.insufficient_permissions"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                         
                         // Because transferTemporaryDirectory already create and transfer files, here can skip these steps
                         if (!SettingsService.getSettings().isTransferTemporaryDirectory()) {
@@ -275,8 +274,8 @@ public class FileTransfer implements AutoCloseable {
             JComboBox<Constants.ConflictAction> cmbs = new JComboBox<>(conflictOptionsCmb);
 
             if (JOptionPane.showOptionDialog(null,
-                    new Object[]{"Some file with the same name already exists. Please choose an action", cmbs},
-                    getBundle().getString("action_required"), JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, null,
+                    new Object[]{getBundle().getString("app.files.message.file_already_exists"), cmbs},
+                    getBundle().getString("general.message.action_required"), JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, null,
                     null) == JOptionPane.YES_OPTION) {
                 action = (ConflictAction) cmbs.getSelectedItem();
             }

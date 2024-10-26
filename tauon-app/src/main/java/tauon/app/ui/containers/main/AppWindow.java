@@ -17,9 +17,10 @@ import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
-import tauon.app.updater.UpdateChecker;
-import tauon.app.util.misc.Constants;
+import tauon.app.util.misc.CertificateValidator;
+import tauon.app.util.misc.FormatUtils;
 import tauon.app.util.misc.PlatformUtils;
+import tauon.app.util.misc.VersionEntry;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -30,9 +31,9 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -55,7 +56,7 @@ public class AppWindow extends JFrame {
     private SessionListPanel sessionListPanel;
     private JLabel lblUploadCount, lblDownloadCount;
     private JPopupMenu popup;
-    private JLabel lblUpdate, lblUpdateText;
+//    private JLabel lblUpdate, lblUpdateText;
     
     private final InputBlocker inputBlocker;
     private final FileTransferManager fileTransferManager;
@@ -127,13 +128,7 @@ public class AppWindow extends JFrame {
         this.fileTransferManager = new FileTransferManager(this, uploadPanel, downloadPanel);
         
         this.slideSessionListPanel();
-
-        new Thread(() -> {
-            if (UpdateChecker.isNewUpdateAvailable()) {
-                lblUpdate.setText(FontAwesomeContants.FA_DOWNLOAD);
-                lblUpdateText.setText("Update available");
-            }
-        }).start();
+        
     }
 
     public void createFirstSessionPanel() {
@@ -145,18 +140,19 @@ public class AppWindow extends JFrame {
             }
             
         } catch (OperationCancelledException ignored) {
+        
         }
-    }    
-
+    }
+    
     public void slideSessionListPanel() {
         int targetWidth = panelVisible ? 0 : 200; // Define 200 como a largura quando o painel está visível
-
+        
         // Largura inicial
         int startWidth = sessionListPanel.getWidth();
-
+        
         // Define a direção da animação
         int direction = panelVisible ? -10 : 10; // Ajusta a largura em 10 pixels a cada passo
-
+        
         Timer timer = new Timer(10, null); // Timer para animar a cada 10 milissegundos
         timer.addActionListener(e -> {
             // Calcula o novo tamanho
@@ -180,22 +176,14 @@ public class AppWindow extends JFrame {
         timer.start(); // Inicia o timer
     }
 
-
     private JPanel createSessionPanel() {
-        JLabel lblSession = new JLabel(getBundle().getString("sessions"));
+        JLabel lblSession = new JLabel(getBundle().getString("app.ui.label.sessions"));
         lblSession.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
         
         Font font = App.skin.getIconFont().deriveFont(14.0f);
         Dimension dimension = new Dimension(30,30);
         
-        JButton btnList = new JButton();
-        btnList.setFont(font);
-        btnList.setText(FontAwesomeContants.FA_BARS);
-        btnList.setMaximumSize(dimension);
-        btnList.addActionListener(e -> this.slideSessionListPanel());
-
-
-        JButton btnNew = new JButton(getBundle().getString("add"));
+        JButton btnNew = new JButton(getBundle().getString("general.action.add"));
         btnNew.setFont(font);
         btnNew.setText(FontAwesomeContants.FA_PLUS);
         btnNew.setMaximumSize(dimension);
@@ -259,25 +247,76 @@ public class AppWindow extends JFrame {
         b1.setBorder(new CompoundBorder(new MatteBorder(1, 0, 0, 0, App.skin.getDefaultBorderColor()),
                 new EmptyBorder(5, 5, 5, 5)));
         b1.add(Box.createRigidArea(new Dimension(10, 10)));
-
-        MouseListener ml = new MouseAdapter() {
+        
+        JLabel lblBrand = new JLabel(APPLICATION_NAME + " " + VERSION.getTagName());
+        lblBrand.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(CertificateValidator.registerCertificateHook(
+                        (chain, authType) -> JOptionPane.showConfirmDialog(
+                                AppWindow.this,
+                                getBundle().getString("app.ui.trust_certificate.message"),
+                                getBundle().getString("app.ui.trust_certificate.title"),
+                                JOptionPane.YES_NO_OPTION
+                        ) == JOptionPane.YES_OPTION)
+                ) {
+                    VersionEntry lastVersion = VersionEntry.getLastVersionFromGithub();
+                    if(lastVersion != null) {
+                        if (lastVersion.compareTo(VERSION) > 0) {
+//                            lblUpdate.setText(FontAwesomeContants.FA_DOWNLOAD);
+//                            lblUpdateText.setText("Update available");
+                            if(JOptionPane.showConfirmDialog(
+                                    AppWindow.this,
+                                    FormatUtils.$$(
+                                            getBundle().getString("app.ui.update_check.new_version.message"),
+                                            Map.of(
+                                                    "OLD_VERSION", VERSION.getTagName(),
+                                                    "NEW_VERSION", lastVersion.getTagName()
+                                            )
+                                    ),
+                                    getBundle().getString("app.ui.update_check.new_version.title"),
+                                    JOptionPane.OK_CANCEL_OPTION,
+                                    JOptionPane.INFORMATION_MESSAGE
+                            )== JOptionPane.YES_OPTION)
+                                PlatformUtils.openWeb(REPOSITORY_TAG_URL + lastVersion.getTagName());
+                        }else{
+                            JOptionPane.showMessageDialog(
+                                    AppWindow.this,
+                                    getBundle().getString("app.ui.update_check.no_version.message"),
+                                    getBundle().getString("app.ui.update_check.no_version.title"),
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                        }
+                    }else{
+                        if(JOptionPane.showConfirmDialog(
+                                AppWindow.this,
+                                getBundle().getString("app.ui.update_check.failed.message"),
+                                getBundle().getString("app.ui.update_check.failed.title"),
+                                JOptionPane.OK_CANCEL_OPTION,
+                                JOptionPane.WARNING_MESSAGE
+                        )== JOptionPane.YES_OPTION)
+                            PlatformUtils.openWeb(REPOSITORY_URL);
+                    }
+                }
+                
+                
+            }
+        });
+        lblBrand.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblBrand.setVerticalAlignment(JLabel.CENTER);
+        lblBrand.setToolTipText(getBundle().getString("app.ui.update_check.tooltip"));
+        b1.add(lblBrand);
+        b1.add(Box.createRigidArea(new Dimension(10, 10)));
+        
+        JLabel lblUrl = new JLabel(REPOSITORY_URL);
+        lblUrl.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 PlatformUtils.openWeb(REPOSITORY_URL);
             }
-        };
-
-
-        JLabel lblBrand = new JLabel(APPLICATION_NAME + " " + APPLICATION_VERSION);
-        lblBrand.addMouseListener(ml);
-        lblBrand.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        lblBrand.setVerticalAlignment(JLabel.CENTER);
-        b1.add(lblBrand);
-        b1.add(Box.createRigidArea(new Dimension(10, 10)));
-
-        JLabel lblUrl = new JLabel(REPOSITORY_URL);
-        lblUrl.addMouseListener(ml);
+        });
         lblUrl.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblUrl.setToolTipText(getBundle().getString("app.ui.repository_url.tooltip"));
         b1.add(lblUrl);
 
         b1.add(Box.createHorizontalGlue());
@@ -345,42 +384,39 @@ public class AppWindow extends JFrame {
 
         lblHelp.setText(FontAwesomeContants.FA_QUESTION_CIRCLE);
         lblHelp.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblHelp.setToolTipText(getBundle().getString("app.ui.help.tooltip"));
         b1.add(lblHelp);
         b1.add(Box.createRigidArea(new Dimension(10, 10)));
 
-        lblUpdate = new JLabel();
-        lblUpdate.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        lblUpdate.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                openUpdateURL();
-            }
-        });
-
-        lblUpdate.setFont(App.skin.getIconFont().deriveFont(16.0f));
-        lblUpdate.setText(FontAwesomeContants.FA_REFRESH);
-        b1.add(lblUpdate);
-
-        b1.add(Box.createRigidArea(new Dimension(5, 10)));
-
-        lblUpdateText = new JLabel(getBundle().getString("chk_update"));
-        lblUpdateText.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        lblUpdateText.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                openUpdateURL();
-            }
-        });
-
-        b1.add(lblUpdateText);
+//        lblUpdate = new JLabel();
+//        lblUpdate.setCursor(new Cursor(Cursor.HAND_CURSOR));
+//        lblUpdate.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                checkUpdates();
+//            }
+//        });
+//
+//        lblUpdate.setFont(App.skin.getIconFont().deriveFont(16.0f));
+//        lblUpdate.setText(FontAwesomeContants.FA_REFRESH);
+//        b1.add(lblUpdate);
+//
+//        b1.add(Box.createRigidArea(new Dimension(5, 10)));
+//
+//        lblUpdateText = new JLabel(getBundle().getString("app.ui.label.check_updates"));
+//        lblUpdateText.setCursor(new Cursor(Cursor.HAND_CURSOR));
+//        lblUpdateText.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                checkUpdates();
+//            }
+//        });
+//
+//        b1.add(lblUpdateText);
 
         b1.add(Box.createRigidArea(new Dimension(10, 10)));
 
         return b1;
-    }
-
-    protected void openUpdateURL() {
-        PlatformUtils.openWeb(UPDATE_URL2);
     }
 
     private void showPopup(Component panel, Component invoker) {

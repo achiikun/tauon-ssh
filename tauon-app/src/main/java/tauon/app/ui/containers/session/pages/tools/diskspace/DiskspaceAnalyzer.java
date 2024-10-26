@@ -56,9 +56,9 @@ public class DiskspaceAnalyzer extends Subpage {
         Component firstPanel = createFirstPanel();
         
         chkRunAsSuperUser1 = new JCheckBox(
-                getBundle().getString("actions_sudo"));
+                getBundle().getString("app.ui.action.do_using_sudo"));
         chkRunAsSuperUser2 = new JCheckBox(
-                getBundle().getString("actions_sudo"));
+                getBundle().getString("app.ui.action.do_using_sudo"));
         chkRunAsSuperUser1.addChangeListener(changeEvent -> chkRunAsSuperUser2.setSelected(chkRunAsSuperUser1.isSelected()));
         chkRunAsSuperUser2.addChangeListener(changeEvent -> chkRunAsSuperUser1.setSelected(chkRunAsSuperUser2.isSelected()));
         
@@ -74,11 +74,11 @@ public class DiskspaceAnalyzer extends Subpage {
         resultTree = new JTree(treeModel);
         resultTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
-        JButton btnStart = new JButton(getBundle().getString("start_another_analysis"));
+        JButton btnStart = new JButton(getBundle().getString("app.tools_diskspace.action.start_another_analysis"));
         btnStart.addActionListener(e -> {
             cardLayout.show(this, "firstPanel");
         });
-        JButton btnReload = new JButton(getBundle().getString("reload"));
+        JButton btnReload = new JButton(getBundle().getString("general.action.reload"));
         btnReload.addActionListener(e -> {
             if(lastAnalyzedPath != null){
                 analyze(lastAnalyzedPath);
@@ -94,7 +94,7 @@ public class DiskspaceAnalyzer extends Subpage {
         resultBox.add(Box.createHorizontalStrut(10));
         resultBox.add(btnStart);
 
-        JLabel resultTitle = new JLabel(getBundle().getString("directory_usage"));
+        JLabel resultTitle = new JLabel(getBundle().getString("app.tools_diskspace.label.directory_usage"));
         resultTitle.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel resultPanel = new JPanel(new BorderLayout());
@@ -105,8 +105,8 @@ public class DiskspaceAnalyzer extends Subpage {
     }
 
     private Component createFirstPanel() {
-        JRadioButton radFolder = new JRadioButton(getBundle().getString("analyze_folder"));
-        JRadioButton radVolume = new JRadioButton(getBundle().getString("analyze_volume"));
+        JRadioButton radFolder = new JRadioButton(getBundle().getString("app.tools_diskspace.label.analyze_folder"));
+        JRadioButton radVolume = new JRadioButton(getBundle().getString("app.tools_diskspace.label.analyze_volume"));
         radFolder.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
         radVolume.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
         radFolder.setHorizontalAlignment(JRadioButton.LEFT);
@@ -114,13 +114,13 @@ public class DiskspaceAnalyzer extends Subpage {
         JLabel lblIcon = new JLabel();
         lblIcon.setFont(App.skin.getIconFont().deriveFont(128.0f));
         lblIcon.setText(FontAwesomeContants.FA_HDD_O);
-        JButton btnNext = new JButton(getBundle().getString("next"));
+        JButton btnNext = new JButton(getBundle().getString("general.action.next"));
         btnNext.addActionListener(e -> {
             if (radVolume.isSelected()) {
                 cardLayout.show(this, "volPanel");
                 listVolumes();
             } else {
-                String text = OptionPaneUtils.showInputDialog(this, "Please enter folder path to analyze", "Input");
+                String text = OptionPaneUtils.showInputDialog(this, getBundle().getString("app.tools_diskspace.action.enter_folder_to_analyze"), getBundle().getString("general.action.input"));
                 if (text != null) {
                     cardLayout.show(this, "resultPanel");
                     analyze(text);
@@ -173,9 +173,9 @@ public class DiskspaceAnalyzer extends Subpage {
         table.setSelectionForeground(App.skin.getDefaultSelectionForeground());
         JScrollPane jsp = new SkinnedScrollPane(table);
 
-        JButton btnBack = new JButton(getBundle().getString("back"));
-        JButton btnNext = new JButton(getBundle().getString("next"));
-        JButton btnReload = new JButton(getBundle().getString("reload"));
+        JButton btnBack = new JButton(getBundle().getString("general.action.back"));
+        JButton btnNext = new JButton(getBundle().getString("general.action.next"));
+        JButton btnReload = new JButton(getBundle().getString("general.action.reload"));
 
         btnNext.addActionListener(e -> {
             int x = table.getSelectedRow();
@@ -184,13 +184,11 @@ public class DiskspaceAnalyzer extends Subpage {
                 cardLayout.show(this, "resultPanel");
                 analyze(model.get(r).getMountPoint());
             } else {
-                JOptionPane.showMessageDialog(this, getBundle().getString("select_partition"));
+                JOptionPane.showMessageDialog(this, getBundle().getString("app.tools_diskspace.action.select_partition"));
             }
         });
 
-        btnBack.addActionListener(e -> {
-            cardLayout.show(this, "firstPanel");
-        });
+        btnBack.addActionListener(e -> cardLayout.show(this, "firstPanel"));
         
         btnReload.addActionListener(e -> {
             // TODO
@@ -207,7 +205,7 @@ public class DiskspaceAnalyzer extends Subpage {
         bottomBox.add(btnNext);
         bottomBox.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JLabel lblTitle = new JLabel(getBundle().getString("select_volume"));
+        JLabel lblTitle = new JLabel(getBundle().getString("app.tools_diskspace.action.select_volume"));
         lblTitle.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -280,15 +278,13 @@ public class DiskspaceAnalyzer extends Subpage {
                         treeModel.setRoot(root);
                     }
                 });
-            }, instance, holder);
+            }, instance);
             task.run();
         }, stopFlag);
     }
 
     private void createTree(DefaultMutableTreeNode treeNode, DiskUsageEntry entry) {
-        Collections.sort(entry.getChildren(), (a, b) -> {
-            return a.getSize() < b.getSize() ? 1 : (a.getSize() > b.getSize() ? -1 : 0);
-        });
+        entry.getChildren().sort((a, b) -> Long.compare(b.getSize(), a.getSize()));
         for (DiskUsageEntry ent : entry.getChildren()) {
             DefaultMutableTreeNode child = new DefaultMutableTreeNode(ent, true);
             child.setAllowsChildren(true);

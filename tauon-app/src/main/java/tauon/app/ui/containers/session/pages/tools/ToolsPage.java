@@ -31,32 +31,32 @@ public class ToolsPage extends SubpagingPage {
 
     @Override
     public String getText() {
-        return getBundle().getString("toolbox");
+        return getBundle().getString("app.tools.title");
     }
 
     @Override
     public void onCreateSubpages(SessionContentPanel holder) {
         addSubpage(
                 "SSH_KEYS",
-                getBundle().getString("ssh_keys"),
+                getBundle().getString("app.tools_ssh_keys.title"),
                 FontAwesomeContants.FA_KEY,
                 new KeyPage(holder)
         );
         addSubpage(
                 "NET_TOOLS",
-                getBundle().getString("network_tools"),
+                getBundle().getString("app.tools_network.title"),
                 FontAwesomeContants.FA_WRENCH,
                 new NetworkToolsPage(holder)
         );
         addSubpage(
                 "FILE_SEARCH",
-                getBundle().getString("file_search"),
+                getBundle().getString("app.tools_file_search.title"),
                 FontAwesomeContants.FA_SEARCH,
                 new SearchPanel(holder)
         );
         addSubpage(
                 "DISKSPACE",
-                getBundle().getString("diskspace"),
+                getBundle().getString("app.tools_diskspace.title"),
                 FontAwesomeContants.FA_PIE_CHART,
                 new DiskspaceAnalyzer(holder)
         );

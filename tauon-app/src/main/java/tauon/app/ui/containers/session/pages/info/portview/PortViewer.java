@@ -10,7 +10,6 @@ import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
-import tauon.app.util.misc.PlatformUtils;
 import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;
@@ -138,9 +137,9 @@ public class PortViewer extends Subpage {
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFillsViewportHeight(true);
 
-        JLabel lbl1 = new JLabel(getBundle().getString("search"));
+        JLabel lbl1 = new JLabel(getBundle().getString("app.info_ports.action.search"));
         txtFilter = new SkinnedTextField(30);
-        btnFilter = new JButton(getBundle().getString("search"));
+        btnFilter = new JButton(getBundle().getString("app.info_ports.action.search"));
 
         Box b1 = Box.createHorizontalBox();
         b1.add(lbl1);
@@ -157,11 +156,11 @@ public class PortViewer extends Subpage {
 
         Box box = Box.createHorizontalBox();
         box.setBorder(new EmptyBorder(10, 0, 0, 0));
-        btnRefresh = new JButton(getBundle().getString("refresh"));
+        btnRefresh = new JButton(getBundle().getString("general.action.refresh"));
         btnRefresh.addActionListener(e -> getListingSockets());
 
         chkRunAsSuperUser = new JCheckBox(
-                getBundle().getString("actions_sudo"));
+                getBundle().getString("app.ui.action.do_using_sudo"));
         box.add(chkRunAsSuperUser);
 
         box.add(Box.createHorizontalGlue());
@@ -195,8 +194,7 @@ public class PortViewer extends Subpage {
                     StringBuilder output = new StringBuilder();
                     if (elevated) {
                         try {
-                            if (SudoUtils.runSudoWithOutput(cmd,instance, output,
-                                    new StringBuilder(),holder.getInfo().getPassword()) == 0) {
+                            if (SudoUtils.runSudoWithOutput(cmd, stopFlag, instance, output, new StringBuilder()) == 0) {
                                 java.util.List<SocketEntry> list = this
                                         .parseSocketList(output.toString());
                                 SwingUtilities.invokeAndWait(() -> setSocketData(list));
@@ -206,7 +204,7 @@ public class PortViewer extends Subpage {
                             // TODO LOG.error();
                             ex.printStackTrace();
                             if (!holder.isSessionClosed()) {
-                                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                             }
                             throw new AlreadyFailedException();
                         }
@@ -224,7 +222,7 @@ public class PortViewer extends Subpage {
                             // TODO LOG.error();
                             ex.printStackTrace();
                             if (!holder.isSessionClosed()) {
-                                JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                             }
                             throw new AlreadyFailedException();
                         }

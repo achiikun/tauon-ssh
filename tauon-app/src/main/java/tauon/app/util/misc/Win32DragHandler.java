@@ -4,7 +4,6 @@ import com.sun.jna.platform.FileMonitor;
 import com.sun.jna.platform.win32.W32FileMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.updater.UpdateChecker;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;

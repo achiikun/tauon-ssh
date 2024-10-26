@@ -1,7 +1,5 @@
 package tauon.app.util.misc;
 
-import tauon.app.App;
-
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

@@ -1,11 +1,11 @@
 package tauon.app.util.misc;
 
 import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
-import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
-import tauon.app.updater.VersionEntry;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -13,14 +13,14 @@ public class Constants {
     
     public static final String BASE_URL = "https://github.com/achiikun";//"https://github.com/devlinx9";
     public static final String HELP_URL = "https://github.com/subhra74/snowflake/wiki"; //TODO change wiki pages
-    public static final String UPDATE_URL = "https://achiikun.github.io/tauon-ssh";
+//    public static final String UPDATE_URL = "https://achiikun.github.io/tauon-ssh";
     public static final String API_UPDATE_URL = "https://api.github.com/repos/achiikun/tauon-ssh/releases/latest";
     public static final String REPOSITORY_URL = BASE_URL + "/tauon-ssh";
-    public static final String APPLICATION_VERSION = "3.1.0";
+    public static final String REPOSITORY_TAG_URL = BASE_URL + "/tauon-ssh/releases/tag/";
+//    public static final String APPLICATION_VERSION = "3.1.0";
     public static final String APPLICATION_NAME = "Tauon SSH";
 
-    public static final VersionEntry VERSION = new VersionEntry("v" + APPLICATION_VERSION);
-    public static final String UPDATE_URL2 = UPDATE_URL + "/check-update.html?v=" + APPLICATION_VERSION;
+//    public static final String UPDATE_URL2 = UPDATE_URL + "/check-update.html?v=" + APPLICATION_VERSION;
     
     public static File[] OLD_CONFIG_DIRS = {
             new File(System.getProperty("user.home") + File.separatorChar + ".muon-ssh"),
@@ -38,6 +38,18 @@ public class Constants {
     
     public static final String PATH_MESSAGES_FILE= "i18n/messages";
     
+    public static final VersionEntry VERSION;
+    
+    static {
+        Properties p = new Properties();
+        try {
+            p.load(Constants.class.getResourceAsStream("/version.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        VERSION = new VersionEntry("v" + p.getProperty("tauon-version"));
+    }
+    
     public static void updateStrings() {
         TransferMode.update();
         ConflictAction.update();
@@ -46,11 +58,11 @@ public class Constants {
     
     public enum ConflictAction {
 
-        OVERWRITE(0, "overwrite"),
-        AUTORENAME(1, "autorename"),
-        SKIP(2, "skip"),
-        PROMPT(3, "prompt"),
-        CANCEL(4, "cancel");
+        OVERWRITE(0, "app.files.action.overwrite"),
+        AUTORENAME(1, "app.files.action.autorename"),
+        SKIP(2, "app.files.action.skip"),
+        PROMPT(3, "app.files.action.prompt"),
+        CANCEL(4, "general.action.cancel");
         
         private final int key;
         private String value;
@@ -61,11 +73,11 @@ public class Constants {
         }
 
         private static void update() {
-            OVERWRITE.setValue(getBundle().getString("overwrite"));
-            AUTORENAME.setValue(getBundle().getString("autorename"));
-            SKIP.setValue(getBundle().getString("skip"));
-            PROMPT.setValue(getBundle().getString("prompt"));
-            CANCEL.setValue(getBundle().getString("cancel"));
+            OVERWRITE.setValue(getBundle().getString("app.files.action.overwrite"));
+            AUTORENAME.setValue(getBundle().getString("app.files.action.autorename"));
+            SKIP.setValue(getBundle().getString("app.files.action.skip"));
+            PROMPT.setValue(getBundle().getString("app.files.action.prompt"));
+            CANCEL.setValue(getBundle().getString("general.action.cancel"));
         }
 
         public int getKey() {
@@ -89,8 +101,8 @@ public class Constants {
     public enum TransferMode {
 
         @JsonEnumDefaultValue
-        NORMAL(0,"transfer_normally"),
-        BACKGROUND(1,"transfer_background");
+        NORMAL(0, "app.files.action.transfer_normally"),
+        BACKGROUND(1, "app.files.action.transfer_background");
 
         private final int key;
         private String value;
@@ -101,8 +113,8 @@ public class Constants {
         }
         
         private static void update() {
-            NORMAL.setValue(getBundle().getString("transfer_normally"));
-            BACKGROUND.setValue(getBundle().getString("transfer_background"));
+            NORMAL.setValue(getBundle().getString("app.files.action.transfer_normally"));
+            BACKGROUND.setValue(getBundle().getString("app.files.action.transfer_background"));
         }
 
         public int getKey() {

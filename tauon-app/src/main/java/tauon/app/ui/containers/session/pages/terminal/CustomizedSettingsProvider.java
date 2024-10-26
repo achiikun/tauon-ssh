@@ -11,6 +11,7 @@ import com.jediterm.terminal.ui.settings.DefaultSettingsProvider;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.Settings;
 import tauon.app.ui.containers.session.SessionContentPanel;
@@ -18,6 +19,7 @@ import tauon.app.util.misc.FontUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.nio.charset.StandardCharsets;
 
 import com.jediterm.core.Color;
 
@@ -186,6 +188,10 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
     
     @Override
     public String getSudoPassword() {
-        return session.getSudoPassword();
+        try {
+            return String.valueOf(session.getSUDOPassword(false));
+        } catch (OperationCancelledException e) {
+            return ""; // If returned null, jediterm fails
+        }
     }
 }

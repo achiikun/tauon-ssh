@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
-import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -129,7 +128,7 @@ public class SysLoadPage extends Subpage {
 
         topPanel.add(titleLabel);
         topPanel.add(Box.createHorizontalGlue());
-        topPanel.add(new JLabel(getBundle().getString("refresh_interval")));
+        topPanel.add(new JLabel(getBundle().getString("app.info_system_load.label.refresh_interval")));
         topPanel.add(Box.createHorizontalStrut(5));
         topPanel.add(spInterval);
         topPanel.add(Box.createHorizontalStrut(5));

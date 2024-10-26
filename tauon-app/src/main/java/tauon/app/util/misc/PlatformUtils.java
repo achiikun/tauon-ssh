@@ -14,7 +14,6 @@ import com.sun.jna.win32.StdCallLibrary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
-import tauon.app.ui.containers.session.pages.logviewer.PagedLogSearchPanel;
 
 import java.awt.*;
 import java.io.*;

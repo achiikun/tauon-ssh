@@ -66,11 +66,11 @@ public class Remote2RemoteTransferDialog extends JDialog {
         }
 
         Box bottom = Box.createHorizontalBox();
-        JButton btnAddKnown = new JButton(getBundle().getString("add_from_manager"));
-        JButton btnAdd = new JButton(getBundle().getString("add"));
-        JButton btnRemove = new JButton(getBundle().getString("delete"));
-        JButton btnEdit = new JButton(getBundle().getString("edit"));
-        JButton btnSend = new JButton(getBundle().getString("send_files"));
+        JButton btnAddKnown = new JButton(getBundle().getString("app.files.remote2remote.action.add_from_manager"));
+        JButton btnAdd = new JButton(getBundle().getString("app.files.remote2remote.action.add"));
+        JButton btnRemove = new JButton(getBundle().getString("app.files.remote2remote.action.delete"));
+        JButton btnEdit = new JButton(getBundle().getString("app.files.remote2remote.action.edit"));
+        JButton btnSend = new JButton(getBundle().getString("app.files.remote2remote.action.send_files"));
 
         btnAddKnown.addActionListener(e -> {
             try {

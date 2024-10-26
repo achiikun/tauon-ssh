@@ -3,8 +3,8 @@ package tauon.app.ui.containers.session.pages.files.ssh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
-import tauon.app.exceptions.OperationCancelledException;
-import tauon.app.exceptions.SessionClosedException;
+import tauon.app.exceptions.*;
+import tauon.app.services.LanguageService;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
@@ -17,6 +17,7 @@ import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
 import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.containers.session.pages.terminal.snippets.SnippetPanel;
+import tauon.app.ui.utils.AlertDialogUtils;
 import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.PathUtils;
 
@@ -99,7 +100,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         return path;
     }
 
-    private void renderDirectory(SshFileSystem sshFileSystem, final String path, final boolean fromCache) throws IOException, OperationCancelledException, InterruptedException, SessionClosedException {
+    private void renderDirectory(SshFileSystem sshFileSystem, final String path, final boolean fromCache) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
         List<FileInfo> list = null;
         if (fromCache) {
             list = this.fileBrowser.getSSHDirectoryCache().get(trimPath(path));
@@ -135,9 +136,8 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
             }
             try {
                 renderDirectory(instance.getSshFs(), this.path, useCache);
-            } catch (OperationCancelledException e){
-                // Do nothing
-            } catch (FileNotFoundException e){
+            } catch (RemoteOperationException.FileNotFound e){
+                AlertDialogUtils.showInfo(this, LanguageService.getBundle().getString("app.files.message.failed_going_rendering_home"));
                 SshFileSystem sshfs = this.fileBrowser.getSSHFileSystem();
                 this.path = sshfs.getHome();
                 renderDirectory(instance.getSshFs(), this.path, useCache);

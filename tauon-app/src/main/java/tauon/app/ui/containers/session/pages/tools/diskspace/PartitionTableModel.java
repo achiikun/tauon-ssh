@@ -1,7 +1,6 @@
 package tauon.app.ui.containers.session.pages.tools.diskspace;
 
 import tauon.app.ui.components.tablerenderers.ByteCountValue;
-import tauon.app.ui.components.tablerenderers.PercentageRenderer;
 import tauon.app.ui.components.tablerenderers.PercentageValue;
 
 import javax.swing.table.AbstractTableModel;
@@ -11,7 +10,14 @@ import java.util.List;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class PartitionTableModel extends AbstractTableModel {
-    private final String[] columns = {getBundle().getString("filesystem"), getBundle().getString("total_size"), getBundle().getString("used"), getBundle().getString("available"), getBundle().getString("percentage_use"), getBundle().getString("mount_point")};
+    private final String[] columns = {
+            getBundle().getString("app.tools_diskspace.partition_table.label.filesystem"),
+            getBundle().getString("app.tools_diskspace.partition_table.label.total_size"),
+            getBundle().getString("app.tools_diskspace.partition_table.label.used"),
+            getBundle().getString("app.tools_diskspace.partition_table.label.available"),
+            getBundle().getString("app.tools_diskspace.partition_table.label.percentage_use"),
+            getBundle().getString("app.tools_diskspace.partition_table.label.mount_point")
+    };
 
     private final List<PartitionEntry> list = new ArrayList<>();
 

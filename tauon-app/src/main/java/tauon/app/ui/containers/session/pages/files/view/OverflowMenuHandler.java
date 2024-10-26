@@ -17,11 +17,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class OverflowMenuHandler {
-    private final JRadioButtonMenuItem mSortName;
-    private final JRadioButtonMenuItem mSortSize;
-    private final JRadioButtonMenuItem mSortModified;
-    private final JRadioButtonMenuItem mSortAsc;
-    private final JRadioButtonMenuItem mSortDesc;
     private final JCheckBoxMenuItem mShowHiddenFiles;
     private final AtomicBoolean sortingChanging = new AtomicBoolean(false);
     private final KeyStroke ksHideShow;
@@ -29,7 +24,6 @@ public class OverflowMenuHandler {
     private final JPopupMenu popup;
     private final AbstractFileBrowserView fileBrowserView;
     private final JMenu favouriteLocations;
-    private final JMenu mSortMenu;
     private final FileBrowser fileBrowser;
     private FolderView folderView;
 
@@ -38,7 +32,7 @@ public class OverflowMenuHandler {
         this.fileBrowser = fileBrowser;
         ksHideShow = KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK);
 
-        mShowHiddenFiles = new JCheckBoxMenuItem(getBundle().getString("show_hidden_files2"));
+        mShowHiddenFiles = new JCheckBoxMenuItem(getBundle().getString("app.files.action.show_hidden_files"));
         mShowHiddenFiles.setSelected(SettingsService.getSettings().isShowHiddenFilesByDefault());
 
         aHideShow = new AbstractAction() {
@@ -54,31 +48,9 @@ public class OverflowMenuHandler {
         });
         mShowHiddenFiles.setAccelerator(ksHideShow);
 
-        ButtonGroup bg1 = new ButtonGroup();
-
-        mSortName = createSortMenuItem("Name", 0, bg1);
-
-        mSortSize = createSortMenuItem("Size", 2, bg1);
-
-        mSortModified = createSortMenuItem("Modification date", 3, bg1);
-
-        ButtonGroup bg2 = new ButtonGroup();
-
-        mSortAsc = createSortMenuItem("Sort ascending", 0, bg2);
-
-        mSortDesc = createSortMenuItem("Sort descending", 1, bg2);
-
-        this.favouriteLocations = new JMenu(getBundle().getString("bookmarks"));
+        this.favouriteLocations = new JMenu(getBundle().getString("app.files.label.bookmarks"));
 
         popup = new JPopupMenu();
-        mSortMenu = new JMenu("Sort");
-
-        mSortMenu.add(mSortName);
-        mSortMenu.add(mSortSize);
-        mSortMenu.add(mSortModified);
-        mSortMenu.addSeparator();
-        mSortMenu.add(mSortAsc);
-        mSortMenu.add(mSortDesc);
 
         popup.add(mShowHiddenFiles);
         popup.add(favouriteLocations);
@@ -101,27 +73,6 @@ public class OverflowMenuHandler {
 
     private void hideOptAction() {
         folderView.setShowHiddenFiles(mShowHiddenFiles.isSelected());
-    }
-
-    private JRadioButtonMenuItem createSortMenuItem(String text, Integer index, ButtonGroup bg) {
-        JRadioButtonMenuItem mSortItem = new JRadioButtonMenuItem(text);
-        mSortItem.putClientProperty("sort.index", index);
-        mSortItem.addActionListener(e -> {
-            sortMenuClicked(mSortItem);
-        });
-        bg.add(mSortItem);
-        return mSortItem;
-    }
-
-    private void sortMenuClicked(JRadioButtonMenuItem mSortItem) {
-        if (mSortItem == mSortAsc) {
-            folderView.sort(folderView.getSortIndex(), SortOrder.ASCENDING);
-        } else if (mSortItem == mSortDesc) {
-            folderView.sort(folderView.getSortIndex(), SortOrder.DESCENDING);
-        } else {
-            int index = (int) mSortItem.getClientProperty("sort.index");
-            folderView.sort(index, folderView.isSortAsc() ? SortOrder.ASCENDING : SortOrder.DESCENDING);
-        }
     }
 
     public JPopupMenu getOverflowMenu() {

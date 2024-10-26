@@ -10,15 +10,13 @@ import net.schmizz.sshj.userauth.password.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
-import tauon.app.exceptions.AlreadyFailedException;
-import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.*;
 import tauon.app.services.SessionService;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.HopEntry;
 import tauon.app.settings.PortForwardingRule;
 import tauon.app.settings.SessionInfo;
-import tauon.app.ssh.GuiHandle;
-import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ssh.*;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.components.glasspanes.ProgressGlasspane;
@@ -29,14 +27,14 @@ import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.PageHolder;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.containers.main.FileTransferProgress;
-import tauon.app.ui.containers.session.pages.tools.diskspace.DiskspaceAnalyzer;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.info.InfoPage;
 import tauon.app.ui.containers.session.pages.logviewer.LogViewer;
-import tauon.app.ui.containers.session.pages.tools.search.SearchPanel;
 import tauon.app.ui.containers.session.pages.terminal.TerminalHolder;
 import tauon.app.ui.containers.session.pages.tools.ToolsPage;
 import tauon.app.ui.dialogs.sessions.PasswordPromptHelper;
+import tauon.app.ui.utils.AlertDialogUtils;
+import tauon.app.util.misc.FormatUtils;
 import tauon.app.util.misc.LayoutUtilities;
 
 import javax.swing.*;
@@ -47,6 +45,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -318,29 +317,36 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     
     @Override
     public boolean promptReconnect(String name, String host) {
-        // TODO i18n
         return JOptionPane.showConfirmDialog(appWindow,
-                "Unable to connect to server " + name + " at "
-                        + host
-//                                    + (e.getMessage() != null ? "\n\nReason: " + e.getMessage() : "\n")
-                        + "\n\nDo you want to retry?") != JOptionPane.YES_OPTION;
+                FormatUtils.$$(
+                        getBundle().getString("app.session.message.unable_to_connect_retry"),
+                        Map.of(
+                                "SERVER_NAME", name,
+                                "SERVER_HOST", host
+                        )
+                )
+        ) != JOptionPane.YES_OPTION;
     }
     
     @Override
-    public char[] promptPassword(HopEntry info, String user, AtomicBoolean rememberPassword, boolean isRetrying) {
+    public char[] promptPassword(HopEntry info, String user, AtomicBoolean rememberPassword, boolean isRetrying) throws OperationCancelledException {
         JPasswordField passwordField = new JPasswordField(30);
         int ret;
         if(rememberPassword != null) {
-            JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("remember_password"));
-            // TODO i18n
+            JCheckBox rememberCheckBox = new JCheckBox(getBundle().getString("app.session.action.remember_password"));
             ret = JOptionPane.showOptionDialog(
                     appWindow,
                     new Object[]{
-                            "Type the password for user '" + user + "'",
+                            FormatUtils.$$(
+                                    getBundle().getString("app.session.type_password_for_user.message"),
+                                    Map.of(
+                                            "USER", user
+                                    )
+                            ),
                             passwordField,
                             rememberCheckBox
                     },
-                    "Input", // TODO i18n
+                    getBundle().getString("app.session.type_password_for_user.title"),
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE,
                     null,
@@ -349,14 +355,18 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
             );
             rememberPassword.set(rememberCheckBox.isSelected());
         }else{
-            // TODO i18n
             ret = JOptionPane.showOptionDialog(
                     appWindow,
                     new Object[]{
-                            "Type the password for user '" + user + "'",
+                            FormatUtils.$$(
+                                    getBundle().getString("app.session.type_password_for_user.message"),
+                                    Map.of(
+                                            "USER", user
+                                    )
+                            ),
                             passwordField
                     },
-                    "Input", // TODO i18n
+                    getBundle().getString("app.session.type_password_for_user.title"),
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE,
                     null,
@@ -369,7 +379,17 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
             return passwordField.getPassword();
         }
         
-        return null;
+        throw new OperationCancelledException();
+    }
+    
+    @Override
+    public char[] getSUDOPassword(boolean isRetrying) throws OperationCancelledException {
+        if(!isRetrying){
+            // TODO set SUDO in a separate field
+            return this.info.getPassword().toCharArray();
+        }else{
+            return promptPassword(null, "SUDO", null, true);
+        }
     }
     
     @Override
@@ -391,14 +411,13 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     public String promptUser(HopEntry info, AtomicBoolean remember) {
         
         JTextField txtUser = new SkinnedTextField(30);
-        JCheckBox chkCacheUser = new JCheckBox(getBundle().getString("remember_username"));
-        // TODO i18n
+        JCheckBox chkCacheUser = new JCheckBox(getBundle().getString("app.session.action.remember_username"));
         try {
             int ret = UIUtil.invokeAndWaitIfNeeded(() ->
                     JOptionPane.showOptionDialog(
                             appWindow,
-                            new Object[]{"User name", txtUser, chkCacheUser},
-                            getBundle().getString("user"),
+                            new Object[]{getBundle().getString("app.ui.label.username"), txtUser, chkCacheUser},
+                            getBundle().getString("app.ui.label.user"),
                             JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.PLAIN_MESSAGE,
                             null,
@@ -427,74 +446,137 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         return uuid;
     }
     
-    public void runSSHOperation(SSHOperator consumer) throws Exception {
-        remoteSessionInstance.ensureConnected();
-        try {
-            consumer.operate(remoteSessionInstance);
-        }catch (OperationCancelledException | AlreadyFailedException ignored){
+    public void runSSHOperation(ISSHOperator consumer) {
         
+        boolean force = false;
+        while (true) {
+            try {
+                remoteSessionInstance.ensureConnected(force);
+                
+                try {
+                    try {
+                        consumer.operate(remoteSessionInstance);
+                    }catch (IOException e){
+                        throw new RemoteOperationException.RealIOException(e);
+                    }
+                    return;
+                } catch (SessionClosedException exception) {
+                    // Report error
+                    LOG.error("Session was closed", exception);
+                } catch (RemoteOperationException.NotConnected | RemoteOperationException.RealIOException ignored) {
+                    // Reconnect
+                    // Don't return (while true will re-execute ensureConnected forcing connection
+                    continue;
+                } catch (TauonOperationException exception) {
+                    LOG.error("Going to show the exception to the user.", exception);
+                    AlertDialogUtils.showError(this, exception.getUserMessage());
+                }
+                
+            } catch (OperationCancelledException | AlreadyFailedException | InterruptedException e) {
+                // Do nothing
+                return;
+            } catch (SessionClosedException e) {
+                LOG.error("Session was closed", e);
+            }
+            
+            return;
         }
     }
     
-    public <R> R runSSHOperation(SSHOperatorRet<R> consumer, R defaultIfFailedOrCancelled) throws Exception {
+    public <R> R runSSHOperation(ISSHOperatorRet<R> consumer, R defaultIfFailedOrCancelled) throws Exception {
         remoteSessionInstance.ensureConnected();
         try {
-            return consumer.operate(remoteSessionInstance);
+            try {
+                return consumer.operate(remoteSessionInstance);
+            }catch (IOException e){
+                throw new RemoteOperationException.RealIOException(e);
+            }
         }catch (OperationCancelledException | AlreadyFailedException ignored){
             return defaultIfFailedOrCancelled;
         }
     }
     
-    public void submitSSHOperation(SSHOperator consumer) {
-        executor.submit(() -> {
-            try {
-                remoteSessionInstance.ensureConnected();
-                disableUi();
-                try {
-                    consumer.operate(remoteSessionInstance);
-                } catch (OperationCancelledException | AlreadyFailedException ignored) {
-
-                } catch (Exception e) {
-                    LOG.error("Operation failed", e);
-                } finally {
-                    enableUi();
-                }
-            } catch (Exception e) {
-                LOG.error("Connection failed", e);
-            }
-        });
+    public void submitSSHOperation(ISSHOperator consumer) {
+        submitSSHOperationStoppable(consumer, null);
     }
     
-    public void submitSSHOperationStoppable(SSHOperator consumer, AtomicBoolean stopFlag) {
+    public void submitSSHOperationStoppable(ISSHOperator consumer, AtomicBoolean stopFlag) {
         executor.submit(() -> {
-            try {
-                remoteSessionInstance.ensureConnected();
-                disableUi(stopFlag);
+            
+            boolean force = false;
+            while (true) {
                 try {
-                    consumer.operate(remoteSessionInstance);
-                } catch (OperationCancelledException | AlreadyFailedException ignored) {
+                    remoteSessionInstance.ensureConnected(force);
+                    
+                    force = true;
+                    disableUi(stopFlag);
+                    try {
+                        try {
+                            consumer.operate(remoteSessionInstance);
+                        }catch (IOException e){
+                            throw new RemoteOperationException.RealIOException(e);
+                        }
+                    } catch (SessionClosedException exception) {
+                        // Report error
+                        LOG.error("Session was closed", exception);
+                    } catch (RemoteOperationException.NotConnected | RemoteOperationException.RealIOException ignored) {
+                        // Reconnect
+                        // Don't return (while true will re-execute ensureConnected forcing connection
+                        continue;
+                    } catch (TauonOperationException exception) {
+                        LOG.error("Going to show the exception to the user.", exception);
+                        AlertDialogUtils.showError(this, exception.getUserMessage());
+                    } finally {
+                        enableUi();
+                    }
+                    
+                } catch (OperationCancelledException | AlreadyFailedException | InterruptedException e) {
+                    // Do nothing
+                } catch (SessionClosedException e) {
+                    LOG.error("Session was closed", e);
+                }
                 
-                } catch (Exception e) {
-                    LOG.error("Operation failed", e);
-                } finally {
-                    enableUi();
-                }
-            } catch (Exception e) {
-                LOG.error("Connection failed", e);
+                return;
             }
+//            try {
+//                remoteSessionInstance.ensureConnected();
+//                disableUi(stopFlag);
+//                try {
+//                    consumer.operate(remoteSessionInstance);
+//                } catch (OperationCancelledException | AlreadyFailedException ignored) {
+//
+//                } catch (Exception e) {
+//                    LOG.error("Operation failed", e);
+//                } finally {
+//                    enableUi();
+//                }
+//            } catch (Exception e) {
+//                LOG.error("Connection failed", e);
+//            }
         });
     }
     
-    public void submitLocalOperation(LocalOperator consumer) {
+    public void submitLocalOperation(ILocalOperator consumer) {
         executor.submit(() -> {
             disableUi();
             try {
                 consumer.operate();
-            } catch (Exception e) {
-                LOG.error("Operation failed", e);
+            } catch (OperationCancelledException | AlreadyFailedException | InterruptedException ignored) {
+                // Do nothing
+            } catch (TauonOperationException exception) {
+                LOG.error("Going to show the exception to the user.", exception);
+                AlertDialogUtils.showError(this, exception.getUserMessage());
             } finally {
                 enableUi();
             }
+//            disableUi();
+//            try {
+//                consumer.operate();
+//            } catch (Exception e) {
+//                LOG.error("Operation failed", e);
+//            } finally {
+//                enableUi();
+//            }
         });
     }
     
@@ -502,10 +584,10 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         return remoteSessionInstance.getSshFs();
     }
     
-    public String getSudoPassword() {
-        // TODO assuming password is also sudo, if not, ask user for password
-        return info.getPassword();
-    }
+//    public String getSudoPassword() {
+//        // TODO assuming password is also sudo, if not, ask user for password
+//        return info.getPassword();
+//    }
     
     private class MyPasswordFinder implements PasswordFinder{
         
@@ -584,15 +666,4 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         }
     }
     
-    public interface SSHOperator {
-        void operate(TauonRemoteSessionInstance instance) throws Exception;
-    }
-    
-    public interface SSHOperatorRet<R> {
-        R operate(TauonRemoteSessionInstance instance) throws Exception;
-    }
-    
-    public interface LocalOperator {
-        void operate() throws Exception;
-    }
 }

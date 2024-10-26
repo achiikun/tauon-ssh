@@ -5,12 +5,15 @@ package tauon.app.ui.containers.session.pages.tools.keys;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.ui.components.misc.FontItemRenderer;
 import tauon.app.ui.components.misc.TabbedPanel;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
 
 import javax.swing.*;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -44,83 +47,65 @@ public class KeyPage extends Subpage {
         keyHolder = new SshKeyHolder();
         tabs = new TabbedPanel();
         remoteKeyPanel = new RemoteKeyPanel(holder.getInfo(), a -> {
-//            holder.disableUi();
             holder.submitSSHOperation(instance -> {
-//                try {
-                    SshKeyManager.generateKeys(keyHolder, instance, false);
-                    SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    holder.enableUi();
-//                }
+                SshKeyManager.generateKeys(keyHolder, instance, false);
+                try {
+                    SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
+                } catch (InvocationTargetException e) {
+                    LOG.error("Exception while rendering results.", e);
+                }
             });
         }, a -> {
-//            holder.disableUi();
             holder.submitSSHOperation(instance -> {
-//                try {
-                    keyHolder = SshKeyManager.getKeyDetails(holder, instance);
-                    SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    holder.enableUi();
-//                }
+                keyHolder = SshKeyManager.getKeyDetails(holder, instance);
+                try {
+                    SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
+                } catch (InvocationTargetException e) {
+                    LOG.error("Exception while rendering results.", e);
+                }
             });
         }, a -> {
-//            holder.disableUi();
             holder.submitSSHOperation(instance -> {
-//                try {
                     SshKeyManager.saveAuthorizedKeysFile(a, instance.getSshFs());
                     keyHolder = SshKeyManager.getKeyDetails(holder, instance);
-                    SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    holder.enableUi();
-//                }
+                try {
+                    SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
+                } catch (InvocationTargetException e) {
+                    LOG.error("Exception while rendering results.", e);
+                }
             });
         });
         localKeyPanel = new LocalKeyPanel(holder.getInfo(), a -> {
-//            holder.disableUi();
             holder.submitSSHOperation(instance -> {
-//                try {
                     SshKeyManager.generateKeys(keyHolder, instance, true);
-                    SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    holder.enableUi();
-//                }
+                try {
+                    SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
+                } catch (InvocationTargetException e) {
+                    LOG.error("Exception while rendering results.", e);
+                }
             });
         }, a -> {
 //            holder.disableUi();
             holder.submitSSHOperation(instance -> {
-//                try {
                     keyHolder = SshKeyManager.getKeyDetails(holder, instance);
-                    SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    holder.enableUi();
-//                }
+                try {
+                    SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
+                } catch (InvocationTargetException e) {
+                    LOG.error("Exception while rendering results.", e);
+                }
             });
         });
-        tabs.addTab(getBundle().getString("server"), remoteKeyPanel);
-        tabs.addTab(getBundle().getString("local_computer"), localKeyPanel);
+        tabs.addTab(getBundle().getString("app.tools_ssh_keys.label.server"), remoteKeyPanel);
+        tabs.addTab(getBundle().getString("app.tools_ssh_keys.label.local_computer"), localKeyPanel);
         this.add(tabs);
 
         holder.submitSSHOperation(instance -> {
-//            holder.disableUi();
-//            try {
-                keyHolder = SshKeyManager.getKeyDetails(holder, instance);
-                SwingUtilities.invokeLater(() -> setKeyData(keyHolder));
-//            } catch (Exception err) {
-//                err.printStackTrace();
-//            } finally {
-//                holder.enableUi();
-//            }
+            keyHolder = SshKeyManager.getKeyDetails(holder, instance);
+            try {
+                SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
+            } catch (InvocationTargetException e) {
+                LOG.error("Exception while rendering results.", e);
+            }
         });
     }
 

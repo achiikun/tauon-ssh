@@ -6,7 +6,6 @@ import tauon.app.App;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import tauon.app.ui.containers.session.pages.info.portview.PortViewer;
 import tauon.app.util.misc.FormatUtils;
 
 import javax.swing.*;
@@ -195,7 +194,7 @@ public class PropertiesDialog extends JDialog {
             chmodAsync(getPermissions(), details);
             dispose();
         });
-        btnCancel = new JButton(getBundle().getString("cancel"));
+        btnCancel = new JButton(getBundle().getString("general.action.cancel"));
         btnCancel.addActionListener(e -> {
             dialogResult = JOptionPane.CANCEL_OPTION;
             dispose();
@@ -514,7 +513,7 @@ public class PropertiesDialog extends JDialog {
             } catch (Exception e) {
                 e.printStackTrace();
                 if (!fileBrowser.isSessionClosed()) {
-                    JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                    JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                 }
             }
             SwingUtilities.invokeLater(() -> {

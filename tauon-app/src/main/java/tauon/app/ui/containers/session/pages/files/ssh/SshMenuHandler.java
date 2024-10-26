@@ -3,11 +3,12 @@ package tauon.app.ui.containers.session.pages.files.ssh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.exceptions.LocalOperationException;
+import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
-import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.components.misc.NativeFileChooser;
 import tauon.app.services.BookmarkManager;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
@@ -76,7 +77,7 @@ public class SshMenuHandler {
 
     private void initMenuItems(InputMap map, ActionMap act) {
         ksOpenInTab = KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK);
-        mOpenInTab = new JMenuItem(getBundle().getString("open_in_tab"));
+        mOpenInTab = new JMenuItem(getBundle().getString("app.files.action.open_in_tab"));
         mOpenInTab.setAccelerator(ksOpenInTab);
         aOpenInTab = new AbstractAction() {
             @Override
@@ -103,7 +104,7 @@ public class SshMenuHandler {
             }
         };
         ksOpen = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        mOpen = new JMenuItem(getBundle().getString("open"));
+        mOpen = new JMenuItem(getBundle().getString("general.action.open"));
         mOpen.addActionListener(aOpen);
         map.put(ksOpen, "mOpen");
         act.put("mOpen", aOpen);
@@ -111,7 +112,7 @@ public class SshMenuHandler {
 
 
         if (PlatformUtils.IS_WINDOWS) {
-            mOpenWithMenu = new JMenuItem(getBundle().getString("open_with"));
+            mOpenWithMenu = new JMenuItem(getBundle().getString("app.files.action.open_with"));
             mOpenWithMenu.addActionListener(e -> {
                 FileInfo fileInfo = folderView.getSelectedFiles()[0];
                 try {
@@ -125,21 +126,21 @@ public class SshMenuHandler {
             });
         }
 
-        mEditorConfig = new JMenuItem(getBundle().getString("configure_editor"));
+        mEditorConfig = new JMenuItem(getBundle().getString("app.files.action.configure_editor"));
         mEditorConfig.addActionListener(e -> openEditorConfig());
 
-        mOpenWithLogView = new JMenuItem(getBundle().getString("open_log_viewer"));
+        mOpenWithLogView = new JMenuItem(getBundle().getString("app.files.action.open_log_viewer"));
         mOpenWithLogView.addActionListener(e -> openLogViewer());
 
-        mEditWith = new JMenu(getBundle().getString("edit_with"));
+        mEditWith = new JMenu(getBundle().getString("app.files.action.edit_with"));
 
-        mSendTo = new JMenu(getBundle().getString("send_another_server"));
+        mSendTo = new JMenu(getBundle().getString("app.files.action.send_another_server"));
 
-        JMenuItem mSendViaSSH = new JMenuItem(getBundle().getString("send_over_ftp"));
+        JMenuItem mSendViaSSH = new JMenuItem(getBundle().getString("app.files.action.send_over_ftp"));
         mSendViaSSH.addActionListener(e -> {
             this.sendFilesViaSSH();
         });
-        JMenuItem mSendViaLocal = new JMenuItem(getBundle().getString("send_this_computer"));
+        JMenuItem mSendViaLocal = new JMenuItem(getBundle().getString("app.files.action.send_this_computer"));
         mSendViaLocal.addActionListener(e -> {
             this.sendFilesViaLocal();
         });
@@ -147,27 +148,27 @@ public class SshMenuHandler {
         mSendTo.add(mSendViaSSH);
         mSendTo.add(mSendViaLocal);
 
-        mRunScriptInTerminal = new JMenuItem(getBundle().getString("run_in_terminal"));
+        mRunScriptInTerminal = new JMenuItem(getBundle().getString("app.files.action.run_in_terminal"));
         mRunScriptInTerminal.addActionListener(e -> {
 
         });
 
-        mOpenFolderInTerminal = new JMenuItem(getBundle().getString("open_folder_terminal"));
+        mOpenFolderInTerminal = new JMenuItem(getBundle().getString("app.files.action.open_folder_terminal"));
         mOpenFolderInTerminal.addActionListener(e -> {
             openFolderInTerminal(folderView.getSelectedFiles()[0].getPath());
         });
 
-        mOpenTerminalHere = new JMenuItem(getBundle().getString("open_terminal_here"));
+        mOpenTerminalHere = new JMenuItem(getBundle().getString("app.files.action.open_terminal_here"));
         mOpenTerminalHere.addActionListener(e -> {
             openFolderInTerminal(fileBrowserView.getCurrentDirectory());
         });
 
-        mRunScriptInTerminal = new JMenuItem(getBundle().getString("run_file_in_terminal"));
+        mRunScriptInTerminal = new JMenuItem(getBundle().getString("app.files.action.run_file_in_terminal"));
         mRunScriptInTerminal.addActionListener(e -> {
             openRunInTerminal(fileBrowserView.getCurrentDirectory(), folderView.getSelectedFiles()[0].getPath());
         });
 
-        mRunScriptInBackground = new JMenuItem(getBundle().getString("run_file_in_background"));
+        mRunScriptInBackground = new JMenuItem(getBundle().getString("app.files.action.run_file_in_background"));
         mRunScriptInBackground.addActionListener(e -> {
             openRunInBackground(fileBrowserView.getCurrentDirectory(), folderView.getSelectedFiles()[0].getPath());
         });
@@ -179,7 +180,7 @@ public class SshMenuHandler {
             }
         };
         ksRename = KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
-        mRename = new JMenuItem(getBundle().getString("rename"));
+        mRename = new JMenuItem(getBundle().getString("app.files.action.rename"));
         mRename.addActionListener(aRename);
         map.put(ksRename, "mRename");
         act.put("mRename", aRename);
@@ -192,7 +193,7 @@ public class SshMenuHandler {
                 delete(folderView.getSelectedFiles(), fileBrowserView.getCurrentDirectory());
             }
         };
-        mDelete = new JMenuItem(getBundle().getString("delete"));
+        mDelete = new JMenuItem(getBundle().getString("app.files.action.delete"));
         mDelete.addActionListener(aDelete);
         map.put(ksDelete, "ksDelete");
         act.put("ksDelete", aDelete);
@@ -205,7 +206,7 @@ public class SshMenuHandler {
                 newFile(fileBrowserView.getCurrentDirectory(), folderView.getFiles());
             }
         };
-        mNewFile = new JMenuItem(getBundle().getString("new_file"));
+        mNewFile = new JMenuItem(getBundle().getString("app.files.action.new_file"));
         mNewFile.addActionListener(aNewFile);
         map.put(ksNewFile, "ksNewFile");
         act.put("ksNewFile", aNewFile);
@@ -218,7 +219,7 @@ public class SshMenuHandler {
                 newFolder(fileBrowserView.getCurrentDirectory(), folderView.getFiles());
             }
         };
-        mNewFolder = new JMenuItem(getBundle().getString("new_folder"));
+        mNewFolder = new JMenuItem(getBundle().getString("app.files.action.new_folder"));
         mNewFolder.addActionListener(aNewFolder);
         mNewFolder.setAccelerator(ksNewFolder);
         map.put(ksNewFolder, "ksNewFolder");
@@ -231,7 +232,7 @@ public class SshMenuHandler {
                 copyToClipboard(false);
             }
         };
-        mCopy = new JMenuItem(getBundle().getString("copy"));
+        mCopy = new JMenuItem(getBundle().getString("app.files.action.copy"));
         mCopy.addActionListener(aCopy);
         map.put(ksCopy, "ksCopy");
         act.put("ksCopy", aCopy);
@@ -244,7 +245,7 @@ public class SshMenuHandler {
                 copyPathToClipboard();
             }
         };
-        mCopyPath = new JMenuItem(getBundle().getString("copy_path"));
+        mCopyPath = new JMenuItem(getBundle().getString("app.files.action.copy_path"));
         mCopyPath.addActionListener(aCopyPath);
         map.put(ksCopyPath, "ksCopyPath");
         act.put("ksCopyPath", aCopyPath);
@@ -257,7 +258,7 @@ public class SshMenuHandler {
                 handlePaste();
             }
         };
-        mPaste = new JMenuItem(getBundle().getString("paste"));
+        mPaste = new JMenuItem(getBundle().getString("app.files.action.paste"));
         mPaste.addActionListener(aPaste);
         map.put(ksPaste, "ksPaste");
         act.put("ksPaste", aPaste);
@@ -270,7 +271,7 @@ public class SshMenuHandler {
                 copyToClipboard(true);
             }
         };
-        mCut = new JMenuItem(getBundle().getString("cut"));
+        mCut = new JMenuItem(getBundle().getString("app.files.action.cut"));
         mCut.addActionListener(aCut);
         map.put(ksCut, "ksCut");
         act.put("ksCut", aCut);
@@ -283,7 +284,7 @@ public class SshMenuHandler {
                 addToFavourites();
             }
         };
-        mAddToFav = new JMenuItem(getBundle().getString("bookmark"));
+        mAddToFav = new JMenuItem(getBundle().getString("app.files.action.bookmark"));
         mAddToFav.addActionListener(aAddToFav);
         map.put(ksAddToFav, "ksAddToFav");
         act.put("ksAddToFav", aAddToFav);
@@ -296,7 +297,7 @@ public class SshMenuHandler {
                 changePermission(folderView.getSelectedFiles(), fileBrowserView.getCurrentDirectory());
             }
         };
-        mChangePerm = new JMenuItem(getBundle().getString("properties"));
+        mChangePerm = new JMenuItem(getBundle().getString("app.files.action.properties"));
         mChangePerm.addActionListener(aChangePerm);
         map.put(ksChangePerm, "ksChangePerm");
         act.put("ksChangePerm", aChangePerm);
@@ -309,21 +310,21 @@ public class SshMenuHandler {
                 createLink(fileBrowserView.getCurrentDirectory(), folderView.getSelectedFiles());
             }
         };
-        mCreateLink = new JMenuItem(getBundle().getString("create_link"));
+        mCreateLink = new JMenuItem(getBundle().getString("app.files.action.create_link"));
         mCreateLink.addActionListener(aCreateLink);
         map.put(ksCreateLink, "ksCreateLink");
         act.put("ksCreateLink", aCreateLink);
         mCreateLink.setAccelerator(ksCreateLink);
 
-        mExtractHere = new JMenuItem(getBundle().getString("extract_here"));
+        mExtractHere = new JMenuItem(getBundle().getString("app.files.action.extract_here"));
         mExtractHere.addActionListener(e -> {
             extractArchive(folderView.getSelectedFiles()[0].getPath(), fileBrowserView.getCurrentDirectory(),
                     fileBrowserView.getCurrentDirectory());
         });
 
-        mExtractTo = new JMenuItem(getBundle().getString("extract_to"));
+        mExtractTo = new JMenuItem(getBundle().getString("app.files.action.extract_to"));
         mExtractTo.addActionListener(e -> {
-            String text = JOptionPane.showInputDialog(getBundle().getString("select_target"),
+            String text = JOptionPane.showInputDialog(getBundle().getString("app.files.action.select_target"),
                     fileBrowserView.getCurrentDirectory());
             if (text == null || text.length() < 1) {
                 return;
@@ -331,7 +332,7 @@ public class SshMenuHandler {
             extractArchive(folderView.getSelectedFiles()[0].getPath(), text, fileBrowserView.getCurrentDirectory());
         });
 
-        mCreateArchive = new JMenuItem(getBundle().getString("create_archive"));
+        mCreateArchive = new JMenuItem(getBundle().getString("app.files.action.create_archive"));
         mCreateArchive.addActionListener(e -> {
             List<String> files = new ArrayList<>();
             for (FileInfo fileInfo : folderView.getSelectedFiles()) {
@@ -340,16 +341,18 @@ public class SshMenuHandler {
             createArchive(files, fileBrowserView.getCurrentDirectory(), fileBrowserView.getCurrentDirectory());
         });
 
-        mDownload = new JMenuItem(getBundle().getString("download_files"));
+        mDownload = new JMenuItem(getBundle().getString("app.files.action.download_files"));
         mDownload.addActionListener(e -> {
             downloadFiles(folderView.getSelectedFiles(), fileBrowserView.getCurrentDirectory());
         });
 
-        mUpload = new JMenuItem(getBundle().getString("upload_here"));
+        mUpload = new JMenuItem(getBundle().getString("app.files.action.upload_here"));
         mUpload.addActionListener(e -> {
             try {
                 uploadFiles();
             } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (LocalOperationException ex) {
                 ex.printStackTrace();
             }
         });
@@ -546,7 +549,7 @@ public class SshMenuHandler {
     }
 
     private void rename(FileInfo info, String baseFolder) {
-        String text = JOptionPane.showInputDialog(getBundle().getString("please_new_name"), info.getName());
+        String text = JOptionPane.showInputDialog(getBundle().getString("app.files.message.please_new_name"), info.getName());
         if (text != null && text.length() > 0) {
             renameAsync(info.getPath(), PathUtils.combineUnix(PathUtils.getParent(info.getPath()), text), baseFolder);
         }
@@ -555,8 +558,7 @@ public class SshMenuHandler {
     private void renameAsync(String oldName, String newName, String baseFolder) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.rename(oldName, newName, fileBrowserView.getFileSystem(),
-                    instance, fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.rename(oldName, newName, fileBrowserView.getFileSystem(), instance)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -586,8 +588,7 @@ public class SshMenuHandler {
             return;
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.delete(targetList, fileBrowserView.getFileSystem(),
-                    instance, fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.delete(targetList, fileBrowserView.getFileSystem(), instance)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -612,8 +613,7 @@ public class SshMenuHandler {
     public void newFile(String baseFolder, FileInfo[] files) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.newFile(files, fileBrowserView.getFileSystem(), baseFolder,
-                    instance, fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.newFile(files, fileBrowserView.getFileSystem(), baseFolder, instance)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -638,8 +638,7 @@ public class SshMenuHandler {
     public void newFolder(String baseFolder, FileInfo[] files) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.newFolder(files, baseFolder, fileBrowserView.getFileSystem(),
-                    instance, fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.newFolder(files, baseFolder, fileBrowserView.getFileSystem(), instance)) {
                 fileBrowserView.render(baseFolder);
             }
         });
@@ -718,8 +717,7 @@ public class SshMenuHandler {
     public void copy(List<FileInfo> files, String targetFolder) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.copyTo(instance, files, targetFolder,
-                    fileBrowserView.getFileSystem(), fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.copyTo(instance, files, targetFolder, fileBrowserView.getFileSystem())) {
                 fileBrowserView.render(targetFolder);
             }
         });
@@ -742,8 +740,7 @@ public class SshMenuHandler {
     public void move(List<FileInfo> files, String targetFolder) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.moveTo(instance, files, targetFolder,
-                    fileBrowserView.getFileSystem(), fileBrowser.getHolder()::getSudoPassword)) {
+            if (fileOperations.moveTo(instance, files, targetFolder, fileBrowserView.getFileSystem())) {
                 fileBrowserView.render(targetFolder);
             }
         });
@@ -780,10 +777,10 @@ public class SshMenuHandler {
 
     public JPopupMenu createAddressPopup() {
         JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem mOpenInNewTab = new JMenuItem(getBundle().getString("open_new_tab"));
-        JMenuItem mCopyPath = new JMenuItem(getBundle().getString("copy_path"));
-        JMenuItem mOpenInTerminal = new JMenuItem(getBundle().getString("open_in_terminal"));
-        JMenuItem mBookmark = new JMenuItem(getBundle().getString("bookmark"));
+        JMenuItem mOpenInNewTab = new JMenuItem(getBundle().getString("app.files.action.open_new_tab"));
+        JMenuItem mCopyPath = new JMenuItem(getBundle().getString("app.files.action.copy_path"));
+        JMenuItem mOpenInTerminal = new JMenuItem(getBundle().getString("app.files.action.open_in_terminal"));
+        JMenuItem mBookmark = new JMenuItem(getBundle().getString("app.files.action.bookmark"));
         popupMenu.add(mOpenInNewTab);
         popupMenu.add(mCopyPath);
         popupMenu.add(mOpenInTerminal);
@@ -819,8 +816,10 @@ public class SshMenuHandler {
     private void openRunInBackground(String folder, String file) {
         
         fileBrowser.getHolder().submitSSHOperation(instance -> {
-            if (fileOperations.runScriptInBackground(instance,
-                    "cd \"" + folder + "\"; nohup \"" + file + "\" &", new AtomicBoolean())) {
+            String cmd;
+            int ret = instance.exec(cmd = "cd \"" + folder + "\"; nohup \"" + file + "\" &", new AtomicBoolean(), new StringBuilder());
+            if (ret != 0) {
+                throw new RemoteOperationException.ErrorReturnCode(cmd, ret);
             }
         });
         
@@ -842,7 +841,7 @@ public class SshMenuHandler {
         fileBrowser.getHolder().submitSSHOperationStoppable(instance -> {
             if (!archiveOperation.extractArchive(instance, archive, folder, stopFlag)) {
                 if (!fileBrowser.isSessionClosed()) {
-                    JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                    JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                 }
             }
             fileBrowserView.render(currentFolder);
@@ -869,7 +868,7 @@ public class SshMenuHandler {
         fileBrowser.getHolder().submitSSHOperationStoppable(instance -> {
             if (!archiveOperation.createArchive(instance, files, folder, stopFlag)) {
                 if (!fileBrowser.isSessionClosed()) {
-                    JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
+                    JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                 }
             }
             fileBrowserView.render(currentFolder);
@@ -896,7 +895,7 @@ public class SshMenuHandler {
         throw new RuntimeException("Not implemented");
     }
 
-    private void uploadFiles() throws IOException {
+    private void uploadFiles() throws IOException, LocalOperationException {
         NativeFileChooser jfc = new NativeFileChooser();
         jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         jfc.setMultiSelectionEnabled(true);

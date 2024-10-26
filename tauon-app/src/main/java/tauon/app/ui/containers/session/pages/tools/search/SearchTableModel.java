@@ -11,9 +11,9 @@ public class SearchTableModel extends AbstractTableModel {
     private static final long serialVersionUID = 7212506492710233442L;
     private final List<SearchResult> list = new ArrayList<>();
     private final String[] columns = new String[]{
-            getBundle().getString("filename"),
-            getBundle().getString("type"),
-            getBundle().getString("path")};
+            getBundle().getString("app.tools_file_search.label.filename"),
+            getBundle().getString("app.tools_file_search.label.type"),
+            getBundle().getString("app.tools_file_search.label.path")};
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {

@@ -25,4 +25,13 @@ public class AlertDialogUtils {
         );
     }
     
+    public static void showInfo(Component parent, Object message){
+        JOptionPane.showMessageDialog(
+                parent,
+                message,
+                LanguageService.getBundle().getString("utils.alert.show_info.title"),
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+    
 }

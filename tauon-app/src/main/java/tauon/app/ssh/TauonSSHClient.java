@@ -18,6 +18,8 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.services.SessionService;
 import tauon.app.services.SettingsService;
 import tauon.app.settings.HopEntry;
@@ -84,11 +86,10 @@ public class TauonSSHClient {
         this.openPortForwarding = openPortForwarding;
     }
     
-    public synchronized boolean connect() throws InterruptedException {
+    public synchronized boolean connect(boolean force) throws InterruptedException {
         
-        // TODO add flag to force reconnect, sometimes there are timeouts but this method
         // stills saying connected
-        if(isConnected()) {
+        if(force || isConnected()) {
             LOG.warn("Client is already connected.");
             return true;
         }
@@ -112,9 +113,6 @@ public class TauonSSHClient {
             disconnect();
             
             LOG.info("Begin connecting client.");
-            
-            sftp = null;
-            portForwardingStates.clear();
             
             try {
                 sshConnectedHop = new SSHConnectedHop(info);
@@ -231,21 +229,26 @@ public class TauonSSHClient {
         if(sshConnectedHop != null) {
             sshConnectedHop.disconnect();
             sshConnectedHop = null;
+            sftp = null;
         }
         
     }
     
-    public synchronized SFTPClient getSftpClient() throws IOException {
+    public synchronized SFTPClient getSftpClient() throws RemoteOperationException, SessionClosedException {
         if (closed.get()) {
-            throw new IOException("Closed by user");
+            throw new SessionClosedException();
         }
         
         if(!isConnected()){
-            throw new IOException("Not connected");
+            throw new RemoteOperationException.NotConnected();
         }
         
         if(sftp == null){
-            sftp = sshConnectedHop.sshj.newSFTPClient();
+            try {
+                sftp = sshConnectedHop.sshj.newSFTPClient();
+            } catch (IOException e) {
+                throw new RemoteOperationException.RealIOException(e);
+            }
             this.sftp.getSFTPEngine().setTimeoutMs(sshConnectedHop.sshj.getTimeout());
             this.sftp.getSFTPEngine().getSubsystem().setAutoExpand(true);
         }
@@ -253,33 +256,39 @@ public class TauonSSHClient {
         return sftp;
     }
     
-    public synchronized Session openSession() throws Exception {
+    public synchronized Session openSession() throws RemoteOperationException, SessionClosedException {
         if (closed.get()) {
-            throw new IOException("Closed by user");
+            throw new SessionClosedException();
         }
         
         if(!isConnected()){
-            throw new IOException("Not connected");
+            throw new RemoteOperationException.NotConnected();
         }
         
-        Session session = sshConnectedHop.sshj.startSession();
-        
-        if(info.isXForwardingEnabled()) {
+        try {
             
-            Random r = new Random();
-            StringBuilder faker = new StringBuilder();
-            for (int i = 0; i < 32; i++) {
-                int n = r.nextInt(16);
-                if(n < 10)
-                    faker.append(n);
-                else
-                    faker.append((char)('a' + (char)(n-10)));
+            Session session = sshConnectedHop.sshj.startSession();
+            
+            if(info.isXForwardingEnabled()) {
+                
+                Random r = new Random();
+                StringBuilder faker = new StringBuilder();
+                for (int i = 0; i < 32; i++) {
+                    int n = r.nextInt(16);
+                    if(n < 10)
+                        faker.append(n);
+                    else
+                        faker.append((char)('a' + (char)(n-10)));
+                }
+                
+                session.reqX11Forwarding("MIT-MAGIC-COOKIE-1", faker.toString(), 0);
+                
             }
+            return session;
             
-            session.reqX11Forwarding("MIT-MAGIC-COOKIE-1", faker.toString(), 0);
+        } catch (ConnectionException | TransportException e) {
+            throw new RemoteOperationException.RealIOException(e);
         }
-        
-        return session;
     }
     
     private void forwardLocalPort(PortForwardingRule r) throws Exception {
@@ -459,7 +468,7 @@ public class TauonSSHClient {
                     throw new OperationCancelledException();
                 }
                 
-                boolean authenticated = this.getAuthMethods(allowedMethodsIfNotAuthenticated, userPassCache.user, rememberUser);
+                boolean authenticated = this.getAuthMethods(allowedMethodsIfNotAuthenticated, userPassCache.user);
                 if (authenticated) {
                     return; // All right
                 }
@@ -468,8 +477,7 @@ public class TauonSSHClient {
                 // order sent by server
                 for (String authMethod : allowedMethodsIfNotAuthenticated) {
                     
-                    if (Thread.interrupted()) {
-                        Thread.currentThread().interrupt();
+                    if (Thread.currentThread().isInterrupted()) {
                         throw new InterruptedException(); // Will be disconnected by TauonSSHClient
                     }
                     
@@ -524,7 +532,7 @@ public class TauonSSHClient {
             
         }
         
-        private char[] promptPassword(String user, int index, AtomicBoolean rememberPassword, boolean isRetrying){
+        private char[] promptPassword(String user, int index, AtomicBoolean rememberPassword, boolean isRetrying) throws OperationCancelledException {
             
             UserPassCache userPassCache;
             
@@ -551,8 +559,7 @@ public class TauonSSHClient {
             
         }
         
-        private boolean getAuthMethods(List<String> allowedMethodsIfNotAuthenticated, String user, AtomicBoolean remember)
-                throws OperationCancelledException {
+        private boolean getAuthMethods(List<String> allowedMethodsIfNotAuthenticated, String user) {
             System.out.println("Trying to get allowed authentication methods...");
             try {
                 sshj.auth(user, new AuthNone());
@@ -582,7 +589,7 @@ public class TauonSSHClient {
             sshj.authPublickey(user, provider);
         }
         
-        private void authPassword(int index, String user, boolean isUserRemembered, boolean haveToRememberUser) throws Exception {
+        private void authPassword(int index, String user, boolean isUserRemembered, boolean haveToRememberUser) throws OperationCancelledException {
             
             AtomicBoolean rememberPassword = isUserRemembered || haveToRememberUser ? new AtomicBoolean() : null;
             
