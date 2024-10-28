@@ -89,7 +89,7 @@ public class TauonSSHClient {
     public synchronized boolean connect(boolean force) throws InterruptedException {
         
         // stills saying connected
-        if(force || isConnected()) {
+        if(!force && isConnected()) {
             LOG.warn("Client is already connected.");
             return true;
         }
@@ -172,6 +172,7 @@ public class TauonSSHClient {
             Thread.currentThread().interrupt();
             throw e;
         }catch (ExecutionException e){
+            LOG.error("Execution exception while connecting.", e);
             guiHandle.reportException(e.getCause());
             return false;
         }finally {
@@ -287,6 +288,7 @@ public class TauonSSHClient {
             return session;
             
         } catch (ConnectionException | TransportException e) {
+            LOG.error("Exception while starting session.", e);
             throw new RemoteOperationException.RealIOException(e);
         }
     }
@@ -368,9 +370,9 @@ public class TauonSSHClient {
             this.hopEntry = hopEntry;
         }
         
-        private void connect(int index) throws IOException, OperationCancelledException {
-            
-            try {
+        private void connect(int index) throws IOException, OperationCancelledException, InterruptedException {
+        
+//            try {
                 
                 ///////
                 // CONNECT
@@ -408,8 +410,8 @@ public class TauonSSHClient {
                     this.sshj.addHostKeyVerifier(hostKeyVerifier);
                     this.sshj.connect(hopEntry.getHost(), hopEntry.getPort());
                 } else {
-                    
-                    try {
+                
+//                    try {
                         LOG.debug("Tunneling through...");
                         tunnelThrough(index);
                         LOG.debug("adding host key verifier");
@@ -422,11 +424,11 @@ public class TauonSSHClient {
                             LOG.debug("port forwarding...");
                             this.connectViaPortForwarding();
                         }
-                    } catch (Exception e) {
-                        LOG.error("Exception while connecting multihop", e);
+//                    } catch (Exception e) {
+//                        LOG.error("Exception while connecting multihop", e);
 //                        disconnect(); // Will be disconnected by TauonSSHClient
-                        throw e;
-                    }
+//                        throw e;
+//                    }
                 }
                 
                 sshj.getConnection().getKeepAlive().setKeepAliveInterval(5);
@@ -526,10 +528,10 @@ public class TauonSSHClient {
                 
                 throw new IOException("Authentication failed");
                 
-            } catch (Exception e) {
-                throw ExceptionUtils.sneakyThrow(e);
-            }
-            
+//            } catch (Exception e) {
+//                throw ExceptionUtils.sneakyThrow(e);
+//            }
+        
         }
         
         private char[] promptPassword(String user, int index, AtomicBoolean rememberPassword, boolean isRetrying) throws OperationCancelledException {
@@ -628,19 +630,19 @@ public class TauonSSHClient {
         }
         
         // recursively
-        private void tunnelThrough(int index) throws Exception {
+        private void tunnelThrough(int index) throws OperationCancelledException, IOException, InterruptedException {
             HopEntry ent = info.getJumpHosts().get(index);
             previousHop = new SSHConnectedHop(ent);
             previousHop.connect(index+1);
         }
         
-        private void connectViaTcpForwarding() throws Exception {
+        private void connectViaTcpForwarding() throws IOException {
             this.sshj.connectVia(this.previousHop.sshj.newDirectConnection(
                     hopEntry.getHost(), hopEntry.getPort()), hopEntry.getHost(), hopEntry.getPort()
             );
         }
         
-        private void connectViaPortForwarding() throws Exception {
+        private void connectViaPortForwarding() throws IOException, InterruptedException {
             serverSocket = new ServerSocket();
             serverSocket.setReuseAddress(true);
             serverSocket.bind(new InetSocketAddress("127.0.0.1", 0));
@@ -669,7 +671,10 @@ public class TauonSSHClient {
             }
             
             if(thrown.get() != null){
-                throw new ExecutionException(thrown.get());
+                if(thrown.get() instanceof IOException)
+                    throw (IOException) thrown.get();
+                else
+                    throw new IOException("Unknown exception.", thrown.get());
             }
             
             this.sshj.connect("127.0.0.1", port);

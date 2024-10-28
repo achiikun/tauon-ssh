@@ -3,12 +3,9 @@
  */
 package tauon.app.ssh;
 
-import com.jcraft.jsch.IO;
-import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.sftp.SFTPClient;
-import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +26,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 
 /**
  * @author subhro
@@ -94,10 +90,11 @@ public class TauonRemoteSessionInstance {
         int operate(Session session) throws IOException, OperationCancelledException, RemoteOperationException;
     }
     
-    private int getSession(Operator operator) throws RemoteOperationException, SessionClosedException, OperationCancelledException {
+    private int getTemporarySession(Operator operator) throws RemoteOperationException, SessionClosedException, OperationCancelledException {
         try (Session session = ssh.openSession()) {
             return operator.operate(session);
         } catch (IOException e) {
+            LOG.error("Exception while operating with temporary session.", e);
             throw new RemoteOperationException.RealIOException(e);
         }
     }
@@ -108,7 +105,7 @@ public class TauonRemoteSessionInstance {
     
     public int exec(String command, ExecCallback callback, boolean pty) throws RemoteOperationException, SessionClosedException, OperationCancelledException {
         
-        return getSession(session -> {
+        return getTemporarySession(session -> {
             session.setAutoExpand(true);
             if (pty) {
                 session.allocatePTY("vt100", 80, 24, 0, 0, Collections.emptyMap());
@@ -152,7 +149,7 @@ public class TauonRemoteSessionInstance {
             throw new OperationCancelledException();
         }
         
-        return getSession(session -> {
+        return getTemporarySession(session -> {
             
             session.setAutoExpand(true);
             try (final Command cmd = session.exec(command)) {
