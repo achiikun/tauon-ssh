@@ -115,4 +115,15 @@ public class PortForwardingRule {
     public enum PortForwardingType {
         Local, Remote;
     }
+    
+    @Override
+    public String toString() {
+        return "PortForwardingRule{" +
+                "type=" + type +
+                ", remoteHost='" + remoteHost + '\'' +
+                ", localHost='" + localHost + '\'' +
+                ", remotePort=" + remotePort +
+                ", localPort=" + localPort +
+                '}';
+    }
 }
