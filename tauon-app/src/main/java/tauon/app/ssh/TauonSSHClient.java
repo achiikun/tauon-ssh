@@ -300,7 +300,7 @@ public class TauonSSHClient {
         
         portForwardingState.serverSocket = new ServerSocket();
         portForwardingState.serverSocket.setReuseAddress(true);
-        portForwardingState.serverSocket.bind(new InetSocketAddress(r.getLocalHost(), r.getRemotePort()));
+        portForwardingState.serverSocket.bind(new InetSocketAddress(r.getLocalHost(), r.getLocalPort()));
         
         SSHClient ssh = sshConnectedHop.sshj;
         portForwardingState.thread = new Thread(() -> {
