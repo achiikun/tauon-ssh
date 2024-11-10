@@ -118,6 +118,7 @@ public class TauonSSHClient {
                 sshConnectedHop = new SSHConnectedHop(info);
                 sshConnectedHop.connect(0);
                 sshConnectedHop.sshj.getTransport().setDisconnectListener((disconnectReason, s) -> {
+                    LOG.info("SSH called disconnect listener with reason: {}", disconnectReason);
                     
                     // Skip programmatically disconnections
                     if(disconnectReason == DisconnectReason.BY_APPLICATION)
@@ -637,8 +638,10 @@ public class TauonSSHClient {
         }
         
         private void connectViaTcpForwarding() throws IOException {
-            this.sshj.connectVia(this.previousHop.sshj.newDirectConnection(
-                    hopEntry.getHost(), hopEntry.getPort()), hopEntry.getHost(), hopEntry.getPort()
+            this.sshj.connectVia(
+                    this.previousHop.sshj.newDirectConnection(hopEntry.getHost(), hopEntry.getPort()),
+                    hopEntry.getHost(),
+                    hopEntry.getPort()
             );
         }
         

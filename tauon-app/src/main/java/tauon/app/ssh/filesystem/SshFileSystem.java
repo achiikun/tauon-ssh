@@ -602,11 +602,9 @@ public class SshFileSystem implements FileSystem {
         return getConnectedSftpClientReturn(sftp -> new OutputTransferChannel() {
             @Override
             public OutputStream getOutputStream(String path) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
-                return getConnectedSftpClientReturn(sftp1 -> {
-                    RemoteFile remoteFile = sftp.open(path,
-                            EnumSet.of(OpenMode.WRITE, OpenMode.TRUNC, OpenMode.CREAT));
-                    return new SSHRemoteFileOutputStream(remoteFile,
-                            sftp.getSFTPEngine().getSubsystem().getRemoteMaxPacketSize());
+                return getConnectedSftpClientReturn(path, sftp1 -> {
+                    RemoteFile remoteFile = sftp1.open(path, EnumSet.of(OpenMode.WRITE, OpenMode.TRUNC, OpenMode.CREAT));
+                    return new SSHRemoteFileOutputStream(remoteFile, sftp.getSFTPEngine().getSubsystem().getRemoteMaxPacketSize());
                 });
                 
 //                try {
