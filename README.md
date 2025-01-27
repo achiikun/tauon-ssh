@@ -81,4 +81,4 @@ For more information visit [https://github.com/JetBrains/jediterm]()
 
 ## Documentation: (from Muon)</h2>
 
-[https://github.com/devlinx9/muon-ssh/wiki]()
+[https://github.com/devlinx9/muon-ssh/wiki](https://github.com/devlinx9/muon-ssh/wiki)
