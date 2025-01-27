@@ -35,7 +35,7 @@ public class SnippetPanel extends JPanel {
     private final JButton btnEdit;
     private final JButton btnDel;
 
-    public SnippetPanel(Consumer<String> callback, Consumer<String> callback2) {
+    public SnippetPanel(Consumer<String> sendCommandCallback, Consumer<String> closeSnippetCallback) {
         super(new BorderLayout());
         setBorder(new LineBorder(App.skin.getDefaultBorderColor(), 1));
         Box topBox = Box.createHorizontalBox();
@@ -88,8 +88,8 @@ public class SnippetPanel extends JPanel {
                     "New snippet", JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, null,
                     null) == JOptionPane.OK_OPTION) {
-                if (txtCommand.getText().length() < 1
-                        || txtName.getText().length() < 1) {
+                if (txtCommand.getText().isEmpty()
+                        || txtName.getText().isEmpty()) {
                     JOptionPane.showMessageDialog(null,
                             "Please enter name and command");
                     return;
@@ -98,7 +98,7 @@ public class SnippetPanel extends JPanel {
                         txtName.getText(), txtCommand.getText()));
                 SnippetManager.getInstance().saveSnippets();
             }
-            callback2.accept(null);
+            closeSnippetCallback.accept(null);
         });
 
         btnEdit.addActionListener(e -> {
@@ -123,8 +123,8 @@ public class SnippetPanel extends JPanel {
                     "New snippet", JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.PLAIN_MESSAGE, null, null,
                     null) == JOptionPane.OK_OPTION) {
-                if (txtCommand.getText().length() < 1
-                        || txtName.getText().length() < 1) {
+                if (txtCommand.getText().isEmpty()
+                        || txtName.getText().isEmpty()) {
                     JOptionPane.showMessageDialog(null,
                             "Please enter name and command");
                     return;
@@ -133,7 +133,7 @@ public class SnippetPanel extends JPanel {
                 snippetItem.setName(txtName.getText());
                 SnippetManager.getInstance().saveSnippets();
             }
-            callback2.accept(null);
+            closeSnippetCallback.accept(null);
         });
 
         btnDel.addActionListener(e -> {
@@ -147,7 +147,7 @@ public class SnippetPanel extends JPanel {
             SnippetManager.getInstance().getSnippetItems().remove(snippetItem);
             SnippetManager.getInstance().saveSnippets();
             loadSnippets();
-            callback2.accept(null);
+            closeSnippetCallback.accept(null);
         });
 
         btnCopy.addActionListener(e -> {
@@ -161,7 +161,7 @@ public class SnippetPanel extends JPanel {
 
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                     new StringSelection(snippetItem.getCommand()), null);
-            callback2.accept(null);
+            closeSnippetCallback.accept(null);
         });
 
         btnInsert.addActionListener(e -> {
@@ -172,8 +172,8 @@ public class SnippetPanel extends JPanel {
             }
 
             SnippetItem snippetItem = listModel.get(index);
-            callback.accept(snippetItem.getCommand());
-            callback2.accept(null);
+            sendCommandCallback.accept(snippetItem.getCommand());
+            closeSnippetCallback.accept(null);
         });
 
         Box bottomBox = Box.createHorizontalBox();

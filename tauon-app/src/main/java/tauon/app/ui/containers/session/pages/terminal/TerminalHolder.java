@@ -55,7 +55,7 @@ public class TerminalHolder extends Page implements AutoCloseable {
 
         snippetPanel = new SnippetPanel(e -> {
             TerminalComponent tc1 = (TerminalComponent) tabs.getSelectedContent();
-            tc1.sendCommand(e + "\n");
+            tc1.sendCommand(e);// + "\n"); I don't want to send the new line
         }, e -> {
             this.snippetPopupMenu.setVisible(false);
         });
