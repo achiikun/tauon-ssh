@@ -342,7 +342,7 @@ public class PlatformUtils {
     public static void openWeb(String url) {
         if (Desktop.isDesktopSupported()) {
             try {
-                Desktop.getDesktop().browse(new URI(HELP_URL));
+                Desktop.getDesktop().browse(new URI(url));
             } catch (Exception ex) {
                 if (IS_MAC) {
                     openMac(url);
