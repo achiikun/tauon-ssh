@@ -77,7 +77,7 @@ The [TODO](TODO.md) file contains what is currently developed and scheduled to d
 Tauon respects the licence from its previous versions: [GPLv3](/LICENSE)
 
 Jediterm (from JetBrains) has an [LGPLv3](LICENSE-LGPLv3.txt) and a [Apache 2.0](LICENSE-APACHE-2.0.txt).
-For more information visit [https://github.com/JetBrains/jediterm]()
+For more information visit [https://github.com/JetBrains/jediterm](https://github.com/JetBrains/jediterm)
 
 ## Documentation: (from Muon)</h2>
 
