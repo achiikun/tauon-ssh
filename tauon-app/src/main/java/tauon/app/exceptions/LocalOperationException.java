@@ -46,6 +46,20 @@ public class LocalOperationException extends TauonOperationException {
         
     }
     
+    public static class RealIOException extends LocalOperationException {
+        public RealIOException(java.io.IOException e) {
+            super(e);
+        }
+        
+        @Override
+        public String getUserMessage() {
+            return getCause() != null ? FormatUtils.$$(
+                    getBundle().getString("general.local_operation_exception.message.real_io_exception"),
+                    Map.of("MESSAGE", getCause().getMessage())
+            ) : getBundle().getString("general.local_operation_exception.message.real_io_exception_unknown");
+        }
+    }
+    
     public static class NotImplemented extends LocalOperationException {
         private final String message;
         

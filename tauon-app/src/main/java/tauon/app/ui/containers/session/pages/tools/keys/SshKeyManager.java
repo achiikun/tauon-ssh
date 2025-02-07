@@ -10,13 +10,10 @@ import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
 import tauon.app.exceptions.TauonOperationException;
 import tauon.app.ssh.TauonRemoteSessionInstance;
-import tauon.app.ssh.filesystem.InputTransferChannel;
 import tauon.app.ssh.filesystem.OutputTransferChannel;
 import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
-import net.schmizz.sshj.sftp.Response;
-import net.schmizz.sshj.sftp.SFTPException;
 import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
@@ -139,10 +136,10 @@ public class SshKeyManager {
         String path = path1 + ".pub";
 
         // Deleting $HOME/.ssh/id_rsa
-        instance.getSshFs().deleteFile(path1);
+        instance.getSshFs().deleteFile(path1, false);
 
         // Deleting $HOME/.ssh/id_rsa.pub
-        instance.getSshFs().deleteFile(path);
+        instance.getSshFs().deleteFile(path, false);
         
         String cmd = "ssh-keygen -q -N \"" + passPhrase + "\" -f \"" + path1 + "\"";
         

@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class FileBrowser extends Page {
-    private static final Logger LOG = LoggerFactory.getLogger(SessionContentPanel.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileBrowser.class);
     
     private final JSplitPane horizontalSplitter;
     private final ClosableTabbedPanel leftTabs;

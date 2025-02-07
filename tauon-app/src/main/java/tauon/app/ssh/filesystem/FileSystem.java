@@ -1,7 +1,6 @@
 package tauon.app.ssh.filesystem;
 
 import tauon.app.exceptions.OperationCancelledException;
-import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
 import tauon.app.exceptions.TauonOperationException;
 
@@ -27,7 +26,7 @@ public interface FileSystem extends AutoCloseable {
 
     void delete(FileInfo f) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException;
 
-    void deleteFile(String f) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException;
+    void deleteFile(String f, boolean throwIfFileDoesNotExist) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException;
 
     void mkdir(String path) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException;
 

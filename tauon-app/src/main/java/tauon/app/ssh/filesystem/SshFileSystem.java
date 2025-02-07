@@ -13,9 +13,9 @@ import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.util.misc.PathUtils;
 
 import java.io.*;
-import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SshFileSystem implements FileSystem {
@@ -55,39 +55,66 @@ public class SshFileSystem implements FileSystem {
     }
     
     private <T> T getConnectedSftpClientReturn(OperatorReturn<T> operatorReturn) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
-        synchronized (ssh) {
-            ssh.ensureConnected();
-            try {
-                return operatorReturn.operateReturn(ssh.getSftpClient());
-            } catch (SFTPException e) {
-                if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
-                    throw new RemoteOperationException.PermissionDenied(e);
-                } else {
-                    throw new RemoteOperationException.SFTPException(e);
-                }
-            } catch (IOException e) {
-                throw new RemoteOperationException.RealIOException(e);
-            }
-        }
+        return getConnectedSftpClientReturn(null, operatorReturn);
     }
     
     private <T> T getConnectedSftpClientReturn(String path, OperatorReturn<T> operatorReturn) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
         synchronized (ssh) {
-            ssh.ensureConnected();
-            try {
-                return operatorReturn.operateReturn(ssh.getSftpClient());
-            } catch (SFTPException e) {
-                if (e.getStatusCode() == Response.StatusCode.NO_SUCH_FILE
-                        || e.getStatusCode() == Response.StatusCode.NO_SUCH_PATH) {
-                    throw new RemoteOperationException.FileNotFound(e, path);
+            boolean force = false;
+            while (true) {
+                ssh.ensureConnected(force);
+                try {
+                    return operatorReturn.operateReturn(ssh.getSftpClient());
+                } catch (SFTPException e) {
+                    if (path != null && (
+                            e.getStatusCode() == Response.StatusCode.NO_SUCH_FILE
+                            || e.getStatusCode() == Response.StatusCode.NO_SUCH_PATH)
+                    ) {
+                        throw new RemoteOperationException.FileNotFound(e, path);
+                    }
+                    if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
+                        throw new RemoteOperationException.PermissionDenied(e);
+                    } else {
+                        if(!force && e.getCause() instanceof TimeoutException){
+                            force = true;
+                            // Continue to another iteration forcing connection
+                        }else{
+                            throw new RemoteOperationException.SFTPException(e);
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RemoteOperationException.RealIOException(e);
                 }
-                if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
-                    throw new RemoteOperationException.PermissionDenied(e);
-                }else{
-                    throw new RemoteOperationException.SFTPException(e);
+            }
+        }
+    }
+    
+    private void getConnectedSftpClient(String path, Operator operator) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
+        synchronized (ssh) {
+            boolean force = false;
+            while (true) {
+                ssh.ensureConnected(force);
+                try {
+                    operator.operate(ssh.getSftpClient());
+                    return;
+                } catch (SFTPException e) {
+                    if (e.getStatusCode() == Response.StatusCode.NO_SUCH_FILE
+                            || e.getStatusCode() == Response.StatusCode.NO_SUCH_PATH) {
+                        throw new RemoteOperationException.FileNotFound(e, path);
+                    }
+                    if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
+                        throw new RemoteOperationException.PermissionDenied(e);
+                    } else {
+                        if(!force && e.getCause() instanceof TimeoutException){
+                            force = true;
+                            // Continue to another iteration forcing connection
+                        }else{
+                            throw new RemoteOperationException.SFTPException(e);
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RemoteOperationException.RealIOException(e);
                 }
-            } catch (IOException e) {
-                throw new RemoteOperationException.RealIOException(e);
             }
         }
     }
@@ -366,10 +393,18 @@ public class SshFileSystem implements FileSystem {
     }
 
     @Override
-    public void deleteFile(String f) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
-        getConnectedSftpClientReturn(f, sftp -> {
-            sftp.rm(f);
-            return null;
+    public void deleteFile(String f, boolean throwIfFileDoesNotExist) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
+        getConnectedSftpClient(f, sftp -> {
+            try{
+                sftp.rm(f);
+            }catch (SFTPException e) {
+                if (throwIfFileDoesNotExist || (
+                        e.getStatusCode() != Response.StatusCode.NO_SUCH_FILE
+                        && e.getStatusCode() != Response.StatusCode.NO_SUCH_PATH
+                )) {
+                    throw e;
+                }
+            }
         });
 //        synchronized (ssh) {
 //            SFTPClient sftp = getConnectedSftpClient();

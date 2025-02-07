@@ -288,7 +288,9 @@ public class TauonSSHClient {
             }
             return session;
             
-        } catch (ConnectionException | TransportException e) {
+        } catch (ConnectionException e) {
+            throw new RemoteOperationException.NotConnected(e);
+        }catch (TransportException e) {
             LOG.error("Exception while starting session.", e);
             throw new RemoteOperationException.RealIOException(e);
         }
