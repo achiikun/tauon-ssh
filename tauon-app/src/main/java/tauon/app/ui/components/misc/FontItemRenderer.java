@@ -31,9 +31,9 @@ public class FontItemRenderer extends JLabel implements ListCellRenderer<String>
     public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
                                                   boolean isSelected, boolean cellHasFocus) {
         System.out.println("Creating font in renderer: " + value);
-        Font font = FontUtils.loadTerminalFont(value).deriveFont(Font.PLAIN, 14);
+        Font font = FontUtils.loadTerminalFont(value).getFont().deriveFont(Font.PLAIN, 14);
         setFont(font);
-        setText(FontUtils.TERMINAL_FONTS.get(value));
+        setText(value);
         setBackground(isSelected ? App.skin.getAddressBarSelectionBackground() : App.skin.getSelectedTabColor());
         setForeground(isSelected ? App.skin.getDefaultSelectionForeground() : App.skin.getDefaultForeground());
         return this;

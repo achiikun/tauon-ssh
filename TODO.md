@@ -43,7 +43,7 @@ List of scheduled features and bugs to be solved:
 * [X] Bug: SymLinks not showed in Local File Explorer
 * [X] Bug: Open in explorer not supported on linux and mac. (Added opening files in explorer)
 * [X] Bug: Sometimes when shell is present, no cursor is blinking (After reconnecting, cursor disappears)
-* [ ] Bug: Unicode characters in terminal (tree is not displaying properly)
+* [X] Bug: Unicode characters in terminal (tree is not displaying properly)
 * [ ] Bug: Forwarded ports remain active after closing session
 * [X] Terminal
   * [X] Snippets aren't saved

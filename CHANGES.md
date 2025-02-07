@@ -1,3 +1,8 @@
+# Tauon 3.3.0
+
+- New fonts were included.
+- More refactorings and stability.
+
 # Tauon 3.2.0
 
 - Jediterm is in an external repository.

@@ -1,7 +1,13 @@
 package tauon.app.ui.containers.session.pages.terminal;
 
+import com.jediterm.terminal.TerminalDisplay;
+import com.jediterm.terminal.model.JediTerminal;
+import com.jediterm.terminal.model.StyleState;
+import com.jediterm.terminal.model.TerminalTextBuffer;
 import com.jediterm.terminal.ui.JediTermWidget;
+import com.jediterm.terminal.ui.TerminalPanel;
 import com.jediterm.terminal.ui.settings.SettingsProvider;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
@@ -40,7 +46,12 @@ public class CustomJediterm extends JediTermWidget {
     protected JScrollBar createScrollBar() {
         return new JScrollBar();
     }
-
+    
+    @Override
+    protected TerminalPanel createTerminalPanel(@NotNull SettingsProvider settingsProvider, @NotNull StyleState styleState, @NotNull TerminalTextBuffer terminalTextBuffer) {
+        return new CustomTerminalPanel(settingsProvider, terminalTextBuffer, styleState);
+    }
+    
     public boolean isStarted() {
         return started;
     }

@@ -3,10 +3,7 @@ package tauon.app.settings;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import tauon.app.ui.laf.theme.DarkTerminalTheme;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
-import tauon.app.util.misc.CollectionHelper;
-import tauon.app.util.misc.Constants;
-import tauon.app.util.misc.Language;
-import tauon.app.util.misc.PlatformUtils;
+import tauon.app.util.misc.*;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -52,7 +49,7 @@ public class Settings {
     private int termWidth = 80;
     private int termHeight = 24;
     private boolean terminalBell = false;
-    private String terminalFontName = "NotoMono-Regular";
+    private String terminalFontName = FontUtils.TERMINAL_FONTS.keySet().iterator().next();
     private int terminalFontSize = 14;
     private Language language = Language.ENGLISH;
     private String terminalTheme = "Dark";

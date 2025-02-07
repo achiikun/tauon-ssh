@@ -79,8 +79,13 @@ The [TODO](TODO.md) file contains what is currently developed and scheduled to d
 
 Tauon respects the licence from its previous versions: [GPLv3](/LICENSE)
 
-Jediterm (from JetBrains) has double license: [LGPLv3](LICENSE-LGPLv3.txt) and [Apache 2.0](LICENSE-APACHE-2.0.txt).
-For more information visit [https://github.com/JetBrains/jediterm](https://github.com/JetBrains/jediterm)
+Jediterm (from JetBrains) has double license: [LGPLv3](https://github.com/achiikun/jediterm/blob/master/LICENSE-LGPLv3.txt) and [Apache 2.0](https://github.com/achiikun/jediterm/blob/master/LICENSE-APACHE-2.0.txt).
+For more information visit [https://github.com/JetBrains/jediterm](https://github.com/JetBrains/jediterm).
+
+### Fonts
+
+- The font **JetbrainsMono** uses a [OFL](https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt) license.
+- The font **Hack** uses a [MIT](https://github.com/source-foundry/Hack/blob/master/LICENSE.md) licence.
 
 ## Documentation: (from Muon)</h2>
 

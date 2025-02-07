@@ -135,8 +135,9 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
     @Override
     public Font getTerminalFont() {
         System.out.println("Called terminal font: " + SettingsService.getSettings().getTerminalFontName());
-        return FontUtils.loadTerminalFont(SettingsService.getSettings().getTerminalFontName()).deriveFont(Font.PLAIN,
-                SettingsService.getSettings().getTerminalFontSize());
+        return FontUtils.loadTerminalFont(SettingsService.getSettings().getTerminalFontName())
+                .getFont()
+                .deriveFont(Font.PLAIN, SettingsService.getSettings().getTerminalFontSize());
     }
 
     @Override
@@ -193,5 +194,9 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
         } catch (OperationCancelledException e) {
             return ""; // If returned null, jediterm fails
         }
+    }
+    
+    public FontUtils.TerminalFont getCustomTerminalFont() {
+        return FontUtils.loadTerminalFont(SettingsService.getSettings().getTerminalFontName());
     }
 }
