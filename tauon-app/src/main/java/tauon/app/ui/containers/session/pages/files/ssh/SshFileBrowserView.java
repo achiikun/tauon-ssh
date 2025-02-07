@@ -3,20 +3,22 @@ package tauon.app.ui.containers.session.pages.files.ssh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
-import tauon.app.exceptions.*;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
+import tauon.app.exceptions.TauonOperationException;
 import tauon.app.services.LanguageService;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.LocalFileSystem;
+import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
-import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
-import tauon.app.ssh.filesystem.SshFileSystem;
-import tauon.app.ui.containers.session.pages.terminal.snippets.SnippetPanel;
+import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.utils.AlertDialogUtils;
 import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.PathUtils;
@@ -25,10 +27,11 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
+import static tauon.app.services.LanguageService.getBundle;
 
 public class SshFileBrowserView extends AbstractFileBrowserView {
     private static final Logger LOG = LoggerFactory.getLogger(SshFileBrowserView.class);
@@ -117,7 +120,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
             SwingUtilities.invokeLater(() -> {
                 addressBar.setText(path);
                 folderView.setItems(list2);
-                tabTitle.getCallback().accept(PathUtils.getFileName(path));
+                setTabTitle(path);
                 int tc = list2.size();
                 String text = String.format("Total %d remote file(s)", tc);
                 fileBrowser.updateRemoteStatus(text);
@@ -252,7 +255,12 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
             return false;
         }
     }
-
+    
+    @Override
+    public String getTitlePrefix() {
+        return getBundle().getString("app.files.tabs.remote.title_prefix");
+    }
+    
     public FileSystem getFileSystem() {
         return this.fileBrowser.getSSHFileSystem();
     }

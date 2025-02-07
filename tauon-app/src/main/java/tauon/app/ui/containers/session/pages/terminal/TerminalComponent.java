@@ -1,20 +1,15 @@
 package tauon.app.ui.containers.session.pages.terminal;
 
-import com.jediterm.terminal.RequestOrigin;
 import com.jediterm.terminal.model.TerminalApplicationTitleListener;
 import com.jediterm.terminal.ui.JediTermWidget;
-import com.jediterm.terminal.ui.TerminalSession;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.App;
 import tauon.app.services.SettingsService;
-import tauon.app.ui.components.closabletabs.ClosableTabContent;
-import tauon.app.ui.components.closabletabs.ClosableTabbedPanel.TabTitle;
-import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
-import tauon.app.ui.containers.session.pages.info.sysload.SysLoadPage;
+import tauon.app.ui.components.closabletabs.TabHandle;
+import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.terminal.ssh.DisposableTtyConnector;
 import tauon.app.ui.containers.session.pages.terminal.ssh.SshTtyConnector;
 
@@ -24,21 +19,21 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
-public class TerminalComponent extends JPanel implements ClosableTabContent {
-    private static final Logger LOG = LoggerFactory.getLogger(SysLoadPage.class);
+public class TerminalComponent extends JPanel {
+    private static final Logger LOG = LoggerFactory.getLogger(TerminalComponent.class);
     
     private final JPanel contentPane;
     private final JediTermWidget term;
     private DisposableTtyConnector tty;
     private String name;
     private final Box reconnectionBox;
-    private final TabTitle tabTitle;
+    
+    private TabHandle tabHandle;
 
     public TerminalComponent(SessionInfo info, String name, String command, SessionContentPanel sessionContentPanel) {
         setLayout(new BorderLayout());
         System.out.println("Current terminal font: " + SettingsService.getSettings().getTerminalFontName());
         this.name = name;
-        this.tabTitle = new TabTitle();
         contentPane = new JPanel(new BorderLayout());
         JRootPane rootPane = new JRootPane();
         rootPane.setContentPane(contentPane);
@@ -92,21 +87,26 @@ public class TerminalComponent extends JPanel implements ClosableTabContent {
         term.getTerminal().addApplicationTitleListener(new TerminalApplicationTitleListener() {
             @Override
             public void onApplicationTitleChanged(@Nls @NotNull String newApplicationTitle) {
-                System.out.println("new title: " + newApplicationTitle);
+                LOG.debug("Terminal requested a new title: {}", newApplicationTitle);
                 TerminalComponent.this.name = newApplicationTitle;
-                SwingUtilities.invokeLater(() -> tabTitle.getCallback().accept(newApplicationTitle));
+                SwingUtilities.invokeLater(() -> tabHandle.setTitle(newApplicationTitle));
             }
         });
         contentPane.add(term);
 
     }
-
+    
+    public void setTabHandle(TabHandle tabHandle) {
+        this.tabHandle = tabHandle;
+        this.tabHandle.setTitle(toString());
+        this.tabHandle.setClosable(this::close);
+    }
+    
     @Override
     public String toString() {
         return "Terminal " + this.name;
     }
 
-    @Override
     public boolean close() {
         System.out.println("Closing terminal..." + name);
         this.term.close();
@@ -114,6 +114,7 @@ public class TerminalComponent extends JPanel implements ClosableTabContent {
     }
 
     public void sendCommand(String command) {
+        // TODO use the same method as sending the password. Plus, is userInput, i want to type ahead.
         this.term.getTerminalStarter().sendString(command, false); // Disable type ahead
     }
 
@@ -128,10 +129,4 @@ public class TerminalComponent extends JPanel implements ClosableTabContent {
         term.start();
     }
 
-    /**
-     * @return the tabTitle
-     */
-    public TabTitle getTabTitle() {
-        return tabTitle;
-    }
 }

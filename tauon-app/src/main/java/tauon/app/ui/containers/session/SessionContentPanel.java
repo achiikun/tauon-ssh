@@ -244,7 +244,13 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     
     public Session openSession() throws Exception {
         remoteSessionInstance.ensureConnected();
-        return remoteSessionInstance.openSession();
+        try {
+            return remoteSessionInstance.openSession();
+        }catch (RemoteOperationException.NotConnected e){
+            LOG.error("Open session assured that you are not connected. Force a new connection.", e);
+            remoteSessionInstance.ensureConnected(true);
+            return remoteSessionInstance.openSession();
+        }
     }
     
     /**

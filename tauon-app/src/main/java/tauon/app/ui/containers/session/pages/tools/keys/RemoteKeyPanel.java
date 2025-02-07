@@ -32,7 +32,6 @@ public class RemoteKeyPanel extends JPanel {
                           Consumer<?> callback2, Consumer<String> callback3) {
         super(new BorderLayout());
         this.info = info;
-        this.info = info;
         this.callback1 = callback1;
         this.callback2 = callback3;
         JLabel lblTitle = new JLabel(getBundle().getString("app.tools_ssh_keys.label.public_key_file"));
@@ -76,11 +75,11 @@ public class RemoteKeyPanel extends JPanel {
 
         btnAdd = new JButton(getBundle().getString("app.tools_ssh_keys.action.add"));
         btnEdit = new JButton(getBundle().getString("app.tools_ssh_keys.action.edit"));
-        btnRemove = new JButton();
+        btnRemove = new JButton(getBundle().getString("app.tools_ssh_keys.action.remove"));
 
         btnAdd.addActionListener(e -> {
             String text = JOptionPane.showInputDialog(null, getBundle().getString("app.tools_ssh_keys.action.new_entry"));
-            if (text != null && text.length() > 0) {
+            if (text != null && !(text = text.trim()).isEmpty()) {
                 model.addElement(text);
                 callback3.accept(getAuthorizedKeys());
             }
@@ -94,7 +93,7 @@ public class RemoteKeyPanel extends JPanel {
             }
             String str = model.get(index);
             String text = JOptionPane.showInputDialog(null, getBundle().getString("app.tools_ssh_keys.action.new_entry"), str);
-            if (text != null && text.length() > 0) {
+            if (text != null && !(text = text.trim()).isEmpty()) {
                 model.set(index, text);
                 callback3.accept(getAuthorizedKeys());
             }
@@ -141,7 +140,7 @@ public class RemoteKeyPanel extends JPanel {
         this.model.clear();
         if (holder.getRemoteAuthorizedKeys() != null) {
             for (String line : holder.getRemoteAuthorizedKeys().split("\n")) {
-                if (line.trim().length() > 0) {
+                if (!(line = line.trim()).isEmpty()) {
                     model.addElement(line);
                 }
             }

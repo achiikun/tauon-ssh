@@ -137,9 +137,9 @@ public class FileBrowser extends Page {
     public void openSshFileBrowserView(String path, AbstractFileBrowserView.PanelOrientation orientation) {
         SshFileBrowserView tab = new SshFileBrowserView(this, path, orientation);
         if (orientation == AbstractFileBrowserView.PanelOrientation.LEFT) {
-            this.leftTabs.addTab(tab.getTabTitle(), tab);
+            tab.setTabHandle(this.leftTabs.addTab(tab));
         } else {
-            this.rightTabs.addTab(tab.getTabTitle(), tab);
+            tab.setTabHandle(this.rightTabs.addTab(tab));
         }
     }
 
@@ -147,9 +147,9 @@ public class FileBrowser extends Page {
 
         LocalFileBrowserView tab = new LocalFileBrowserView(this, path, orientation);
         if (orientation == AbstractFileBrowserView.PanelOrientation.LEFT) {
-            this.leftTabs.addTab(tab.getTabTitle(), tab);
+            tab.setTabHandle(this.leftTabs.addTab(tab));
         } else {
-            this.rightTabs.addTab(tab.getTabTitle(), tab);
+            tab.setTabHandle(this.rightTabs.addTab(tab));
         }
     }
 
@@ -214,11 +214,11 @@ public class FileBrowser extends Page {
         }
         init.set(true);
         SshFileBrowserView left = new SshFileBrowserView(this, null, AbstractFileBrowserView.PanelOrientation.LEFT);
-        this.leftTabs.addTab(left.getTabTitle(), left);
+        left.setTabHandle(this.leftTabs.addTab(left));
 
         LocalFileBrowserView right = new LocalFileBrowserView(this, System.getProperty("user.home"),
                 AbstractFileBrowserView.PanelOrientation.RIGHT);
-        this.rightTabs.addTab(right.getTabTitle(), right);
+        right.setTabHandle(this.rightTabs.addTab(right));
     }
 
     @Override

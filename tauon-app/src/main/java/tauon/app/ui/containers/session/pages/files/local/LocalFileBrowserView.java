@@ -23,6 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static tauon.app.services.LanguageService.getBundle;
+
 public class LocalFileBrowserView extends AbstractFileBrowserView {
     private static final Logger LOG = LoggerFactory.getLogger(LocalFileBrowserView.class);
     
@@ -61,14 +63,19 @@ public class LocalFileBrowserView extends AbstractFileBrowserView {
                 SwingUtilities.invokeLater(() -> {
                     addressBar.setText(path);
                     folderView.setItems(list);
-                    tabTitle.getCallback().accept(PathUtils.getFileName(path));
+                    setTabTitle(path);
                 });
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
-
+    
+    @Override
+    public String getTitlePrefix() {
+        return getBundle().getString("app.files.tabs.local.title_prefix");
+    }
+    
     public void createAddressBar() {
         addressBar = new AddressBar(File.separatorChar, new ActionListener() {
             @Override
@@ -119,7 +126,7 @@ public class LocalFileBrowserView extends AbstractFileBrowserView {
                 int tc = list.size();
                 String text = String.format("Total %d remote file(s)", tc);
                 fileBrowser.updateRemoteStatus(text);
-                tabTitle.getCallback().accept(PathUtils.getFileName(this.path));
+                setTabTitle(this.path);
             });
         });
         

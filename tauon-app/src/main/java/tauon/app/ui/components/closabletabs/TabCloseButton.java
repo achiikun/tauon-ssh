@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 
 /**
  * @author subhro
@@ -19,7 +20,8 @@ public class TabCloseButton extends JComponent {
     /**
      *
      */
-    private boolean hovering;
+    private boolean hoveringTab;
+    private boolean hoveringButton;
     private boolean selected;
     private final Font font;
 
@@ -31,13 +33,13 @@ public class TabCloseButton extends JComponent {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                hovering = true;
+                hoveringButton = true;
                 repaint(0);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                hovering = false;
+                hoveringButton = false;
                 repaint(0);
             }
         });
@@ -46,23 +48,31 @@ public class TabCloseButton extends JComponent {
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(getBackground());
-        boolean drawButton = selected || hovering;
-        g2.setColor(getBackground());
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        if(hoveringButton){
+            if(selected) {
+                g2.setColor(App.skin.getSelectedTabColor());
+            }else{
+                g2.setColor(App.skin.getDefaultBackground());
+            }
+        }else{
+            g2.setColor(getBackground());
+        }
+        
         g2.fillRect(0, 0, getWidth(), getHeight());
+        
+        boolean drawButton = selected || hoveringTab || hoveringButton;
         if (drawButton) {
             g2.setColor(getForeground());
-            int size = Math.min(getHeight(), Math.min(getWidth(), 16));
-            int x = (getWidth() - size) / 2;
-            int y = (getHeight() - size) / 2;
-
             g2.setFont(font);
-            int acc = g2.getFontMetrics().getAscent();
-            int w = g2.getFontMetrics()
-                    .stringWidth(FontAwesomeContants.FA_WINDOW_CLOSE);
-            g2.drawString(FontAwesomeContants.FA_WINDOW_CLOSE, x, y + acc);
+            
+            Rectangle2D metrics = g2.getFontMetrics().getStringBounds(FontAwesomeContants.FA_WINDOW_CLOSE, g2);
+            g2.drawString(
+                    FontAwesomeContants.FA_WINDOW_CLOSE,
+                    ((float) (getWidth() - metrics.getWidth())) / 2,
+                    (float) (metrics.getHeight() + (metrics.getHeight() + metrics.getY()) / 2)
+            );
         }
     }
 
@@ -75,10 +85,10 @@ public class TabCloseButton extends JComponent {
     }
 
     /**
-     * @param hovering the hovering to set
+     * @param hoveringTab the hovering to set
      */
-    public void setHovering(boolean hovering) {
-        this.hovering = hovering;
+    public void setHoveringTab(boolean hoveringTab) {
+        this.hoveringTab = hoveringTab;
         this.repaint(0);
     }
 

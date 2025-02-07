@@ -6,14 +6,12 @@ import tauon.app.App;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
-import tauon.app.ui.components.closabletabs.ClosableTabContent;
-import tauon.app.ui.components.closabletabs.ClosableTabbedPanel.TabTitle;
+import tauon.app.ui.components.closabletabs.TabHandle;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
-import tauon.app.ui.containers.session.pages.files.view.*;
+import tauon.app.ui.containers.session.pages.files.view.OverflowMenuHandler;
 import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderViewEventListener;
-import tauon.app.util.externaleditor.ExternalEditorHandler;
 import tauon.app.util.misc.LayoutUtilities;
 import tauon.app.util.misc.PathUtils;
 
@@ -24,7 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.UUID;
 
-public abstract class AbstractFileBrowserView extends JPanel implements FolderViewEventListener, ClosableTabContent {
+public abstract class AbstractFileBrowserView extends JPanel implements FolderViewEventListener {
     
     private static final Logger LOG = LoggerFactory.getLogger(AbstractFileBrowserView.class);
     
@@ -36,7 +34,8 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
     protected FolderView folderView;
     protected String path;
     protected PanelOrientation orientation;
-    protected TabTitle tabTitle;
+    
+    private TabHandle tabHandle;
 
     protected FileBrowser fileBrowser;
     
@@ -46,7 +45,6 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
         super(new BorderLayout());
         this.fileBrowser = fileBrowser;
         this.orientation = orientation;
-        this.tabTitle = new TabTitle();
 
         UIDefaults toolbarButtonSkin = App.skin.createToolbarSkin();
 
@@ -175,8 +173,24 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
         this.fileBrowser.registerForViewNotification(this);
 
     }
+    
+    public void setTabHandle(TabHandle tabHandle) {
+        this.tabHandle = tabHandle;
+        tabHandle.setClosable(this::close);
+    }
+    
+    protected void setTabTitle(String path){
+        String pref = getTitlePrefix();
+        if(pref != null){
+            tabHandle.setTitle("<html><b>" + pref + "</b>: " + PathUtils.getFileName(path));
+        }else{
+            tabHandle.setTitle(PathUtils.getFileName(path));
+        }
+    }
 
     protected abstract void createAddressBar();
+    
+    public abstract String getTitlePrefix();
 
     public abstract String getHostText();
 
@@ -231,13 +245,6 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
     }
 
     public abstract FileSystem getFileSystem();
-
-    /**
-     * @return the tabTitle
-     */
-    public TabTitle getTabTitle() {
-        return tabTitle;
-    }
 
     public void refreshViewMode() {
         this.folderView.refreshViewMode();

@@ -7,7 +7,6 @@ import tauon.app.ui.components.closabletabs.ClosableTabbedPanel;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.settings.SessionInfo;
-import tauon.app.ui.containers.session.pages.info.sysload.SysLoadPage;
 import tauon.app.ui.containers.session.pages.terminal.snippets.SnippetPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
@@ -20,7 +19,7 @@ import java.awt.event.ComponentEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TerminalHolder extends Page implements AutoCloseable {
-    private static final Logger LOG = LoggerFactory.getLogger(SysLoadPage.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TerminalHolder.class);
     
     private final ClosableTabbedPanel tabs;
     private JPopupMenu snippetPopupMenu;
@@ -48,10 +47,10 @@ public class TerminalHolder extends Page implements AutoCloseable {
         tabs.getButtonsBox().add(btn);
 
         long t1 = System.currentTimeMillis();
-        TerminalComponent tc = new TerminalComponent(info, c + "", null, sessionContentPanel);
-        this.tabs.addTab(tc.getTabTitle(), tc);
+        TerminalComponent tc = new TerminalComponent(info, String.valueOf(c), null, sessionContentPanel);
+        tc.setTabHandle(this.tabs.addTab(tc));
         long t2 = System.currentTimeMillis();
-        System.out.println("Terminal init in: " + (t2 - t1) + " ms");
+        LOG.debug("Terminal was init in: {} ms", t2 - t1);
 
         snippetPanel = new SnippetPanel(e -> {
             TerminalComponent tc1 = (TerminalComponent) tabs.getSelectedContent();
@@ -108,7 +107,6 @@ public class TerminalHolder extends Page implements AutoCloseable {
         }
         init.set(true);
         TerminalComponent tc = (TerminalComponent) this.tabs.getSelectedContent();
-        tc.getTabTitle().getCallback().accept(tc.toString());
         tc.start();
     }
 
@@ -153,8 +151,7 @@ public class TerminalHolder extends Page implements AutoCloseable {
                 command,
                 this.sessionContentPanel
         );
-        this.tabs.addTab(tc.getTabTitle(), tc);
-        tc.getTabTitle().getCallback().accept(tc.toString());
+        tc.setTabHandle(this.tabs.addTab(tc));
         tc.start();
     }
 }

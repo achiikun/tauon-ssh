@@ -12,13 +12,14 @@ import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
 import tauon.app.services.SettingsService;
 import tauon.app.ssh.TauonRemoteSessionInstance;
-import tauon.app.ui.components.closabletabs.ClosableTabContent;
+import tauon.app.ui.components.closabletabs.TabHandle;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.components.misc.TextGutter;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.util.misc.LayoutUtilities;
+import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -40,7 +41,7 @@ import java.util.zip.GZIPInputStream;
 /**
  * @author subhro
  */
-public class LogContent extends JPanel implements ClosableTabContent {
+public class LogContent extends JPanel {
     private static final Logger LOG = LoggerFactory.getLogger(LogContent.class);
     
     private final static int LINE_PER_PAGE = 50;
@@ -63,6 +64,8 @@ public class LogContent extends JPanel implements ClosableTabContent {
     private long totalLines;
     private long currentPage;
     private long pageCount;
+    
+    private TabHandle tabHandle;
     
     /**
      *
@@ -243,6 +246,12 @@ public class LogContent extends JPanel implements ClosableTabContent {
         painter = new DefaultHighlighter.DefaultHighlightPainter(App.skin.getAddressBarSelectionBackground());
         
         initPages();
+    }
+    
+    public void setTabHandle(TabHandle tabHandle) {
+        this.tabHandle = tabHandle;
+        this.tabHandle.setTitle(PathUtils.getFileName(remoteFile));
+        this.tabHandle.setClosable(this::close);
     }
     
     private static void toByteArray(long value, byte[] result) {
@@ -472,7 +481,6 @@ public class LogContent extends JPanel implements ClosableTabContent {
 //        });
     }
     
-    @Override
     public boolean close() {
         try {
             if (raf != null) {
