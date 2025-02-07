@@ -6,12 +6,11 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class SnippetListRenderer extends JPanel
-        implements ListCellRenderer<SnippetItem> {
+public class SnippetListCellRenderer extends JPanel implements ListCellRenderer<SnippetItem> {
     private final JLabel lblName;
     private final JLabel lblCommand;
-
-    public SnippetListRenderer() {
+    
+    public SnippetListCellRenderer() {
         super(new BorderLayout(5, 5));
         setBorder(new EmptyBorder(5, 10, 5, 10));
         lblName = new JLabel();
@@ -20,16 +19,22 @@ public class SnippetListRenderer extends JPanel
         add(lblName);
         add(lblCommand, BorderLayout.SOUTH);
     }
-
+    
     @Override
     public Component getListCellRendererComponent(
             JList<? extends SnippetItem> list, SnippetItem value, int index,
-            boolean isSelected, boolean cellHasFocus) {
-        setBackground(isSelected ? new Color(3, 155, 229)
-                : list.getBackground());
+            boolean isSelected, boolean cellHasFocus
+    ) {
+        setBackground(
+                isSelected
+                        ? new Color(3, 155, 229)
+                        : list.getBackground()
+        );
         lblName.setForeground(
-                isSelected ? App.skin.getDefaultSelectionForeground()
-                        : App.skin.getDefaultForeground());
+                isSelected
+                        ? App.skin.getDefaultSelectionForeground()
+                        : App.skin.getDefaultForeground()
+        );
         lblCommand.setForeground(App.skin.getInfoTextForeground());
         lblName.setText(value.getName());
         lblCommand.setText(value.getCommand());

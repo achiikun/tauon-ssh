@@ -49,7 +49,7 @@ public final class BookmarkManager {
                 LOG.error("Error loading snippets.");
             
         }
-        return true;
+        return loaded;
     }
 
     public Map<String, List<String>> getAll() {

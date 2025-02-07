@@ -23,8 +23,6 @@ List of scheduled features and bugs to be solved:
 * [ ] Store securely proxy password
 * [ ] Let user upload private key files and store them securely
 * [ ] UI: Add countdown in the connecting dialog
-* [ ] Terminal
-    * [ ] Bookmarks aren't saved
 * [ ] Toolbox
     * [ ] Show executed commands
 * [ ] Diskspace
@@ -47,6 +45,8 @@ List of scheduled features and bugs to be solved:
 * [X] Bug: Sometimes when shell is present, no cursor is blinking (After reconnecting, cursor disappears)
 * [ ] Bug: Unicode characters in terminal (tree is not displaying properly)
 * [ ] Bug: Forwarded ports remain active after closing session
+* [X] Terminal
+  * [X] Snippets aren't saved
 * [ ] File Browser:
     * [ ] File browser arrows (history) don't work
 

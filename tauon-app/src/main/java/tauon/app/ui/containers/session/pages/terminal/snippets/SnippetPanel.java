@@ -68,14 +68,18 @@ public class SnippetPanel extends JPanel {
                 });
         topBox.add(searchTextField);
 
-        listView.setCellRenderer(new SnippetListRenderer());
+        listView.setCellRenderer(new SnippetListCellRenderer());
         listView.setBackground(App.skin.getTableBackgroundColor());
-
-        btnAdd = new JButton(getBundle().getString("app.terminal.snippets.action.add"));
-        btnEdit = new JButton(getBundle().getString("app.terminal.snippets.action.edit"));
-        btnDel = new JButton(getBundle().getString("app.terminal.snippets.action.delete"));
+        
         btnInsert = new JButton(getBundle().getString("app.terminal.snippets.action.insert"));
         btnCopy = new JButton(getBundle().getString("app.terminal.snippets.action.copy"));
+        
+        btnAdd = new JButton(FontAwesomeContants.FA_PLUS);//. getBundle().getString("app.terminal.snippets.action.add"));
+        btnAdd.setFont(App.skin.getIconFont());
+        btnEdit = new JButton(FontAwesomeContants.FA_PENCIL);//getBundle().getString("app.terminal.snippets.action.edit"));
+        btnEdit.setFont(App.skin.getIconFont());
+        btnDel = new JButton(FontAwesomeContants.FA_TRASH);//getBundle().getString("app.terminal.snippets.action.delete"));
+        btnDel.setFont(App.skin.getIconFont());
 
         btnAdd.addActionListener(e -> {
             JTextField txtName = new SkinnedTextField(30);

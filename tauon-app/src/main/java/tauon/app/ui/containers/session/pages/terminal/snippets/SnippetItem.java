@@ -16,6 +16,10 @@ public class SnippetItem {
         this.name = name;
         this.command = command;
     }
+    
+    public SnippetItem() {
+    
+    }
 
     public String getName() {
         return name;
