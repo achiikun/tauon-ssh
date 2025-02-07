@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.LocalOperationException;
+import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.TauonOperationException;
 import tauon.app.util.misc.PathUtils;
 
@@ -175,8 +176,16 @@ public class LocalFileSystem implements FileSystem {
      * @see nixexplorer.core.FileSystemProvider#deleteFile(java.lang.String)
      */
     @Override
-    public void deleteFile(String f) {
-        new File(f).delete();
+    public void deleteFile(String f, boolean throwIfFileDoesNotExist) throws LocalOperationException {
+        try {
+            if(throwIfFileDoesNotExist){
+                    Files.deleteIfExists(new File(f).toPath());
+            }else{
+                Files.delete(new File(f).toPath());
+            }
+        } catch (IOException e) {
+            throw new LocalOperationException.RealIOException(e);
+        }
     }
 
     @Override
