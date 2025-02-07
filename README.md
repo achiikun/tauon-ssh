@@ -68,15 +68,18 @@ flatpak-builder --force-clean --sandbox --user --install --install-deps-from=fla
 * Linux specific tools
 * Manage SSH keys easily
 * Network tools
-* MultiLanguage Support
 
 The [TODO](TODO.md) file contains what is currently developed and scheduled to develop.
+
+### Not features
+
+* Dropped support for multilanguage as it messes with the length of buttons and also thinking as English as the only universal dev language in the world.
 
 ## Licences
 
 Tauon respects the licence from its previous versions: [GPLv3](/LICENSE)
 
-Jediterm (from JetBrains) has an [LGPLv3](LICENSE-LGPLv3.txt) and a [Apache 2.0](LICENSE-APACHE-2.0.txt).
+Jediterm (from JetBrains) has double license: [LGPLv3](LICENSE-LGPLv3.txt) and [Apache 2.0](LICENSE-APACHE-2.0.txt).
 For more information visit [https://github.com/JetBrains/jediterm](https://github.com/JetBrains/jediterm)
 
 ## Documentation: (from Muon)</h2>
