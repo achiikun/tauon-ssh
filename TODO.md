@@ -22,6 +22,14 @@ List of scheduled features and bugs to be solved:
 * [ ] Notification tray
 * [ ] Store securely proxy password
 * [ ] Let user upload private key files and store them securely
+* [ ] UI: Add countdown in the connecting dialog
+* [ ] Terminal
+    * [ ] Bookmarks aren't saved
+* [ ] Toolbox
+    * [ ] Show executed commands
+* [ ] Diskspace
+    * [ ] Show files in analyzed volumes
+    * [ ] Copy paths
 * [ ] File Browser:
     * [ ] Unify behavior for all file tasks (ask for sudo, ask for reconnect)
     * [ ] Download is not implemented
