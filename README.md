@@ -20,7 +20,7 @@ __* You must have Java 11 installed minimum__
 ### History
 
 This project is the next iteration of another one called [Muon](https://github.com/devlinx9/muon-ssh).
-Its last update was a few years ago. I've been doing lots of refactorings and cleaning code in order to fix bugs and
+~~Its last update was a few years ago~~ (But is rarely updated...). I've been doing lots of refactorings and cleaning code in order to fix bugs and
 make the development of new features easier. The main change respect Muon is that now x11 forwarding (in linux) is supported.
 Some of the description above is copy-pasted from the Devlinx9 repo ;)
 

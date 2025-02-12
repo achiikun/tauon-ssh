@@ -50,7 +50,7 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         this.addressPopup = menuHandler.createAddressPopup();
         if (initialPath == null) {
             this.path = this.fileBrowser.getInfo().getRemoteFolder();
-            if (this.path != null && this.path.trim().length() < 1) {
+            if (this.path != null && this.path.trim().isEmpty()) {
                 this.path = null;
             }
             System.out.println("Path: " + path);
@@ -132,7 +132,6 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
     public void render(String path, boolean useCache) {
         System.out.println("Rendering: " + path + " caching: " + useCache);
         this.path = path;
-//        fileBrowser.getHolder().submitSSHOperation(instance -> {
         try {
             SshFileSystem sshfs = this.fileBrowser.getSshFileSystem();
             if (path == null) {
@@ -149,7 +148,6 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
             e.printStackTrace();
             // TODO notify user
         }
-//        });
     }
 
     @Override
@@ -204,9 +202,8 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         }
         try {
             AbstractFileBrowserView source = transferData.getSource();
-            SessionContentPanel sessionHashCode;
-//            System.out.println("Session hash code: " + sessionHashCode);
-            FileSystem sourceFs = null;
+            
+            FileSystem sourceFs;
             if (source == null || source.getFileSystem().isLocal()) {
                 System.out.println("Source fs is local");
                 sourceFs = LocalFileSystem.getInstance();
@@ -265,13 +262,9 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
         return getBundle().getString("app.files.tabs.remote.title_prefix");
     }
     
-    public FileSystem getFileSystem() throws OperationCancelledException, RemoteOperationException, InterruptedException, SessionClosedException {
+    public FileSystem getFileSystem() {
         return this.fileBrowser.getSshFileSystem();
     }
-
-//    public TauonRemoteSessionInstance getSshClient() {
-//        return this.fileBrowser.getSessionInstance();
-//    }
 
     @Override
     public TransferHandler getTransferHandler() {

@@ -17,15 +17,13 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.UUID;
 
 import static tauon.app.services.LanguageService.getBundle;
 
 /**
  * @author subhro
- *
  */
 public class PortViewer extends Subpage {
     private static final Logger LOG = LoggerFactory.getLogger(PortViewer.class);
@@ -40,20 +38,20 @@ public class PortViewer extends Subpage {
     private JCheckBox chkRunAsSuperUser;
     private JButton btnFilter;
     private List<SocketEntry> list;
-
+    
     /**
      *
      */
     public PortViewer(SessionContentPanel holder) {
         super(holder);
         setBorder(new EmptyBorder(10, 10, 10, 10));
-
+        
     }
-
+    
     private void filter() {
         String text = txtFilter.getText();
         model.clear();
-        if (text.length() > 0) {
+        if (!text.isEmpty()) {
             List<SocketEntry> filteredList = new ArrayList<>();
             for (SocketEntry entry : list) {
                 if (entry.getApp().contains(text)
@@ -69,11 +67,11 @@ public class PortViewer extends Subpage {
         }
         model.fireTableDataChanged();
     }
-
+    
     public boolean getUseSuperUser() {
         return chkRunAsSuperUser.isSelected();
     }
-
+    
     public List<SocketEntry> parseSocketList(String text) {
         System.err.println("text: " + text);
         List<SocketEntry> list = new ArrayList<>();
@@ -125,132 +123,97 @@ public class PortViewer extends Subpage {
         }
         return list;
     }
-
+    
     public void setSocketData(List<SocketEntry> list) {
         this.list = list;
         filter();
     }
-
+    
     @Override
     protected void createUI() {
         table = new JTable(model);
         table.setShowGrid(false);
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFillsViewportHeight(true);
-
+        
         JLabel lbl1 = new JLabel(getBundle().getString("app.info_ports.action.search"));
         txtFilter = new SkinnedTextField(30);
         btnFilter = new JButton(getBundle().getString("app.info_ports.action.search"));
-
+        
         Box b1 = Box.createHorizontalBox();
         b1.add(lbl1);
         b1.add(Box.createHorizontalStrut(5));
         b1.add(txtFilter);
         b1.add(Box.createHorizontalStrut(5));
         b1.add(btnFilter);
-
+        
         add(b1, BorderLayout.NORTH);
-
+        
         btnFilter.addActionListener(e -> filter());
         table.setAutoCreateRowSorter(true);
         add(new SkinnedScrollPane(table));
-
+        
         Box box = Box.createHorizontalBox();
         box.setBorder(new EmptyBorder(10, 0, 0, 0));
         btnRefresh = new JButton(getBundle().getString("general.action.refresh"));
         btnRefresh.addActionListener(e -> getListingSockets());
-
+        
         chkRunAsSuperUser = new JCheckBox(
                 getBundle().getString("app.ui.action.do_using_sudo"));
         box.add(chkRunAsSuperUser);
-
+        
         box.add(Box.createHorizontalGlue());
         box.add(btnRefresh);
         box.add(Box.createHorizontalStrut(5));
-
+        
         add(box, BorderLayout.SOUTH);
-
+        
         getListingSockets();
     }
-
+    
     @Override
     protected void onComponentVisible() {
-
+    
     }
-
+    
     @Override
     protected void onComponentHide() {
-
+    
     }
-
+    
     private void getListingSockets() {
         IStopper.Handle stopFlag = new IStopper.Default();
-//        holder.disableUi(stopFlag);
-
+        
         boolean elevated = this.getUseSuperUser();
-//        if (cmd != null) {
-            holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
-//                try {
-                
-                SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
-                        .withCommand(LSOF_COMMAND)
-                        .withStdoutString()
-                        .withStopper(stopFlag)
-                        .withSudo(elevated ? guiHandle : null);
-                
-                instance.exec(sshCommandRunner);
-                
-                if(sshCommandRunner.getResult() == 0){
-                    java.util.List<SocketEntry> list = this.parseSocketList(sshCommandRunner.getStdoutString());
-                    try {
-                        SwingUtilities.invokeAndWait(() -> setSocketData(list));
-                    }catch (InvocationTargetException e){
-                        e.printStackTrace();
-                        throw new AlreadyFailedException();
-                    }
+        holder.submitSSHOperationStoppable((guiHandle, instance) -> {
+            
+            SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                    .withCommand(LSOF_COMMAND)
+                    .withStdoutString()
+                    .withStopper(stopFlag)
+                    .withSudo(elevated ? guiHandle : null);
+            
+            instance.exec(sshCommandRunner);
+            
+            if (sshCommandRunner.getResult() == 0) {
+                java.util.List<SocketEntry> list = this.parseSocketList(sshCommandRunner.getStdoutString());
+                try {
+                    SwingUtilities.invokeAndWait(() -> setSocketData(list));
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                    throw new AlreadyFailedException();
                 }
-                
-//                    if (elevated) {
-//                        try {
-//                            if (SudoUtils.runSudoWithOutput(cmd, stopFlag, instance, output, new StringBuilder()) == 0) {
-//                                java.util.List<SocketEntry> list = this
-//                                        .parseSocketList(output.toString());
-//                                SwingUtilities.invokeAndWait(() -> setSocketData(list));
-//                                return;
-//                            }
-//                        } catch (Exception ex) {
-//                            // TODO LOG.error();
-//                            ex.printStackTrace();
-//                            if (!holder.isSessionClosed()) {
-//                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
-//                            }
-//                            throw new AlreadyFailedException();
-//                        }
-//                    } else {
-//                        System.out.println("Command was: " + cmd);
-//                        try {
-//                            if (instance.exec(cmd, stopFlag, output) == 0) {
-//                                System.out.println("Command was: " + cmd + " " + output);
-//                                java.util.List<SocketEntry> list = this.parseSocketList(output.toString());
-//                                SwingUtilities.invokeAndWait(() -> setSocketData(list));
-//                                return;
-//                            }
-//                            System.out.println("Error: " + output);
-//                        } catch (Exception ex) {
-//                            // TODO LOG.error();
-//                            ex.printStackTrace();
-//                            if (!holder.isSessionClosed()) {
-//                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
-//                            }
-//                            throw new AlreadyFailedException();
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    holder.enableUi();
-//                }
-            }, stopFlag);
+            } else {
+                LOG.warn("Lsof command returned an error. Clearing list.");
+                try {
+                    SwingUtilities.invokeAndWait(() -> setSocketData(Collections.emptyList()));
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                    throw new AlreadyFailedException();
+                }
+            }
+            
+        }, stopFlag);
 //        }
     }
 }

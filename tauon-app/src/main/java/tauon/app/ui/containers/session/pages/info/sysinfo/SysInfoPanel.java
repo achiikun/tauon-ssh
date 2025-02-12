@@ -19,29 +19,26 @@ import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author subhro
- *
  */
 public class SysInfoPanel extends Subpage {
     
     private static final Logger LOG = LoggerFactory.getLogger(SysInfoPanel.class);
-
+    
     private JTextArea textArea;
-
+    
     public SysInfoPanel(SessionContentPanel holder) {
         super(holder);
     }
-
+    
     @Override
     protected void createUI() {
         textArea = new SkinnedTextArea();
         textArea.setFont(new Font("Noto Mono", Font.PLAIN, 14));
         JScrollPane scrollPane = new SkinnedScrollPane(textArea);
         this.add(scrollPane);
-
+        
         IStopper.Handle stopFlag = new IStopper.Default();
-//        holder.disableUi(stopFlag);
-        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
-//            try {
+        holder.submitSSHOperationStoppable((guiHandle, instance) -> {
             
             SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
                     .withCommand(ScriptLoader.loadShellScript("/scripts/linux-sysinfo.sh"))
@@ -52,31 +49,26 @@ public class SysInfoPanel extends Subpage {
             
             int ret = sshCommandRunner.getResult();
             
-                if (ret == 0) {
-                    try {
-                        SwingUtilities.invokeAndWait(() -> {
-                            textArea.setText(sshCommandRunner.getStdoutString());
-                            textArea.setCaretPosition(0);
-                        });
-                    } catch (InvocationTargetException e) {
-                        LOG.error("Exception while rendering info.", e);
-                    }
+            if (ret == 0) {
+                try {
+                    SwingUtilities.invokeAndWait(() -> {
+                        textArea.setText(sshCommandRunner.getStdoutString());
+                        textArea.setCaretPosition(0);
+                    });
+                } catch (InvocationTargetException e) {
+                    LOG.error("Exception while rendering info.", e);
                 }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            } finally {
-//                holder.enableUi();
-//            }
+            }
         }, stopFlag);
     }
-
+    
     @Override
     protected void onComponentVisible() {
-
+    
     }
-
+    
     @Override
     protected void onComponentHide() {
-
+    
     }
 }

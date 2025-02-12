@@ -18,15 +18,14 @@ public class LocalKeyPanel extends JPanel {
     private final JButton btnGenNewKey;
     private final JButton btnRefresh;
     private final JTextArea txtPubKey;
-    private final Consumer<?> callback1;
-    private final Consumer<?> callback2;
 
-    public LocalKeyPanel(SiteInfo info, Consumer<?> callback1,
-                         Consumer<?> callback2) {
+    public LocalKeyPanel(
+            SiteInfo info,
+            Consumer<?> onGenerateNewKey,
+            Consumer<?> onRefresh
+    ) {
         super(new BorderLayout());
         this.info = info;
-        this.callback1 = callback1;
-        this.callback2 = callback2;
         JLabel lblTitle = new JLabel(getBundle().getString("app.tools_ssh_keys.label.public_key_file"));
         txtKeyFile = new SkinnedTextField(20);
         txtKeyFile.setBackground(App.skin.getDefaultBackground());
@@ -48,9 +47,9 @@ public class LocalKeyPanel extends JPanel {
         btnGenNewKey = new JButton(getBundle().getString("app.tools_ssh_keys.action.generate_new_key"));
         btnRefresh = new JButton(getBundle().getString("general.action.refresh"));
 
-        btnGenNewKey.addActionListener(e -> callback1.accept(null));
+        btnGenNewKey.addActionListener(e -> onGenerateNewKey.accept(null));
 
-        btnRefresh.addActionListener(e -> callback2.accept(null));
+        btnRefresh.addActionListener(e -> onRefresh.accept(null));
 
         Box hbox1 = Box.createHorizontalBox();
         hbox1.add(Box.createHorizontalGlue());

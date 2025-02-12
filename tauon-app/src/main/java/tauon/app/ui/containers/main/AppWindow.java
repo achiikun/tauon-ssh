@@ -56,9 +56,9 @@ public class AppWindow extends JFrame {
     private final Component bottomPanel;
     
     private final Component sessionPanelTop;
-    private final Component collapedSessionPanelTop;
+    private final Component collapsedSessionPanelTop;
     
-    private SessionListPanel sessionListPanel;
+    private final SessionListPanel sessionListPanel;
     private JLabel lblUploadCount, lblDownloadCount;
     private JPopupMenu popup;
 //    private JLabel lblUpdate, lblUpdateText;
@@ -112,7 +112,7 @@ public class AppWindow extends JFrame {
         this.cardPanel = new JPanel(this.sessionCard, true);
         this.cardPanel.setDoubleBuffered(true);
         
-        collapedSessionPanelTop = createCollapsedSessionPanelTop();
+        collapsedSessionPanelTop = createCollapsedSessionPanelTop();
         sessionPanelTop = createSessionPanelTop();
         
         sessionListPanel = new SessionListPanel(this);
@@ -161,12 +161,12 @@ public class AppWindow extends JFrame {
         desiredPanelVisible = !desiredPanelVisible;
         
         if(desiredPanelVisible){
-            sessionListPanel.remove(collapedSessionPanelTop);
+            sessionListPanel.remove(collapsedSessionPanelTop);
             sessionListPanel.add(sessionPanelTop, BorderLayout.NORTH);
             sessionListPanel.collapsed(false);
         }else{
             sessionListPanel.remove(sessionPanelTop);
-            sessionListPanel.add(collapedSessionPanelTop, BorderLayout.NORTH);
+            sessionListPanel.add(collapsedSessionPanelTop, BorderLayout.NORTH);
             sessionListPanel.collapsed(true);
         }
         
@@ -285,7 +285,7 @@ public class AppWindow extends JFrame {
      */
     public void removeSession(SessionContentPanel sessionContentPanel) {
         cardPanel.remove(sessionContentPanel);
-        // TODO remove responsability from here
+        // TODO remove responsibility from here
         uploadPanel.removePendingTransfers(sessionContentPanel);
         downloadPanel.removePendingTransfers(sessionContentPanel);
         revalidate();
@@ -455,35 +455,7 @@ public class AppWindow extends JFrame {
         btnSettings.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b1.add(btnSettings);
         b1.add(Box.createRigidArea(new Dimension(10, 10)));
-
-//        lblUpdate = new JLabel();
-//        lblUpdate.setCursor(new Cursor(Cursor.HAND_CURSOR));
-//        lblUpdate.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                checkUpdates();
-//            }
-//        });
-//
-//        lblUpdate.setFont(App.skin.getIconFont().deriveFont(16.0f));
-//        lblUpdate.setText(FontAwesomeContants.FA_REFRESH);
-//        b1.add(lblUpdate);
-//
-//        b1.add(Box.createRigidArea(new Dimension(5, 10)));
-//
-//        lblUpdateText = new JLabel(getBundle().getString("app.ui.label.check_updates"));
-//        lblUpdateText.setCursor(new Cursor(Cursor.HAND_CURSOR));
-//        lblUpdateText.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                checkUpdates();
-//            }
-//        });
-//
-//        b1.add(lblUpdateText);
-
-        b1.add(Box.createRigidArea(new Dimension(10, 10)));
-
+        
         return b1;
     }
 

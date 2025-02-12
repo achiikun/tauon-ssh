@@ -46,8 +46,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
     @Override
     public boolean init(Questioner q) {
         try {
-//            this.wr = new SshClient2(this.info, App.getInputBlocker(), sessionContentPanel);
-//            this.wr.connect();
+            
             // Let's use the same connection and open a session
             this.session = sshConnectionHandler.getSession(false);
             this.session.setAutoExpand(true);
@@ -61,8 +60,6 @@ public class SshTtyConnector implements DisposableTtyConnector {
                     Collections.emptyMap()
             );
             
-//            this.channel.reqX11Forwarding("MIT-MAGIC-COOKIE-1", "b0956167c9ad8f34c8a2788878307dc9", 0);
-
             try{
                 this.session.setEnvVar("LANG", "en_US.UTF-8");
             } catch (Exception e) {
@@ -102,7 +99,6 @@ public class SshTtyConnector implements DisposableTtyConnector {
             stopFlag.set(true);
             System.out.println("Terminal wrapper disconnecting");
             this.session.close();
-//            wr.disconnect();
         } catch (Exception e) {
         }
     }

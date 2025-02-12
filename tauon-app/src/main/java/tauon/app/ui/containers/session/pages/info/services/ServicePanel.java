@@ -50,14 +50,14 @@ public class ServicePanel extends Subpage {
     private JCheckBox chkRunAsSuperUser;
     private JButton btnFilter;
     private List<ServiceEntry> list;
-
+    
     /**
      *
      */
     public ServicePanel(SessionContentPanel holder) {
         super(holder);
     }
-
+    
     private static List<ServiceEntry> parseServiceEntries(String data) {
         List<ServiceEntry> list = new ArrayList<>();
         Map<String, String> unitMap = new HashMap<>();
@@ -67,7 +67,7 @@ public class ServicePanel extends Subpage {
                 parsingUnit = false;
                 continue;
             }
-
+            
             if (parsingUnit) {
                 parseUnitFile(s, unitMap);
             } else {
@@ -77,18 +77,18 @@ public class ServicePanel extends Subpage {
                 }
             }
         }
-
+        
         return list;
     }
-
-
+    
+    
     private static void parseUnitFile(String data, Map<String, String> map) {
         Matcher m = UNIT_PATTERN.matcher(data);
         if (m.find() && m.groupCount() == 2) {
             map.put(m.group(1).trim(), m.group(2).trim());
         }
     }
-
+    
     private static ServiceEntry parseUnit(String data,
                                           Map<String, String> unitMap) {
         ServiceEntry ent = new ServiceEntry();
@@ -103,39 +103,39 @@ public class ServicePanel extends Subpage {
                 ent.setDesc(m.group(5).trim());
                 return ent;
             }
-
+            
         }
         return null;
     }
-
+    
     public void setElevationActionListener(ActionListener a) {
         chkRunAsSuperUser.addActionListener(a);
     }
-
+    
     public void setStartServiceActionListener(ActionListener a) {
         btnStart.addActionListener(a);
     }
-
+    
     public void setStopServiceActionListener(ActionListener a) {
         btnStop.addActionListener(a);
     }
-
+    
     public void setRestartServiceActionListener(ActionListener a) {
         btnRestart.addActionListener(a);
     }
-
+    
     public void setReloadServiceActionListener(ActionListener a) {
         btnReload.addActionListener(a);
     }
-
+    
     public void setEnableServiceActionListener(ActionListener a) {
         btnEnable.addActionListener(a);
     }
-
+    
     public void setDisableServiceActionListener(ActionListener a) {
         btnDisable.addActionListener(a);
     }
-
+    
     private void filter() {
         String text = txtFilter.getText();
         model.clear();
@@ -153,7 +153,7 @@ public class ServicePanel extends Subpage {
             model.addEntries(list);
         }
     }
-
+    
     private String getSelectedService() {
         int r = table.getSelectedRow();
         if (r < 0) {
@@ -161,7 +161,7 @@ public class ServicePanel extends Subpage {
         }
         return (String) model.getValueAt(table.convertRowIndexToModel(r), 0);
     }
-
+    
     public String getStartServiceCommand() {
         String cmd = getSelectedService();
         if (cmd == null) {
@@ -169,7 +169,7 @@ public class ServicePanel extends Subpage {
         }
         return "systemctl start " + cmd;
     }
-
+    
     public String getStopServiceCommand() {
         String cmd = getSelectedService();
         if (cmd == null) {
@@ -177,7 +177,7 @@ public class ServicePanel extends Subpage {
         }
         return "systemctl stop " + cmd;
     }
-
+    
     public String getRestartServiceCommand() {
         String cmd = getSelectedService();
         if (cmd == null) {
@@ -185,7 +185,7 @@ public class ServicePanel extends Subpage {
         }
         return "systemctl restart " + cmd;
     }
-
+    
     public String getReloadServiceCommand() {
         String cmd = getSelectedService();
         if (cmd == null) {
@@ -193,7 +193,7 @@ public class ServicePanel extends Subpage {
         }
         return "systemctl reload " + cmd;
     }
-
+    
     public String getEnableServiceCommand() {
         String cmd = getSelectedService();
         if (cmd == null) {
@@ -201,7 +201,7 @@ public class ServicePanel extends Subpage {
         }
         return "systemctl enable " + cmd;
     }
-
+    
     public String getDisableServiceCommand() {
         String cmd = getSelectedService();
         if (cmd == null) {
@@ -209,53 +209,53 @@ public class ServicePanel extends Subpage {
         }
         return "systemctl disable " + cmd;
     }
-
+    
     public boolean getUseSuperUser() {
         return chkRunAsSuperUser.isSelected();
     }
-
+    
     public void setUseSuperUser(boolean select) {
         chkRunAsSuperUser.setSelected(select);
     }
-
+    
     private void setServiceData(List<ServiceEntry> list) {
         this.list = list;
         filter();
     }
-
+    
     @Override
     protected void createUI() {
         setBorder(new EmptyBorder(10, 10, 10, 10));
-
+        
         ServiceTableCellRenderer r = new ServiceTableCellRenderer();
-
+        
         table = new JTable(model);
         table.setDefaultRenderer(Object.class, r);
         table.setShowGrid(false);
         table.setRowHeight(r.getPreferredSize().height);
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFillsViewportHeight(true);
-
+        
         JLabel lbl1 = new JLabel(getBundle().getString("app.info_services_systemd.action.search"));
         txtFilter = new SkinnedTextField(30);
         txtFilter.addActionListener(e -> filter());
         btnFilter = new JButton(getBundle().getString("app.info_services_systemd.action.search"));
-
+        
         Box b1 = Box.createHorizontalBox();
         b1.add(lbl1);
         b1.add(Box.createHorizontalStrut(5));
         b1.add(txtFilter);
         b1.add(Box.createHorizontalStrut(5));
         b1.add(btnFilter);
-
+        
         add(b1, BorderLayout.NORTH);
-
+        
         btnFilter.addActionListener(e -> filter());
         table.setAutoCreateRowSorter(true);
         add(new SkinnedScrollPane(table));
-
+        
         Box box = Box.createHorizontalBox();
-
+        
         btnStart = new JButton(getBundle().getString("app.info_services_systemd.action.start"));
         btnStop = new JButton(getBundle().getString("app.info_services_systemd.action.stop"));
         btnRestart = new JButton(getBundle().getString("app.info_services_systemd.action.restart"));
@@ -263,11 +263,11 @@ public class ServicePanel extends Subpage {
         btnEnable = new JButton(getBundle().getString("app.info_services_systemd.action.enable"));
         btnDisable = new JButton(getBundle().getString("app.info_services_systemd.action.disable"));
         btnRefresh = new JButton(getBundle().getString("app.info_services_systemd.action.refresh"));
-
+        
         chkRunAsSuperUser = new JCheckBox(
                 getBundle().getString("app.ui.action.do_using_sudo"));
         box.add(chkRunAsSuperUser);
-
+        
         box.add(Box.createHorizontalGlue());
         box.add(btnStart);
         box.add(Box.createHorizontalStrut(5));
@@ -284,45 +284,40 @@ public class ServicePanel extends Subpage {
         box.add(btnRefresh);
         box.add(Box.createHorizontalStrut(5));
         box.setBorder(new EmptyBorder(10, 0, 0, 0));
-
+        
         add(box, BorderLayout.SOUTH);
-
+        
         this.setStartServiceActionListener(e -> performServiceAction(1));
         this.setStopServiceActionListener(e -> performServiceAction(2));
         this.setEnableServiceActionListener(e -> performServiceAction(3));
         this.setDisableServiceActionListener(e -> performServiceAction(4));
         this.setReloadServiceActionListener(e -> performServiceAction(5));
         this.setRestartServiceActionListener(e -> performServiceAction(6));
-
+        
         btnRefresh.addActionListener(e -> {
             IStopper.Handle stopFlag = new IStopper.Default();
-            holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+            holder.submitSSHOperationStoppable((guiHandle, instance) -> {
                 updateView(instance, stopFlag);
             }, stopFlag);
         });
-//                holder.executor.submit(() -> {
-//                    holder.disableUi(stopFlag);
-//                    holder.enableUi();
-//                }));
-
-//        holder.executor.submit(() -> {
-            IStopper.Handle stopFlag = new IStopper.Default();
-            holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
-                updateView(instance, stopFlag);
-            }, stopFlag);
-//        });
+        
+        IStopper.Handle stopFlag = new IStopper.Default();
+        holder.submitSSHOperationStoppable((guiHandle, instance) -> {
+            updateView(instance, stopFlag);
+        }, stopFlag);
+        
     }
-
+    
     @Override
     protected void onComponentVisible() {
-
+    
     }
-
+    
     @Override
     protected void onComponentHide() {
-
+    
     }
-
+    
     private void performServiceAction(int option) {
         String cmd1 = null;
         switch (option) {
@@ -345,16 +340,14 @@ public class ServicePanel extends Subpage {
                 cmd1 = this.getRestartServiceCommand();
                 break;
         }
-
+        
         String cmd = cmd1;
-
+        
         IStopper.Handle stopFlag = new IStopper.Default();
-
-//        holder.disableUi(stopFlag);
-
+        
         boolean elevated = this.getUseSuperUser();
         if (cmd != null) {
-            holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+            holder.submitSSHOperationStoppable((guiHandle, instance) -> {
                 
                 SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
                         .withCommand(cmd)
@@ -365,59 +358,15 @@ public class ServicePanel extends Subpage {
                 
                 int ret = sshCommandRunner.getResult();
                 
-                if(ret == 0){
+                if (ret == 0) {
                     updateView(instance, stopFlag);
                 }
                 
-                
-//                try {
-//                    if (elevated) {
-//                        try {
-//                            if (this.runCommandWithSudo(instance, cmd)) {
-//                                updateView(instance, stopFlag);
-//                                return;
-//                            }
-//                        } catch (Exception ex) {
-//                            ex.printStackTrace();
-//                        }
-//                        if (!holder.isSessionClosed()) {
-//                            JOptionPane.showMessageDialog(null,
-//                                    getBundle().getString("general.message.operation_failed"));
-//                        }
-//                    } else {
-//                        try {
-//                            if (this.runCommand(instance, stopFlag, cmd)) {
-//                                updateView(instance, stopFlag);
-//                                return;
-//                            }
-//                        } catch (Exception ex) {
-//                            ex.printStackTrace();
-//                        }
-//                        if (!holder.isSessionClosed()) {
-//                            JOptionPane.showMessageDialog(null,
-//                                    getBundle().getString("general.message.operation_failed"));
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                } finally {
-//                    holder.enableUi();
-//                }
             }, stopFlag);
         }
     }
-
-//    public boolean runCommandWithSudo(TauonRemoteSessionInstance client, String command) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
-//        return SudoUtils.runSudo(command, client) == 0;
-//    }
-//
-//    public boolean runCommand(TauonRemoteSessionInstance client, AtomicBoolean stopFlag, String command) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
-//        StringBuilder output = new StringBuilder();
-//        return client.exec(command, stopFlag, output) == 0;
-//    }
-
+    
     private void updateView(SSHConnectionHandler instance, IStopper stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
-//        try {
         
         SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
                 .withCommand(SYSTEMD_COMMAND)
@@ -425,19 +374,17 @@ public class ServicePanel extends Subpage {
                 .withStopper(stopFlag);
         
         instance.exec(sshCommandRunner);
-            
-            int ret = sshCommandRunner.getResult(); //instance.exec(SYSTEMD_COMMAND, stopFlag, output);
-            if (ret == 0) {
-                List<ServiceEntry> list = ServicePanel.parseServiceEntries(sshCommandRunner.getStdoutString());
-                // TODO test invoke later
-                try {
-                    SwingUtilities.invokeAndWait(() -> setServiceData(list));
-                } catch (InvocationTargetException e) {
-                    LOG.error("Exception while rendering service data.", e);
-                }
+        
+        int ret = sshCommandRunner.getResult(); //instance.exec(SYSTEMD_COMMAND, stopFlag, output);
+        if (ret == 0) {
+            List<ServiceEntry> list = ServicePanel.parseServiceEntries(sshCommandRunner.getStdoutString());
+            // TODO test invoke later
+            try {
+                SwingUtilities.invokeAndWait(() -> setServiceData(list));
+            } catch (InvocationTargetException e) {
+                LOG.error("Exception while rendering service data.", e);
             }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        }
+        
     }
 }

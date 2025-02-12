@@ -46,8 +46,6 @@ public class SettingsDialog extends JDialog {
     private final JButton btnReset;
     private final DefaultComboBoxModel<Constants.ConflictAction> conflictOptions = new DefaultComboBoxModel<>(Constants.ConflictAction.values());
     private final DefaultComboBoxModel<Constants.TransferMode> transferModes = new DefaultComboBoxModel<>(Constants.TransferMode.values());
-//    private final List<String> conflictOption1 = Arrays.asList(getBundle().getString("app.files.action.overwrite"), getBundle().getString("auto_rename"), getBundle().getString("app.files.action.skip"), getBundle().getString("app.files.action.prompt"));
-//    private final List<String> conflictOption2 = Arrays.asList(getBundle().getString("app.files.action.overwrite"), getBundle().getString("auto_rename"), getBundle().getString("app.files.action.skip"));
     private final CardLayout cardLayout;
     private final JPanel cardPanel;
     private final JList<String> navList;
@@ -323,8 +321,8 @@ public class SettingsDialog extends JDialog {
         });
 
         JPanel paletteGrid = new JPanel(new GridLayout(2, 8, 10, 10));
-        for (int i = 0; i < paletteButtons.length; i++) {
-            paletteGrid.add(paletteButtons[i]);
+        for (ColorSelectorButton paletteButton : paletteButtons) {
+            paletteGrid.add(paletteButton);
         }
         paletteGrid.setAlignmentX(Box.LEFT_ALIGNMENT);
 

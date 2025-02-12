@@ -265,7 +265,7 @@ public class DiskspaceAnalyzer extends Subpage {
 
     private void listVolumes() {
         IStopper.Default stopFlag = new IStopper.Default();
-        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+        holder.submitSSHOperationStoppable((guiHandle, instance) -> {
             System.out.println("Listing partitions");
             listPartitions(instance, stopFlag);
         }, stopFlag);
@@ -277,20 +277,7 @@ public class DiskspaceAnalyzer extends Subpage {
         IStopper.Default stopFlag = new IStopper.Default();
         cardLayout.show(this, "Results");
         
-//        DiskAnalysisTask task = new DiskAnalysisTask(path, chkRunAsSuperUser1.isSelected(), stopFlag, res -> {
-//            SwingUtilities.invokeLater(() -> {
-//                if (res != null) {
-//                    System.out.println("Result found");
-//                    DefaultMutableTreeNode root = new DefaultMutableTreeNode(res, true);
-//                    root.setAllowsChildren(true);
-//                    createTree(root, res);
-//                    treeModel.setRoot(root);
-//                }
-//            });
-//        }, sshConnectionHandler);
-//        task.run();
-        
-        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+        holder.submitSSHOperationStoppable((guiHandle, instance) -> {
             DiskAnalysisTask task = new DiskAnalysisTask(path, chkRunAsSuperUser1.isSelected(), stopFlag, guiHandle, instance);
             task.run();
             DiskUsageEntry res = task.getRoot();

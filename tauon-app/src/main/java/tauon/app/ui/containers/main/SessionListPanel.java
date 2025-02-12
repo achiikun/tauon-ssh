@@ -68,7 +68,6 @@ public class SessionListPanel extends JPanel {
                         int y = e.getPoint().y;
 
                         if (isMouseOnEjectButton(r, x, y)) {
-                            System.out.println("Clicked on: " + index);
                             removeSession(index);
                         }
                     }
@@ -93,8 +92,6 @@ public class SessionListPanel extends JPanel {
                         int y = e.getPoint().y;
 
                         Rectangle absolute = new Rectangle(r);
-//                        Point listLocationOnScreen = sessionList.getLocationOnScreen();
-//                        absolute.translate(listLocationOnScreen.x, listLocationOnScreen.y);
                         
                         if(collapsed){
                             collapsedPopup.showOn(sessionListModel.get(index), absolute);
@@ -204,11 +201,6 @@ public class SessionListPanel extends JPanel {
             setLayout(new BorderLayout());
             setBorder(new EmptyBorder(0,0,0,0));
             
-//            setModal(false);
-//            setUndecorated(true);
-//            setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-//            setAlwaysOnTop(true);
-            
             lblText = new JLabel();
             lblHost = new JLabel();
             
@@ -245,7 +237,6 @@ public class SessionListPanel extends JPanel {
             panel.setPreferredSize(d);
             panel.setMaximumSize(d);
             
-//            collapsedPopup.setLocation(new Point((int) cellRectangle.getMaxX(), (int) cellRectangle.getY()));
             collapsedPopup.show(owner, (int) cellRectangle.getMaxX(), (int) cellRectangle.getY());
         }
     }
@@ -329,23 +320,11 @@ public class SessionListPanel extends JPanel {
             
             lblText.setText(info.getName());
             lblHost.setText(info.getHost());
-//            lblIcon.setText(FontAwesomeContants.FA_CUBE);
-//            lblClose.setText(FontAwesomeContants.FA_EJECT);
             
             JPanel myPanel;
             if (collapsed) {
-//                panel.removeAll();
-//                collapsedPanel.removeAll();
-//                collapsedPanel.add(lblIcon, BorderLayout.NORTH);
-//                collapsedPanel.add(lblClose, BorderLayout.SOUTH);
-//                panel.add(textHolder);
                 myPanel = collapsedPanel;
             } else {
-//                panel.removeAll();
-//                collapsedPanel.removeAll();
-//                panel.add(lblIcon, BorderLayout.WEST);
-//                panel.add(lblClose, BorderLayout.EAST);
-//                panel.add(textHolder);
                 myPanel = panel;
             }
             

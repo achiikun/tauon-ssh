@@ -558,7 +558,7 @@ public class SshMenuHandler {
 
     private void renameAsync(String oldName, String newName, String baseFolder) {
         
-        fileBrowser.getHolder().submitSSHOperation2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperation((guiHandle, instance) -> {
             if (fileOperations.rename(oldName, newName, fileBrowserView.getFileSystem(), guiHandle, instance)) {
                 fileBrowserView.render(baseFolder);
             }
@@ -588,7 +588,7 @@ public class SshMenuHandler {
         if (!delete)
             return;
         
-        fileBrowser.getHolder().submitSSHOperation2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperation((guiHandle, instance) -> {
             if (fileOperations.delete(targetList, fileBrowserView.getFileSystem(), guiHandle, instance)) {
                 fileBrowserView.render(baseFolder);
             }
@@ -613,7 +613,7 @@ public class SshMenuHandler {
 
     public void newFile(String baseFolder, FileInfo[] files) {
         
-        fileBrowser.getHolder().submitSSHOperation2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperation((guiHandle, instance) -> {
             if (fileOperations.newFile(files, fileBrowserView.getFileSystem(), baseFolder, guiHandle, instance)) {
                 fileBrowserView.render(baseFolder);
             }
@@ -638,7 +638,7 @@ public class SshMenuHandler {
 
     public void newFolder(String baseFolder, FileInfo[] files) {
         
-        fileBrowser.getHolder().submitSSHOperation2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperation((guiHandle, instance) -> {
             if (fileOperations.newFolder(files, baseFolder, fileBrowserView.getFileSystem(), guiHandle, instance)) {
                 fileBrowserView.render(baseFolder);
             }
@@ -663,7 +663,7 @@ public class SshMenuHandler {
 
     public void createLink(String baseFolder, FileInfo[] files) {
         
-        fileBrowser.getHolder().submitSSHOperation2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperation((guiHandle, instance) -> {
             if (fileOperations.createLink(files, fileBrowserView.getFileSystem(), instance)) {
                 fileBrowserView.render(baseFolder);
             }
@@ -717,7 +717,7 @@ public class SshMenuHandler {
 
     public void copy(List<FileInfo> files, String targetFolder) {
         
-        fileBrowser.getHolder().submitSSHOperation2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperation((guiHandle, instance) -> {
             if (fileOperations.copyTo(guiHandle, instance, files, targetFolder, fileBrowserView.getFileSystem())) {
                 fileBrowserView.render(targetFolder);
             }
@@ -740,7 +740,7 @@ public class SshMenuHandler {
 
     public void move(List<FileInfo> files, String targetFolder) {
         
-        fileBrowser.getHolder().submitSSHOperation2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperation((guiHandle, instance) -> {
             if (fileOperations.moveTo(guiHandle, instance, files, targetFolder, fileBrowserView.getFileSystem())) {
                 fileBrowserView.render(targetFolder);
             }
@@ -816,7 +816,7 @@ public class SshMenuHandler {
 
     private void openRunInBackground(String folder, String file) {
         
-        fileBrowser.getHolder().submitSSHOperation2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperation((guiHandle, instance) -> {
             String cmd;
             
             SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
@@ -845,7 +845,7 @@ public class SshMenuHandler {
 
     private void extractArchive(String archive, String folder, String currentFolder) {
         IStopper.Handle stopFlag = new IStopper.Default();
-        fileBrowser.getHolder().submitSSHOperationStoppable2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperationStoppable((guiHandle, instance) -> {
             if (!archiveOperation.extractArchive(instance, archive, folder, stopFlag)) {
                 if (!fileBrowser.isSessionClosed()) {
                     JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
@@ -872,7 +872,7 @@ public class SshMenuHandler {
 
     private void createArchive(List<String> files, String folder, String currentFolder) {
         IStopper.Handle stopFlag = new IStopper.Default();
-        fileBrowser.getHolder().submitSSHOperationStoppable2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperationStoppable((guiHandle, instance) -> {
             if (!archiveOperation.createArchive(instance, files, folder, stopFlag)) {
                 if (!fileBrowser.isSessionClosed()) {
                     JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));

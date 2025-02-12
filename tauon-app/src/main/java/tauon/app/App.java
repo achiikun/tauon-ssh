@@ -105,7 +105,7 @@ public class App {
     private static void validateMaxKeySize() {
         try {
             int maxKeySize = javax.crypto.Cipher.getMaxAllowedKeyLength("AES");
-            LOG.info("maxKeySize: " + maxKeySize);
+            LOG.info("maxKeySize: {}", maxKeySize);
             if (maxKeySize < Integer.MAX_VALUE) {
                 JOptionPane.showMessageDialog(null, getBundle().getString("app.ui.message.unlimited_cryptography_not_enabled"));
             }

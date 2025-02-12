@@ -38,51 +38,51 @@ public interface GuiHandle extends SSHCommandRunner.SudoPasswordPrompter {
     
     abstract class Delegate implements GuiHandle {
         
-        private final GuiHandle delagator;
+        private final GuiHandle delegator;
         
-        public Delegate(GuiHandle delagator) {
-            this.delagator = delagator;
+        public Delegate(GuiHandle delegator) {
+            this.delegator = delegator;
         }
         
         @Override
         public void showMessage(String name, String instruction) {
-            delagator.showMessage(name, instruction);
+            delegator.showMessage(name, instruction);
         }
         
         public void reportException(Throwable cause) {
-            delagator.reportException(cause);
+            delegator.reportException(cause);
         }
         
         @Override
         public boolean promptReconnect(String name, String host) {
-            return delagator.promptReconnect(name, host);
+            return delegator.promptReconnect(name, host);
         }
         
         public char[] promptPassword(HopEntry info, String user, AtomicBoolean remember, boolean isRetrying) throws OperationCancelledException {
-            return delagator.promptPassword(info, user, remember, isRetrying);
+            return delegator.promptPassword(info, user, remember, isRetrying);
         }
         
         @Override
         public char[] promptSudoPassword(boolean isRetrying) throws OperationCancelledException {
-            return delagator.promptSudoPassword(isRetrying);
+            return delegator.promptSudoPassword(isRetrying);
         }
         
         public void reportPortForwardingFailed(PortForwardingRule portForwardingState, IOException e) {
-            delagator.reportPortForwardingFailed(portForwardingState, e);
+            delegator.reportPortForwardingFailed(portForwardingState, e);
         }
         
         public String promptUser(HopEntry info, AtomicBoolean remember) {
-            return delagator.promptUser(info, remember);
+            return delegator.promptUser(info, remember);
         }
         
         @Override
         public String promptInput(String prompt, boolean echo) {
-            return delagator.promptInput(prompt, echo);
+            return delegator.promptInput(prompt, echo);
         }
         
         @Override
         public void saveInfo(SiteInfo info) {
-            delagator.saveInfo(info);
+            delegator.saveInfo(info);
         }
     }
     

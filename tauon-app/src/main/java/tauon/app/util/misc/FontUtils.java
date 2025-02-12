@@ -18,7 +18,7 @@ public class FontUtils {
     
     public static class TerminalFont{
         
-        private String regularTtf;
+        private final String regularTtf;
         private String boldTtf;
         private String italicTtf;
         private String boldItalicTtf;

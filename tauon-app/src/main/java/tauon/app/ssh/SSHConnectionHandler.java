@@ -43,14 +43,8 @@ public class SSHConnectionHandler {
     
     private final SiteInfo info;
     private final GuiHandle.Delegate guiHandle;
-    private final PasswordFinder passwordFinder;
-    private final GraphicalHostKeyVerifier hostKeyVerifier;
     
-    //
-    // MAIN
-    //
-    
-    private TauonSSHClient mainSsh;
+    private final TauonSSHClient mainSsh;
     
     private final AtomicBoolean mainClosed = new AtomicBoolean(false);
     
@@ -64,16 +58,12 @@ public class SSHConnectionHandler {
     
     private final ExecutorService executorService;
     
-    
     public SSHConnectionHandler(
             SiteInfo info,
             GuiHandle guiHandle,
             PasswordFinder passwordFinder,
             GraphicalHostKeyVerifier hostKeyVerifier
     ) {
-        
-        this.passwordFinder = passwordFinder;
-        this.hostKeyVerifier = hostKeyVerifier;
         
         GuiHandle.Delegate guiHandleDelegate = new GuiHandle.Delegate(guiHandle) {
             @Override
@@ -96,6 +86,8 @@ public class SSHConnectionHandler {
         
         this.executorService = Executors.newCachedThreadPool(namedThreadFactory);
         
+        this.mainSsh = new TauonSSHClient(info, guiHandle, passwordFinder, executorService, true, hostKeyVerifier);
+        
     }
     
     private TauonSSHClient ensureConnected() throws OperationCancelledException, SessionClosedException, InterruptedException {
@@ -104,10 +96,6 @@ public class SSHConnectionHandler {
     
     public synchronized TauonSSHClient ensureConnected(boolean force) throws OperationCancelledException, SessionClosedException, InterruptedException {
         checkNotClosed();
-        
-        if(mainSsh == null){
-            mainSsh = new TauonSSHClient(info, guiHandle, passwordFinder, executorService, true, hostKeyVerifier);
-        }
         
         if(force || !mainSsh.isConnected()){
             checkNotClosed();
@@ -126,7 +114,7 @@ public class SSHConnectionHandler {
         return mainSsh;
         
     }
-    public void close() throws InterruptedException, IOException {
+    public synchronized void close() throws InterruptedException, IOException {
         
         if(mainClosed.getAndSet(true))
             return;
@@ -169,8 +157,6 @@ public class SSHConnectionHandler {
         } catch (IOException e) {
             LOG.error("Exception while operating with temporary session.", e);
             throw new RemoteOperationException.RealIOException(e);
-        } catch (RemoteOperationException e) {
-            throw new RuntimeException(e);
         }
     }
     
@@ -326,4 +312,5 @@ public class SSHConnectionHandler {
         }
         
     }
+    
 }

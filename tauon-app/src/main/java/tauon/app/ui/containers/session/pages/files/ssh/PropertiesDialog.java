@@ -400,7 +400,7 @@ public class PropertiesDialog extends JDialog {
             command.append("\"").append(fileInfo.getPath()).append("\" ");
         }
         System.out.println("Command to execute: " + command);
-        fileBrowser.getHolder().submitSSHOperationStoppable2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperationStoppable((guiHandle, instance) -> {
             try {
                 long total = 0;
                 
@@ -444,7 +444,7 @@ public class PropertiesDialog extends JDialog {
                 "export POSIXLY_CORRECT=1; export BLOCKSIZE=1024; df -P -k \""
                         + files[0].getPath() + "\"");
         System.out.println("Command to execute: " + command);
-        fileBrowser.getHolder().submitSSHOperationStoppable2((guiHandle, instance) -> {
+        fileBrowser.getHolder().submitSSHOperationStoppable((guiHandle, instance) -> {
             try {
                 
                 SSHCommandRunner sshCommandRunner = new SSHCommandRunner()

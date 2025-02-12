@@ -203,7 +203,7 @@ public class LogContent extends JPanel {
             @Override
             public void search(String text) {
                 IStopper.Handle stopFlag = new IStopper.Default();
-                holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+                holder.submitSSHOperationStoppable((guiHandle, instance) -> {
                     try (RandomAccessFile searchIndex = LogContent.this.search(instance, text, stopFlag)) {
                         long len = searchIndex.length();
                         SwingUtilities.invokeAndWait(() -> logSearchPanel.setResults(searchIndex, len));
@@ -211,19 +211,6 @@ public class LogContent extends JPanel {
                         LOG.error("Exception while rendering results.", e);
                     }
                 }, stopFlag);
-
-//                holder.disableUi(stopFlag);
-//                holder.executor.execute(() -> {
-//                    try {
-//                        RandomAccessFile searchIndex = LogContent.this.search(text, stopFlag);
-//                        long len = searchIndex.length();
-//                        SwingUtilities.invokeLater(() -> logSearchPanel.setResults(searchIndex, len));
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    } finally {
-//                        holder.enableUi();
-//                    }
-//                });
             }
             
             @Override
@@ -264,7 +251,7 @@ public class LogContent extends JPanel {
     
     private void initPages() {
         IStopper.Handle stopFlag = new IStopper.Default();
-        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+        holder.submitSSHOperationStoppable((guiHandle, instance) -> {
             try {
                 if ((indexFile(instance, true, stopFlag)) || (indexFile(instance, false, stopFlag))) {
                     this.totalLines = this.raf.length() / 16;
@@ -301,16 +288,6 @@ public class LogContent extends JPanel {
             }
         }, stopFlag);
 
-//        holder.disableUi(stopFlag);
-//        holder.executor.execute(() -> {
-//            try {
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            } finally {
-//                holder.enableUi();
-//            }
-//        });
     }
     
     private String getPageText(SSHConnectionHandler instance, long page, IStopper stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
@@ -467,12 +444,12 @@ public class LogContent extends JPanel {
     
     public void loadPage(int line) {
         IStopper.Handle stopFlag = new IStopper.Default();
-        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+        holder.submitSSHOperationStoppable((guiHandle, instance) -> {
             try{
                 String pageText = getPageText(instance, this.currentPage, stopFlag);
                 SwingUtilities.invokeAndWait(() -> {
                     this.textArea.setText(pageText);
-                    if (pageText.length() > 0) {
+                    if (!pageText.isEmpty()) {
                         this.textArea.setCaretPosition(0);
                     }
                     this.lblCurrentPage.setText((this.currentPage + 1) + "");
@@ -487,16 +464,7 @@ public class LogContent extends JPanel {
                 LOG.error("Exception while rendering results.", e);
             }
         }, stopFlag);
-//        holder.disableUi(stopFlag);
-//        holder.executor.execute(() -> {
-//            try {
-//
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            } finally {
-//                holder.enableUi();
-//            }
-//        });
+        
     }
     
     public boolean close() {

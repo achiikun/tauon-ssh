@@ -71,7 +71,7 @@ public class ProcessViewer extends Subpage {
         IStopper.Handle stopFlag = new IStopper.Default();
         switch (mode) {
             case KILL_AS_USER:
-                holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+                holder.submitSSHOperationStoppable((guiHandle, instance) -> {
                     SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
                             .withCommand(cmd)
                             .withStopper(stopFlag);
@@ -87,7 +87,7 @@ public class ProcessViewer extends Subpage {
                 }, stopFlag);
                 break;
             case KILL_AS_ROOT:
-                holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+                holder.submitSSHOperationStoppable((guiHandle, instance) -> {
                     SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
                             .withCommand(cmd)
                             .withStopper(stopFlag)
@@ -105,7 +105,7 @@ public class ProcessViewer extends Subpage {
                 }, stopFlag);
                 break;
             case LIST_PROCESS:
-                holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+                holder.submitSSHOperationStoppable((guiHandle, instance) -> {
                     updateProcessList(instance, stopFlag);
                 }, stopFlag);
                 break;
@@ -126,15 +126,6 @@ public class ProcessViewer extends Subpage {
         }
         return parseProcessList(sshCommandRunner.getStdoutString());
         
-//        StringBuilder out = new StringBuilder();
-//        StringBuilder err = new StringBuilder();
-//        int ret = instance.exec(ScriptLoader.loadShellScript("/scripts/ps.sh"),
-//                // "ps -e -o pid=pid -o pcpu -o rss -o etime -o ppid -o user -o nice -o args -ww
-//                // --sort pid",
-//                stopFlag, out, err);
-//        if (ret != 0)
-//            throw new RemoteOperationException.ErrorReturnCode("ps.sh", ret, "Error while getting metrics");
-//        return parseProcessList(out.toString());
     }
 
     private List<ProcessTableEntry> parseProcessList(String text) {

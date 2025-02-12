@@ -79,6 +79,7 @@ public class SshKeyManager {
     }
 
     public static void generateKeys(SshKeyHolder holder, SSHConnectionHandler instance, boolean local) throws TauonOperationException, IOException, OperationCancelledException, InterruptedException, SessionClosedException {
+        // TODO i18n
         if (holder.getLocalPublicKey() != null && JOptionPane.showConfirmDialog(null,
                 "WARNING: This will overwrite the existing SSH key"
                         + "\n\nIf the key was being used to connect to other servers," + "\nconnection will fail."

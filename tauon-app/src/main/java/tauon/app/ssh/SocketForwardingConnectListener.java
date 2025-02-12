@@ -25,7 +25,7 @@ public class SocketForwardingConnectListener implements ConnectListener {
     }
     
     public void gotConnect(Channel.Forwarded chan) throws IOException {
-        LOG.debug("New connection from " + chan.getOriginatorIP() + ":" + chan.getOriginatorPort());
+        LOG.debug("New connection from {}:{}", chan.getOriginatorIP(), chan.getOriginatorPort());
         
         Socket sock;
         if (addr instanceof AFSocketAddress) {

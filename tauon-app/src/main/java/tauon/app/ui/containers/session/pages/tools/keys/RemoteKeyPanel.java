@@ -21,19 +21,18 @@ public class RemoteKeyPanel extends JPanel {
     private final JButton btnRemove;
     private final JButton btnEdit;
     private final JTextArea txtPubKey;
-    private final Consumer<?> callback1;
-    private final Consumer<?> callback2;
     private final DefaultListModel<String> model;
     private final JList<String> jList;
     private SiteInfo info;
-    private Consumer<String> callback3;
 
-    public RemoteKeyPanel(SiteInfo info, Consumer<?> callback1,
-                          Consumer<?> callback2, Consumer<String> callback3) {
+    public RemoteKeyPanel(
+            SiteInfo info,
+            Consumer<?> onGenerateNewKey,
+            Consumer<?> onRefresh,
+            Consumer<String> onSaveAuthorizedKeys
+    ) {
         super(new BorderLayout());
         this.info = info;
-        this.callback1 = callback1;
-        this.callback2 = callback3;
         JLabel lblTitle = new JLabel(getBundle().getString("app.tools_ssh_keys.label.public_key_file"));
         txtKeyFile = new SkinnedTextField(20);
         txtKeyFile.setBorder(null);
@@ -51,11 +50,11 @@ public class RemoteKeyPanel extends JPanel {
         JScrollPane jScrollPane = new SkinnedScrollPane(txtPubKey);
 
         btnGenNewKey = new JButton(getBundle().getString("app.tools_ssh_keys.action.generate_new_key"));
-        btnRefresh = new JButton(getBundle().getString("app.tools_ssh_keys.action.generate"));
+        btnRefresh = new JButton(getBundle().getString("app.tools_ssh_keys.action.refresh"));
 
-        btnGenNewKey.addActionListener(e -> callback1.accept(null));
+        btnGenNewKey.addActionListener(e -> onGenerateNewKey.accept(null));
 
-        btnRefresh.addActionListener(e -> callback2.accept(null));
+        btnRefresh.addActionListener(e -> onRefresh.accept(null));
 
         Box hbox1 = Box.createHorizontalBox();
         hbox1.add(Box.createHorizontalGlue());
@@ -81,7 +80,7 @@ public class RemoteKeyPanel extends JPanel {
             String text = JOptionPane.showInputDialog(null, getBundle().getString("app.tools_ssh_keys.action.new_entry"));
             if (text != null && !(text = text.trim()).isEmpty()) {
                 model.addElement(text);
-                callback3.accept(getAuthorizedKeys());
+                onSaveAuthorizedKeys.accept(getAuthorizedKeys());
             }
         });
 
@@ -95,7 +94,7 @@ public class RemoteKeyPanel extends JPanel {
             String text = JOptionPane.showInputDialog(null, getBundle().getString("app.tools_ssh_keys.action.new_entry"), str);
             if (text != null && !(text = text.trim()).isEmpty()) {
                 model.set(index, text);
-                callback3.accept(getAuthorizedKeys());
+                onSaveAuthorizedKeys.accept(getAuthorizedKeys());
             }
         });
 
@@ -106,7 +105,7 @@ public class RemoteKeyPanel extends JPanel {
                 return;
             }
             model.remove(index);
-            callback3.accept(getAuthorizedKeys());
+            onSaveAuthorizedKeys.accept(getAuthorizedKeys());
         });
 
         Box boxBottom = Box.createHorizontalBox();

@@ -129,18 +129,6 @@ public class FileBrowser extends Page {
         this.repaint();
     }
 
-//    public void disableUi() {
-//        holder.disableUi();
-//    }
-//
-//    public void disableUi(AtomicBoolean stopFlag) {
-//        holder.disableUi(stopFlag);
-//    }
-//
-//    public void enableUi() {
-//        holder.enableUi();
-//    }
-
     public void openSshFileBrowserView(String path, AbstractFileBrowserView.PanelOrientation orientation) {
         SshFileBrowserView tab = new SshFileBrowserView(this, path, orientation);
         if (orientation == AbstractFileBrowserView.PanelOrientation.LEFT) {
@@ -163,10 +151,6 @@ public class FileBrowser extends Page {
     public SshFileSystem getSshFileSystem() {
         return sshFileSystem;
     }
-
-//    public TauonRemoteSessionInstance getSessionInstance() {
-//        return this.holder.getRemoteSessionInstance();
-//    }
 
     public SiteInfo getInfo() {
         return info;
@@ -316,7 +300,6 @@ public class FileBrowser extends Page {
     }
     
     public void uploadInBackground(FileInfo[] localFiles, String targetRemoteDirectory) throws RemoteOperationException, SessionClosedException {
-//        TauonRemoteSessionInstance instance = getHolder().createBackgroundSession();
         FileSystem sourceFs = LocalFileSystem.getInstance();
         SSHConnectionHandler.TempSshFileSystem targetFs = sshConnectionHandler.openTempSshFileSystem();
         FileTransfer transfer = new FileTransfer(sourceFs, targetFs, localFiles, targetRemoteDirectory,
@@ -399,8 +382,4 @@ public class FileBrowser extends Page {
         return viewList.get(uuid);
     }
     
-//    public static class ResponseHolder {
-//        public Constants.TransferMode transferMode;
-//        public Constants.ConflictAction conflictAction;
-//    }
 }

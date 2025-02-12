@@ -143,7 +143,7 @@ public class FileTransfer implements AutoCloseable {
                         
                         String command = "sh -c  \"cd '" + tmpDir + "'; cp -r * '" + this.targetFolder + "'\"";
                         
-                        session.runSSHOperation2((guiHandle, instance2) -> {
+                        session.runSSHOperation((guiHandle, instance2) -> {
                             System.out.println("Invoke sudo: " + command);
                             SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
                                     .withCommand(command)

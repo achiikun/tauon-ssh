@@ -151,7 +151,7 @@ public class ExternalEditorHandler extends JDialog {
             return info.remoteFile.getSize();
         }
 
-        scp.runSSHOperation2((guiHandle, instance) -> {
+        scp.runSSHOperation((guiHandle, instance) -> {
             long totalBytes1 = totalBytes;
             LOG.debug("Opening local file: {}; and remote file: {}", info.localFile, info.remoteFile.getPath());
             try (

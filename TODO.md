@@ -35,6 +35,9 @@ List of scheduled features and bugs to be solved:
     * [ ] Add a box to query what happens when copying a file that exists
     * [ ] Move an item to a folder in the same window
     * [ ] Create a remote folder picker
+* [ ] SSH Keys
+  * [ ] Show server fingerprints
+  
 
 ## Improvements
 

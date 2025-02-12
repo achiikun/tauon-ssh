@@ -45,7 +45,7 @@ public class KeyPage extends Subpage {
         keyHolder = new SshKeyHolder();
         tabs = new TabbedPanel();
         remoteKeyPanel = new RemoteKeyPanel(holder.getInfo(), a -> {
-            holder.submitSSHOperation2((guiHandle, instance) -> {
+            holder.submitSSHOperation((guiHandle, instance) -> {
                 SshKeyManager.generateKeys(keyHolder, instance, false);
                 try {
                     SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
@@ -54,7 +54,7 @@ public class KeyPage extends Subpage {
                 }
             });
         }, a -> {
-            holder.submitSSHOperation2((guiHandle, instance) -> {
+            holder.submitSSHOperation((guiHandle, instance) -> {
                 keyHolder = SshKeyManager.getKeyDetails(holder, instance);
                 try {
                     SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
@@ -63,7 +63,7 @@ public class KeyPage extends Subpage {
                 }
             });
         }, a -> {
-            holder.submitSSHOperation2((guiHandle, instance) -> {
+            holder.submitSSHOperation((guiHandle, instance) -> {
                     SshKeyManager.saveAuthorizedKeysFile(a, instance.getSshFileSystem());
                     keyHolder = SshKeyManager.getKeyDetails(holder, instance);
                 try {
@@ -74,7 +74,7 @@ public class KeyPage extends Subpage {
             });
         });
         localKeyPanel = new LocalKeyPanel(holder.getInfo(), a -> {
-            holder.submitSSHOperation2((guiHandle, instance) -> {
+            holder.submitSSHOperation((guiHandle, instance) -> {
                     SshKeyManager.generateKeys(keyHolder, instance, true);
                 try {
                     SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
@@ -83,8 +83,7 @@ public class KeyPage extends Subpage {
                 }
             });
         }, a -> {
-//            holder.disableUi();
-            holder.submitSSHOperation2((guiHandle, instance) -> {
+            holder.submitSSHOperation((guiHandle, instance) -> {
                     keyHolder = SshKeyManager.getKeyDetails(holder, instance);
                 try {
                     SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));
@@ -97,7 +96,7 @@ public class KeyPage extends Subpage {
         tabs.addTab(getBundle().getString("app.tools_ssh_keys.label.local_computer"), localKeyPanel);
         this.add(tabs);
 
-        holder.submitSSHOperation2((guiHandle, instance) -> {
+        holder.submitSSHOperation((guiHandle, instance) -> {
             keyHolder = SshKeyManager.getKeyDetails(holder, instance);
             try {
                 SwingUtilities.invokeAndWait(() -> setKeyData(keyHolder));

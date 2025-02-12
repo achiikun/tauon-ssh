@@ -124,8 +124,7 @@ public class NetworkToolsPage extends Subpage {
 
     private void executeAsync(String cmd) {
         IStopper.Handle stopFlag = new IStopper.Default();
-//        holder.disableUi(stopFlag);
-        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+        holder.submitSSHOperationStoppable((guiHandle, instance) -> {
             StringBuilder outText = new StringBuilder();
             try {
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -148,14 +147,10 @@ public class NetworkToolsPage extends Subpage {
                             getBundle().getString("general.message.executed_with_errors"));
                 }
             }
-//            catch (Exception e) {
-//                e.printStackTrace();
-//            }
             finally {
                 SwingUtilities.invokeLater(() -> {
                     this.txtOutput.setText(outText.toString());
                 });
-//                holder.enableUi();
             }
         }, stopFlag);
     }

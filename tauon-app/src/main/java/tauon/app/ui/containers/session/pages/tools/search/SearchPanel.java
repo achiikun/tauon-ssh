@@ -104,7 +104,7 @@ public class SearchPanel extends Subpage {
 
         criteriaBuffer.append(" ");
 
-        if (txtSize.getText().length() > 0) {
+        if (!txtSize.getText().isEmpty()) {
             criteriaBuffer.append("-size");
             switch (cmbSize.getSelectedIndex()) {
                 case 1:
@@ -130,7 +130,7 @@ public class SearchPanel extends Subpage {
             }
             try {
                 long size = Long.parseLong(txtSize.getText()) * sizeFactor;
-                criteriaBuffer.append(size + "c");
+                criteriaBuffer.append(size).append("c");
                 criteriaBuffer.append(" ");
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(null, "Invalid size");
@@ -151,6 +151,7 @@ public class SearchPanel extends Subpage {
             Date d2 = (Date) spDate2.getValue();
 
             if (!d1.before(d2)) {
+                // TODO i18n
                 JOptionPane.showMessageDialog(this,
                         "Start date greater than last date");
                 return;
@@ -165,7 +166,7 @@ public class SearchPanel extends Subpage {
             long days1 = ChronoUnit.DAYS.between(date1, now);
             long days2 = ChronoUnit.DAYS.between(date2, now);
 
-            criteriaBuffer.append(" -mtime +" + days2 + " -a -mtime -" + days1);
+            criteriaBuffer.append(" -mtime +").append(days2).append(" -a -mtime -").append(days1);
         }
 
         StringBuilder scriptBuffer = new StringBuilder();
@@ -185,9 +186,7 @@ public class SearchPanel extends Subpage {
         }
         
         IStopper.Handle stopFlag = new IStopper.Default();
-//        this.holder.disableUi(stopFlag);
-//        holder.executor.submit(() -> findAsync(scriptBuffer, stopFlag));
-        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+        holder.submitSSHOperationStoppable((guiHandle, instance) -> {
             System.out.println("Listing partitions");
             findAsync(instance, scriptBuffer, stopFlag);
         }, stopFlag);
@@ -568,7 +567,7 @@ public class SearchPanel extends Subpage {
                 SearchResult res = model.getItemAt(index);
                 String path = res.getPath();
                 path = PathUtils.getParent(path);
-                if (path.length() > 0) {
+                if (path != null && !path.isEmpty()) {
                     holder.openFileInBrowser(path);
                 }
             }

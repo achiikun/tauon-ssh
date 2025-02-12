@@ -22,14 +22,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class SSHCommandRunner {
     private static final Logger LOG = LoggerFactory.getLogger(SSHCommandRunner.class);
-    public interface SudoPasswordPrompter{
-        
-        char[] promptSudoPassword(boolean isRetrying) throws OperationCancelledException;
-    }
     
     private HashMap<String, String> envVars;
     
@@ -106,6 +101,7 @@ public class SSHCommandRunner {
         if(this.envVars == null){
             this.envVars = new HashMap<>();
         };
+        this.envVars.put(var, value);
         return this;
     }
     
@@ -117,14 +113,7 @@ public class SSHCommandRunner {
         return stdoutStringBuilder != null || stdoutAppendable != null || stdoutStream != null;
     }
     
-    /**
-     * TODO move it to SSHConnection
-     * @param session
-     * @param executorService
-     * @throws OperationCancelledException
-     * @throws RemoteOperationException.RealIOException
-     */
-    public void run(Session session, ExecutorService executorService) throws OperationCancelledException, RemoteOperationException.RealIOException {
+    void run(Session session, ExecutorService executorService) throws OperationCancelledException, RemoteOperationException.RealIOException {
         
         Future<?> stderrFuture = null;
         Future<?> stdoutFuture = null;
@@ -150,7 +139,8 @@ public class SSHCommandRunner {
             // Why not to use pty with sudo:
             // https://superuser.com/questions/1581768/why-isnt-putty-getting-ssh-msg-channel-extended-data-packets-when-ttys-are-enab
             if (sudo != null) {
-//                // Sudo needs to allocate a pty // TODO try without one
+                // Sudo NOT needs to allocate a pty, this action provokes the stderr to be mixed with stdout,
+                // By setting -S option, the password sending works fine
 //                session.allocatePTY("vt100", 80, 24, 0, 0, Collections.emptyMap());
                 fullCommand = "sudo -S" + (envVars != null ? " -E" : "") + " -p '" + prompt + "' " + command;
             }else{
@@ -292,13 +282,6 @@ public class SSHCommandRunner {
                     }
                 }else {
                     // Wait to finish the command
-//                    try {
-//                        cmd.join(10, TimeUnit.SECONDS);
-//                    }catch (ConnectionException connectionException){
-//                        if(!(connectionException.getCause() instanceof TimeoutException)) {
-//                            throw connectionException;
-//                        }
-//                    }
                     // TODO show users that process is not responding
                     cmd.join();
                 }
@@ -328,48 +311,6 @@ public class SSHCommandRunner {
                 }
                 
                 closeFutures(stdoutFuture, stderrFuture);
-
-
-//            byte[] b = new byte[8192];
-//
-//            do {
-//                if (stopper.isStopped()) {
-//                    throw new OperationCancelledException();
-//                }
-//
-//                if()
-//
-//                if (in.available() > 0) {
-//                    int m = in.available();
-//                    while (m > 0) {
-//                        int x = in.read(b, 0, Math.min(m, b.length));
-//                        if (x == -1) {
-//                            break;
-//                        }
-//                        m -= x;
-//                        if (bout != null) {
-//                            bout.write(b, 0, x);
-//                        }
-//
-//                    }
-//                }
-//
-//                if (err.available() > 0) {
-//                    int m = err.available();
-//                    while (m > 0) {
-//                        int x = err.read(b, 0, Math.min(m, b.length));
-//                        if (x == -1) {
-//                            break;
-//                        }
-//                        m -= x;
-//                        if (berr != null) {
-//                            berr.write(b, 0, x);
-//                        }
-//
-//                    }
-//                }
-//
-//            } while (cmd.isOpen() || in.available() > 0 || err.available() > 0);
                 
                 LOG.debug("Command and Session closed: isOpen={} isEof={} exitStatus={}", cmd.isOpen(), cmd.isEOF(), cmd.getExitStatus());
                 
@@ -514,6 +455,10 @@ public class SSHCommandRunner {
     
     public String getStderrString(){
         return stderrString;
+    }
+    
+    public interface SudoPasswordPrompter{
+        char[] promptSudoPassword(boolean isRetrying) throws OperationCancelledException;
     }
     
 }
