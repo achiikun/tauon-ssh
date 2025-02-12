@@ -3,18 +3,18 @@
  */
 package tauon.app.ui.containers.session.pages.info.services;
 
-import com.jediterm.terminal.TerminalMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
-import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
-import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -23,7 +23,6 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,11 +58,11 @@ public class ServicePanel extends Subpage {
         super(holder);
     }
 
-    private static List<ServiceEntry> parseServiceEntries(StringBuilder data) {
+    private static List<ServiceEntry> parseServiceEntries(String data) {
         List<ServiceEntry> list = new ArrayList<>();
         Map<String, String> unitMap = new HashMap<>();
         boolean parsingUnit = true;
-        for (String s : data.toString().split("\n")) {
+        for (String s : data.split("\n")) {
             if (parsingUnit && s.equals(SEP)) {
                 parsingUnit = false;
                 continue;
@@ -296,8 +295,8 @@ public class ServicePanel extends Subpage {
         this.setRestartServiceActionListener(e -> performServiceAction(6));
 
         btnRefresh.addActionListener(e -> {
-            AtomicBoolean stopFlag = new AtomicBoolean(false);
-            holder.submitSSHOperationStoppable(instance -> {
+            IStopper.Handle stopFlag = new IStopper.Default();
+            holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
                 updateView(instance, stopFlag);
             }, stopFlag);
         });
@@ -307,8 +306,8 @@ public class ServicePanel extends Subpage {
 //                }));
 
 //        holder.executor.submit(() -> {
-            AtomicBoolean stopFlag = new AtomicBoolean(false);
-            holder.submitSSHOperationStoppable(instance -> {
+            IStopper.Handle stopFlag = new IStopper.Default();
+            holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
                 updateView(instance, stopFlag);
             }, stopFlag);
 //        });
@@ -349,20 +348,35 @@ public class ServicePanel extends Subpage {
 
         String cmd = cmd1;
 
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        IStopper.Handle stopFlag = new IStopper.Default();
 
 //        holder.disableUi(stopFlag);
 
         boolean elevated = this.getUseSuperUser();
         if (cmd != null) {
-            holder.submitSSHOperationStoppable(instance -> {
+            holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+                
+                SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                        .withCommand(cmd)
+                        .withStopper(stopFlag)
+                        .withSudo(elevated ? guiHandle : null);
+                
+                instance.exec(sshCommandRunner);
+                
+                int ret = sshCommandRunner.getResult();
+                
+                if(ret == 0){
+                    updateView(instance, stopFlag);
+                }
+                
+                
 //                try {
-                    if (elevated) {
+//                    if (elevated) {
 //                        try {
-                            if (this.runCommandWithSudo(instance, cmd)) {
-                                updateView(instance, stopFlag);
-                                return;
-                            }
+//                            if (this.runCommandWithSudo(instance, cmd)) {
+//                                updateView(instance, stopFlag);
+//                                return;
+//                            }
 //                        } catch (Exception ex) {
 //                            ex.printStackTrace();
 //                        }
@@ -370,12 +384,12 @@ public class ServicePanel extends Subpage {
 //                            JOptionPane.showMessageDialog(null,
 //                                    getBundle().getString("general.message.operation_failed"));
 //                        }
-                    } else {
+//                    } else {
 //                        try {
-                            if (this.runCommand(instance, stopFlag, cmd)) {
-                                updateView(instance, stopFlag);
-                                return;
-                            }
+//                            if (this.runCommand(instance, stopFlag, cmd)) {
+//                                updateView(instance, stopFlag);
+//                                return;
+//                            }
 //                        } catch (Exception ex) {
 //                            ex.printStackTrace();
 //                        }
@@ -383,7 +397,7 @@ public class ServicePanel extends Subpage {
 //                            JOptionPane.showMessageDialog(null,
 //                                    getBundle().getString("general.message.operation_failed"));
 //                        }
-                    }
+//                    }
 //                } catch (Exception e) {
 //                    e.printStackTrace();
 //                } finally {
@@ -393,21 +407,28 @@ public class ServicePanel extends Subpage {
         }
     }
 
-    public boolean runCommandWithSudo(TauonRemoteSessionInstance client, String command) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
-        return SudoUtils.runSudo(command, client) == 0;
-    }
+//    public boolean runCommandWithSudo(TauonRemoteSessionInstance client, String command) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
+//        return SudoUtils.runSudo(command, client) == 0;
+//    }
+//
+//    public boolean runCommand(TauonRemoteSessionInstance client, AtomicBoolean stopFlag, String command) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
+//        StringBuilder output = new StringBuilder();
+//        return client.exec(command, stopFlag, output) == 0;
+//    }
 
-    public boolean runCommand(TauonRemoteSessionInstance client, AtomicBoolean stopFlag, String command) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
-        StringBuilder output = new StringBuilder();
-        return client.exec(command, stopFlag, output) == 0;
-    }
-
-    private void updateView(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
+    private void updateView(SSHConnectionHandler instance, IStopper stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
 //        try {
-            StringBuilder output = new StringBuilder();
-            int ret = instance.exec(SYSTEMD_COMMAND, stopFlag, output);
+        
+        SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                .withCommand(SYSTEMD_COMMAND)
+                .withStdoutString()
+                .withStopper(stopFlag);
+        
+        instance.exec(sshCommandRunner);
+            
+            int ret = sshCommandRunner.getResult(); //instance.exec(SYSTEMD_COMMAND, stopFlag, output);
             if (ret == 0) {
-                List<ServiceEntry> list = ServicePanel.parseServiceEntries(output);
+                List<ServiceEntry> list = ServicePanel.parseServiceEntries(sshCommandRunner.getStdoutString());
                 // TODO test invoke later
                 try {
                     SwingUtilities.invokeAndWait(() -> setServiceData(list));

@@ -1,15 +1,12 @@
 package tauon.app.ui.containers.session.pages.terminal;
 
-import com.jediterm.terminal.model.TerminalApplicationTitleListener;
 import com.jediterm.terminal.ui.JediTermWidget;
-import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.services.SettingsService;
-import tauon.app.settings.SessionInfo;
+import tauon.app.services.SettingsConfigManager;
+import tauon.app.ssh.GuiHandle;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ui.components.closabletabs.TabHandle;
-import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.terminal.ssh.DisposableTtyConnector;
 import tauon.app.ui.containers.session.pages.terminal.ssh.SshTtyConnector;
 
@@ -30,16 +27,16 @@ public class TerminalComponent extends JPanel {
     
     private TabHandle tabHandle;
 
-    public TerminalComponent(SessionInfo info, String name, String command, SessionContentPanel sessionContentPanel) {
+    public TerminalComponent(String name, String initialCommand, GuiHandle guiHandle, SSHConnectionHandler.SessionHandle sessionHandle) {
         setLayout(new BorderLayout());
-        System.out.println("Current terminal font: " + SettingsService.getSettings().getTerminalFontName());
+        System.out.println("Current terminal font: " + SettingsConfigManager.getSettings().getTerminalFontName());
         this.name = name;
         contentPane = new JPanel(new BorderLayout());
         JRootPane rootPane = new JRootPane();
         rootPane.setContentPane(contentPane);
         add(rootPane);
         
-        term = new CustomJediterm(new CustomizedSettingsProvider(sessionContentPanel));
+        term = new CustomJediterm(new CustomizedSettingsProvider(guiHandle));
 
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -54,7 +51,7 @@ public class TerminalComponent extends JPanel {
             }
         });
 
-        tty = new SshTtyConnector(info, command, sessionContentPanel);
+        tty = new SshTtyConnector(initialCommand, sessionHandle);
 
         reconnectionBox = Box.createHorizontalBox();
         reconnectionBox.setOpaque(true);
@@ -66,7 +63,7 @@ public class TerminalComponent extends JPanel {
             contentPane.remove(reconnectionBox);
             contentPane.revalidate();
             contentPane.repaint();
-            tty = new SshTtyConnector(info, command, sessionContentPanel);
+            tty = new SshTtyConnector(initialCommand, sessionHandle);
             term.setTtyConnector(tty);
             // Quick fix: terminal sets cursor invisible if disconnected, set it back to visible after reconnecting
             term.getTerminal().setCursorVisible(true);
@@ -77,6 +74,7 @@ public class TerminalComponent extends JPanel {
         reconnectionBox.setBorder(new EmptyBorder(10, 10, 10, 10));
         term.addListener((e) -> {
             System.out.println("Disconnected");
+            sessionHandle.dispose();
             SwingUtilities.invokeLater(() -> {
                 contentPane.add(reconnectionBox, BorderLayout.NORTH);
                 contentPane.revalidate();
@@ -84,13 +82,10 @@ public class TerminalComponent extends JPanel {
             });
         });
         term.setTtyConnector(tty);
-        term.getTerminal().addApplicationTitleListener(new TerminalApplicationTitleListener() {
-            @Override
-            public void onApplicationTitleChanged(@Nls @NotNull String newApplicationTitle) {
-                LOG.debug("Terminal requested a new title: {}", newApplicationTitle);
-                TerminalComponent.this.name = newApplicationTitle;
-                SwingUtilities.invokeLater(() -> tabHandle.setTitle(newApplicationTitle));
-            }
+        term.getTerminal().addApplicationTitleListener(newApplicationTitle -> {
+            LOG.debug("Terminal requested a new title: {}", newApplicationTitle);
+            TerminalComponent.this.name = newApplicationTitle;
+            SwingUtilities.invokeLater(() -> tabHandle.setTitle(newApplicationTitle));
         });
         contentPane.add(term);
 

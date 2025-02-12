@@ -3,10 +3,11 @@ package tauon.app.ui.containers.session.pages.terminal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.exceptions.SessionClosedException;
+import tauon.app.ssh.GuiHandle;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ui.components.closabletabs.ClosableTabbedPanel;
 import tauon.app.ui.components.page.Page;
-import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.settings.SessionInfo;
 import tauon.app.ui.containers.session.pages.terminal.snippets.SnippetPanel;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
@@ -27,12 +28,19 @@ public class TerminalHolder extends Page implements AutoCloseable {
     private final AtomicBoolean init = new AtomicBoolean(false);
     private int c = 1;
     private final JButton btn;
-    private final SessionContentPanel sessionContentPanel;
-
-    public TerminalHolder(SessionInfo info, SessionContentPanel sessionContentPanel) {
-        this.sessionContentPanel = sessionContentPanel;
+    
+    private final GuiHandle guiHandle;
+    private final SSHConnectionHandler connectionHandler;
+    
+    public TerminalHolder(GuiHandle guiHandle, SSHConnectionHandler connectionHandler) {
+        this.guiHandle = guiHandle;
+        this.connectionHandler = connectionHandler;
         this.tabs = new ClosableTabbedPanel(e -> {
-            openNewTerminal(null);
+            try {
+                openNewTerminal(null);
+            } catch (SessionClosedException ex) {
+                guiHandle.reportException(ex);
+            }
         });
 
         btn = new JButton();
@@ -47,8 +55,13 @@ public class TerminalHolder extends Page implements AutoCloseable {
         tabs.getButtonsBox().add(btn);
 
         long t1 = System.currentTimeMillis();
-        TerminalComponent tc = new TerminalComponent(info, String.valueOf(c), null, sessionContentPanel);
-        tc.setTabHandle(this.tabs.addTab(tc));
+        try {
+            TerminalComponent tc = new TerminalComponent(String.valueOf(c), null, guiHandle, connectionHandler.openSessionHandle());
+            tc.setTabHandle(this.tabs.addTab(tc));
+        } catch (SessionClosedException e) {
+            guiHandle.reportException(e);
+        }
+        
         long t2 = System.currentTimeMillis();
         LOG.debug("Terminal was init in: {} ms", t2 - t1);
 
@@ -143,13 +156,13 @@ public class TerminalHolder extends Page implements AutoCloseable {
         return "Terminal";
     }
 
-    public void openNewTerminal(String command) {
+    public void openNewTerminal(String command) throws SessionClosedException {
         c++;
         TerminalComponent tc = new TerminalComponent(
-                this.sessionContentPanel.getInfo(),
-                c + "",
+                String.valueOf(c),
                 command,
-                this.sessionContentPanel
+                guiHandle,
+                connectionHandler.openSessionHandle()
         );
         tc.setTabHandle(this.tabs.addTab(tc));
         tc.start();

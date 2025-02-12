@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class SessionFolder extends NamedItem {
     private List<SessionFolder> folders = new ArrayList<>();
-    private List<SessionInfo> items = new ArrayList<>();
+    private List<SiteInfo> items = new ArrayList<>();
 
     @Override
     public String toString() {
@@ -45,14 +45,14 @@ public class SessionFolder extends NamedItem {
     /**
      * @return the items
      */
-    public List<SessionInfo> getItems() {
+    public List<SiteInfo> getItems() {
         return items;
     }
 
     /**
      * @param items the items to set
      */
-    public void setItems(List<SessionInfo> items) {
+    public void setItems(List<SiteInfo> items) {
         this.items = items;
     }
 

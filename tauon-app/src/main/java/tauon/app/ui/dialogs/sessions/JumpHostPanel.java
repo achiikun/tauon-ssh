@@ -2,7 +2,7 @@ package tauon.app.ui.dialogs.sessions;
 
 import tauon.app.App;
 import tauon.app.settings.HopEntry;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.ui.components.misc.NativeFileChooser;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
@@ -20,7 +20,7 @@ import static tauon.app.services.LanguageService.getBundle;
 public class JumpHostPanel extends JPanel {
     private final DefaultListModel<HopEntry> hopModel = new DefaultListModel<>();
     private final JList<HopEntry> hopList = new JList<>(hopModel);
-    private SessionInfo info;
+    private SiteInfo info;
 
     public JumpHostPanel() {
         super(new BorderLayout(5, 5));
@@ -129,7 +129,7 @@ public class JumpHostPanel extends JPanel {
         this.info.setJumpHosts(getJumpHosts());
     }
 
-    public void setInfo(SessionInfo info) {
+    public void setInfo(SiteInfo info) {
         this.info = info;
         setJumpHosts(this.info.getJumpHosts());
     }

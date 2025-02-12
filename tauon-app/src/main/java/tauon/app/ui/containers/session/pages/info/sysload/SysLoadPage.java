@@ -40,7 +40,7 @@ public class SysLoadPage extends Subpage {
      *
      */
     private void fetchSystemLoad() {
-        holder.submitSSHOperation(instance -> {
+        holder.submitSSHOperation2((guiHandle, instance) -> {
             try {
                 if (holder.isSessionClosed()) {
                     SwingUtilities.invokeAndWait(() -> timer.stop());

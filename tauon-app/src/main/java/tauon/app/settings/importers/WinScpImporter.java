@@ -9,9 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.settings.NamedItem;
 import tauon.app.settings.SessionFolder;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.util.misc.RegUtil;
-import tauon.app.util.misc.Win32DragHandler;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.net.URLDecoder;
@@ -86,7 +85,7 @@ public class WinScpImporter {
                     proxyType = 0;
                 }
 
-                SessionInfo info = new SessionInfo();
+                SiteInfo info = new SiteInfo();
 
                 info.setHost(host);
                 info.setPort(port);

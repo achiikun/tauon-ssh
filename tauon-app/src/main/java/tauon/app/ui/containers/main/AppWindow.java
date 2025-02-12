@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.services.ConfigFilesService;
-import tauon.app.services.SettingsService;
-import tauon.app.settings.SessionInfo;
+import tauon.app.services.SettingsConfigManager;
+import tauon.app.settings.SiteInfo;
 import tauon.app.ui.components.glasspanes.AppInputBlocker;
 import tauon.app.ui.components.glasspanes.InputBlocker;
 import tauon.app.ui.components.misc.FontAwesomeContants;
@@ -98,7 +98,7 @@ public class AppWindow extends JFrame {
         int screenWidth = screenD.width - inset.left - inset.right;
         int screenHeight = screenD.height - inset.top - inset.bottom;
 
-        if (screenWidth < 1024 || screenHeight < 650 || SettingsService.getSettings().isStartMaximized()) {
+        if (screenWidth < 1024 || screenHeight < 650 || SettingsConfigManager.getSettings().isStartMaximized()) {
             setSize(screenWidth, screenHeight);
         } else {
             int width = (screenWidth * 80) / 100;
@@ -141,7 +141,7 @@ public class AppWindow extends JFrame {
     public void createFirstSessionPanel() {
         try {
             
-            SessionInfo info = new NewSessionDlg(this).newSession();
+            SiteInfo info = new NewSessionDlg(this).newSession();
             if (info != null) {
                 sessionListPanel.createSession(info);
             }
@@ -285,6 +285,7 @@ public class AppWindow extends JFrame {
      */
     public void removeSession(SessionContentPanel sessionContentPanel) {
         cardPanel.remove(sessionContentPanel);
+        // TODO remove responsability from here
         uploadPanel.removePendingTransfers(sessionContentPanel);
         downloadPanel.removePendingTransfers(sessionContentPanel);
         revalidate();

@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.AlreadyFailedException;
 import tauon.app.settings.SessionFolder;
-import tauon.app.settings.SessionInfo;
-import tauon.app.services.SessionService;
+import tauon.app.settings.SiteInfo;
+import tauon.app.services.SitesConfigManager;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ui.components.misc.NativeFileChooser;
 import tauon.app.settings.importers.SSHConfigImporter;
@@ -28,7 +28,7 @@ import static tauon.app.util.misc.Constants.CONFIG_DIR;
 
 public class SessionExportImport {
     
-    private static final Logger LOG = LoggerFactory.getLogger(SessionService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SitesConfigManager.class);
     
     public static synchronized void exportSessions() throws IOException {
     
@@ -110,7 +110,7 @@ public class SessionExportImport {
         int skipped = 0;
         int overwritten = 0;
         
-        List<SessionInfo> sessions;
+        List<SiteInfo> sessions;
         
         try {
             sessions = SSHConfigImporter.getSessionFromFile(f);
@@ -120,20 +120,20 @@ public class SessionExportImport {
             throw new AlreadyFailedException();
         }
         
-        SavedSessionTree tree = SessionService.getInstance().getSessionTree(new PasswordPromptHelper(parent));
+        SavedSessionTree tree = SitesConfigManager.getInstance().getSessionTree(new PasswordPromptHelper(parent));
             SessionFolder folder = tree.getFolder();
 
             List<SessionFolder> folders = folder.getFolders();
             int total = sessions.size();
             SessionFolder sessionFolder;
-            for (SessionInfo session : sessions) {
+            for (SiteInfo session : sessions) {
                 session.setId(UUID.randomUUID().toString());
                 
                 sessionFolder = new SessionFolder();
                 sessionFolder.setId(UUID.randomUUID().toString());
                 sessionFolder.setName(session.getName());
                 
-                List<SessionInfo> item = new ArrayList<>();
+                List<SiteInfo> item = new ArrayList<>();
                 item.add(session);
                 sessionFolder.setItems(item);
                 
@@ -151,14 +151,14 @@ public class SessionExportImport {
                     continue;
                 }
                 
-                SessionService.getInstance().setPasswordsFrom(session);
+                SitesConfigManager.getInstance().setPasswordsFrom(session);
                 folders.add(sessionFolder);
                 imported++;
             }
 
             folder.setFolders(folders);
             
-            SessionService.getInstance().save(new PasswordPromptHelper(parent));
+            SitesConfigManager.getInstance().save(new PasswordPromptHelper(parent));
             
 //            JOptionPane.showMessageDialog(parent,
 //                    "Total=" + total +

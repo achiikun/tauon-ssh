@@ -1,8 +1,8 @@
 package tauon.app.ui.dialogs.sessions;
 
 import tauon.app.settings.HopEntry;
-import tauon.app.settings.SessionInfo;
-import tauon.app.settings.SessionInfo.JumpType;
+import tauon.app.settings.SiteInfo;
+import tauon.app.settings.SiteInfo.JumpType;
 import tauon.app.ui.components.misc.NativeFileChooser;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.components.misc.SkinnedTextField;
@@ -50,7 +50,7 @@ public class SessionInfoPanel extends JPanel {
     private JumpHostPanel panJumpHost;
     private PortForwardingPanel panPF;
     private TabbedPanel tabs;
-    private SessionInfo info;
+    private SiteInfo info;
 
     public SessionInfoPanel() {
         createUI();
@@ -80,7 +80,7 @@ public class SessionInfoPanel extends JPanel {
         return true;
     }
 
-    public void setSessionInfo(SessionInfo info) {
+    public void setSessionInfo(SiteInfo info) {
         this.info = info;
         setHost(info.getHost());
         setPort(info.getPort());

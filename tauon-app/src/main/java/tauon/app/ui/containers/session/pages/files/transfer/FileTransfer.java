@@ -2,7 +2,8 @@ package tauon.app.ui.containers.session.pages.files.transfer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.services.SettingsService;
+import tauon.app.services.SettingsConfigManager;
+import tauon.app.ssh.SSHCommandRunner;
 import tauon.app.ssh.filesystem.SSHRemoteFileInputStream;
 import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
 import tauon.app.ssh.filesystem.*;
@@ -11,7 +12,6 @@ import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.Constants.ConflictAction;
 import tauon.app.util.misc.PathUtils;
-import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -35,7 +35,8 @@ public class FileTransfer implements AutoCloseable {
     private final FileInfo[] files;
     private final String targetFolder;
     private final AtomicBoolean stopFlag = new AtomicBoolean(false);
-    private final SessionContentPanel instance;
+    @Deprecated
+    private final SessionContentPanel session;
     private long totalSize;
     private long processedBytes;
     private int processedFilesCount;
@@ -43,13 +44,13 @@ public class FileTransfer implements AutoCloseable {
     private Constants.ConflictAction conflictAction = ConflictAction.PROMPT; // 0 -> overwrite, 1 -> auto rename, 2
 
     public FileTransfer(FileSystem sourceFs, FileSystem targetFs, FileInfo[] files, String targetFolder,
-                        Constants.ConflictAction defaultConflictAction, SessionContentPanel instance) {
+                        Constants.ConflictAction defaultConflictAction, SessionContentPanel session) {
         this.sourceFs = sourceFs;
         this.targetFs = targetFs;
         this.files = files;
         this.targetFolder = targetFolder;
         this.conflictAction = defaultConflictAction;
-        this.instance = instance;
+        this.session = session;
         if (defaultConflictAction == Constants.ConflictAction.CANCEL) {
             throw new IllegalArgumentException("defaultConflictAction can not be ConflictAction.Cancel");
         }
@@ -119,7 +120,7 @@ public class FileTransfer implements AutoCloseable {
                 
                 if (targetFs instanceof SshFileSystem) {
                     String tmpDir = "/tmp/" + UUID.randomUUID();
-                    if (SettingsService.getSettings().isTransferTemporaryDirectory()) {
+                    if (SettingsConfigManager.getSettings().isTransferTemporaryDirectory()) {
                         targetFs.mkdir(tmpDir);
                         transfer(tmpDir, callback);
                         callback.done(this);
@@ -129,22 +130,26 @@ public class FileTransfer implements AutoCloseable {
                         JOptionPane.showMessageDialog(null, tmpFilePath, "Copied to temp directory", JOptionPane.WARNING_MESSAGE);
                     }
                     
-                    if (!SettingsService.getSettings().isPromptForSudo() ||
+                    if (!SettingsConfigManager.getSettings().isPromptForSudo() ||
                             JOptionPane.showConfirmDialog(null,
                                     getBundle().getString("app.files.message.copy_denied_ask_for_temp"),
                                     getBundle().getString("general.message.insufficient_permissions"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                         
                         // Because transferTemporaryDirectory already create and transfer files, here can skip these steps
-                        if (!SettingsService.getSettings().isTransferTemporaryDirectory()) {
+                        if (!SettingsConfigManager.getSettings().isTransferTemporaryDirectory()) {
                             targetFs.mkdir(tmpDir);
                             transfer(tmpDir, callback);
                         }
                         
                         String command = "sh -c  \"cd '" + tmpDir + "'; cp -r * '" + this.targetFolder + "'\"";
                         
-                        instance.runSSHOperation(instance2 -> {
+                        session.runSSHOperation2((guiHandle, instance2) -> {
                             System.out.println("Invoke sudo: " + command);
-                            int ret = SudoUtils.runSudo(command, instance2);
+                            SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                                    .withCommand(command)
+                                    .withSudo(guiHandle);
+                            instance2.exec(sshCommandRunner);
+                            int ret = sshCommandRunner.getResult();
                             if (ret == 0) {
                                 callback.done(this);
                             }
@@ -322,7 +327,7 @@ public class FileTransfer implements AutoCloseable {
     }
     
     public SessionContentPanel getSession() {
-        return instance;
+        return session;
     }
     
     public boolean isUpload() {

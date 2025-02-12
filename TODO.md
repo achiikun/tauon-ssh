@@ -15,7 +15,6 @@ List of scheduled features and bugs to be solved:
 * [ ] Add a connection status page (list of active forwarding ports)
 * [ ] Add a name and an enable check to each port forwarding
 * [ ] Run ports with sudo by default
-* [ ] When hit a CTRL+C, flush console buffer to receive the prompt ASAP
 * [ ] Open the program in the last location, or in the active screen if multiple
 * [ ] Copy PID from processes
 * [ ] When a port forwarding fails, notify to the user
@@ -23,6 +22,7 @@ List of scheduled features and bugs to be solved:
 * [ ] Store securely proxy password
 * [ ] Let user upload private key files and store them securely
 * [ ] UI: Add countdown in the connecting dialog
+* [ ] Add VNC viewer (from tightvnc-java)
 * [ ] Toolbox
     * [ ] Show executed commands
 * [ ] Diskspace
@@ -36,7 +36,10 @@ List of scheduled features and bugs to be solved:
     * [ ] Move an item to a folder in the same window
     * [ ] Create a remote folder picker
 
+## Improvements
 
+* [ ] Get rid of jsch
+* [ ] When hit a CTRL+C, flush console buffer to receive the prompt ASAP
 
 ## Bugs
 

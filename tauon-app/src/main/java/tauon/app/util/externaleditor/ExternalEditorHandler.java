@@ -6,6 +6,8 @@ package tauon.app.util.externaleditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.TauonOperationException;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.SSHRemoteFileInputStream;
 import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
@@ -149,11 +151,11 @@ public class ExternalEditorHandler extends JDialog {
             return info.remoteFile.getSize();
         }
 
-        scp.runSSHOperation(instance -> {
+        scp.runSSHOperation2((guiHandle, instance) -> {
             long totalBytes1 = totalBytes;
             LOG.debug("Opening local file: {}; and remote file: {}", info.localFile, info.remoteFile.getPath());
             try (
-                    OutputStream out = instance.getSshFs().outputTransferChannel()
+                    OutputStream out = instance.getSshFileSystem().outputTransferChannel()
                             .getOutputStream(info.remoteFile.getPath());
                     InputStream in = new FileInputStream(info.localFile)
             ) {
@@ -178,6 +180,10 @@ public class ExternalEditorHandler extends JDialog {
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (TauonOperationException e) {
+                if(e instanceof RemoteOperationException)
+                    throw (RemoteOperationException) e;
                 throw new RuntimeException(e);
             }
         });

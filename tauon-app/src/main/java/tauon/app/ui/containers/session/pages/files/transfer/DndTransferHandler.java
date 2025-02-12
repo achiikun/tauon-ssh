@@ -1,9 +1,13 @@
 package tauon.app.ui.containers.session.pages.files.transfer;
 
+import com.sun.jna.platform.dnd.DragHandler;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
@@ -48,32 +52,43 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
 
     @Override
     public void exportAsDrag(JComponent comp, InputEvent e, int action) {
-        if (fileBrowserView.getFileSystem().isRemote()) {
-            if (PlatformUtils.IS_WINDOWS) {
-                try {
-                    this.tempDir = Files.createTempDirectory(App.APP_INSTANCE_ID).toFile();
-                    LOG.debug("Create monitor in windows to know where to copy remote file.");
-                    this.win32DragHandler = new Win32DragHandler();
-                    this.win32DragHandler.listenForDrop(tempDir.getName(), file -> {
-                        LOG.debug("File dropped on: " + file.getParent());
-                        this.fileBrowserView.getFileBrowser().handleLocalDrop(
-                                transferData,
-                                new LocalFileSystem(),
-                                file.getParent()
-                        );
-                    });
-                } catch (IOException e1) {
-                    LOG.debug("Error while creating monitor: ", e1);
-                    return;
+        try {
+            if (fileBrowserView.getFileSystem().isRemote()) {
+                if (PlatformUtils.IS_WINDOWS) {
+                    try {
+                        this.tempDir = Files.createTempDirectory(App.APP_INSTANCE_ID).toFile();
+                        LOG.debug("Create monitor in windows to know where to copy remote file.");
+                        this.win32DragHandler = new Win32DragHandler();
+                        this.win32DragHandler.listenForDrop(tempDir.getName(), file -> {
+                            LOG.debug("File dropped on: " + file.getParent());
+                            this.fileBrowserView.getFileBrowser().handleLocalDrop(
+                                    transferData,
+                                    LocalFileSystem.getInstance(),
+                                    file.getParent()
+                            );
+                        });
+                    } catch (IOException e1) {
+                        LOG.debug("Error while creating monitor: ", e1);
+                        return;
+                    }
+                }else{
+                    // Download file to a temporary folder
+                    // Return that file in getTransferData()
+                    // Only move supported, linux will move the whole file until the temporary one is closed.
+                    // In case of copy, linux will only copy the bytes already downloaded, not the whole file.
+                    
                 }
-            }else{
-                // Download file to a temporary folder
-                // Return that file in getTransferData()
-                // Only move supported, linux will move the whole file until the temporary one is closed.
-                // In case of copy, linux will only copy the bytes already downloaded, not the whole file.
             }
+        } catch (OperationCancelledException ex) {
+            throw new RuntimeException(ex);
+        } catch (RemoteOperationException ex) {
+            throw new RuntimeException(ex);
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        } catch (SessionClosedException ex) {
+            throw new RuntimeException(ex);
         }
-
+        
         DndTransferData data = new DndTransferData(fileBrowserView, fileBrowserView.getSelectedFiles(), null);
         LOG.debug("Creating data to export: " + data);
         this.transferData = data;
@@ -89,7 +104,17 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
         for (DataFlavor f : support.getDataFlavors()) {
             LOG.debug("Checking flavour: " + f);
             if (f.isFlavorJavaFileListType()) {
-                isJavaFileList = this.fileBrowserView.getFileSystem().isRemote();
+                try {
+                    isJavaFileList = this.fileBrowserView.getFileSystem().isRemote();
+                } catch (OperationCancelledException e) {
+                    throw new RuntimeException(e);
+                } catch (RemoteOperationException e) {
+                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (SessionClosedException e) {
+                    throw new RuntimeException(e);
+                }
             }
             if (DATA_FLAVOR_DATA_FILE.equals(f)) {
                 isInternalFile = true;
@@ -146,7 +171,17 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
         for (DataFlavor f : info.getDataFlavors()) {
             System.out.println("Data flavor: " + f);
             if (f.isFlavorJavaFileListType()) {
-                isJavaFileList = this.fileBrowserView.getFileSystem().isRemote();
+                try {
+                    isJavaFileList = this.fileBrowserView.getFileSystem().isRemote();
+                } catch (OperationCancelledException e) {
+                    throw new RuntimeException(e);
+                } catch (RemoteOperationException e) {
+                    throw new RuntimeException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (SessionClosedException e) {
+                    throw new RuntimeException(e);
+                }
             }
             if (DATA_FLAVOR_DATA_FILE.equals(f)) {
                 isDataFile = true;
@@ -253,10 +288,20 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
 
     @Override
     public boolean isDataFlavorSupported(DataFlavor flavor) {
-        if (this.fileBrowserView.getFileSystem().isRemote()) {
-            return DATA_FLAVOR_DATA_FILE.equals(flavor) || DATA_FLAVOR_FILE_LIST.equals(flavor);
-        } else {
-            return DATA_FLAVOR_DATA_FILE.equals(flavor);
+        try {
+            if (this.fileBrowserView.getFileSystem().isRemote()) {
+                return DATA_FLAVOR_DATA_FILE.equals(flavor) || DATA_FLAVOR_FILE_LIST.equals(flavor);
+            } else {
+                return DATA_FLAVOR_DATA_FILE.equals(flavor);
+            }
+        } catch (OperationCancelledException e) {
+            throw new RuntimeException(e);
+        } catch (RemoteOperationException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (SessionClosedException e) {
+            throw new RuntimeException(e);
         }
     }
 

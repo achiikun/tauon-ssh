@@ -7,7 +7,7 @@ import tauon.app.exceptions.TauonOperationException;
 import java.util.List;
 import java.util.Map;
 
-public interface FileSystem extends AutoCloseable {
+public interface FileSystem {// extends AutoCloseable {
 
     FileInfo getInfo(String path) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException ;
 
@@ -30,10 +30,8 @@ public interface FileSystem extends AutoCloseable {
 
     void mkdir(String path) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException;
 
-    void close() throws TauonOperationException;
-
-    boolean isConnected();
-
+//    void close() throws TauonOperationException;
+    
     void chmod(int perm, String path) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException ;
 
     boolean mkdirs(String absPath) throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException;

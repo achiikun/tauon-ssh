@@ -3,7 +3,7 @@ package tauon.app.ui.dialogs.sessions;
 import tauon.app.App;
 import tauon.app.settings.PortForwardingRule;
 import tauon.app.settings.PortForwardingRule.PortForwardingType;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
@@ -20,7 +20,7 @@ import static tauon.app.services.LanguageService.getBundle;
 public class PortForwardingPanel extends JPanel {
     private final PFTableModel model;
     private final JTable table;
-    private SessionInfo info;
+    private SiteInfo info;
 
     public PortForwardingPanel() {
         super(new BorderLayout(10, 10));
@@ -86,7 +86,7 @@ public class PortForwardingPanel extends JPanel {
         this.info.setPortForwardingRules(model.getRules());
     }
 
-    public void setInfo(SessionInfo info) {
+    public void setInfo(SiteInfo info) {
         this.info = info;
         model.setRules(this.info.getPortForwardingRules());
     }

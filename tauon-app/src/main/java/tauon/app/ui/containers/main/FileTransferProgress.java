@@ -42,36 +42,6 @@ public interface FileTransferProgress {
         }
     }
     
-    class DelegateToSwing implements FileTransferProgress {
-        
-        private final FileTransferProgress delagator;
-        
-        public DelegateToSwing(FileTransferProgress delagator) {
-            this.delagator = delagator;
-        }
-        
-        @Override
-        public void init(long totalSize, long files, FileTransfer fileTransfer) {
-            SwingUtilities.invokeLater(() -> delagator.init(totalSize, files, fileTransfer));
-        }
-        
-        @Override
-        public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount, FileTransfer fileTransfer) {
-            SwingUtilities.invokeLater(() -> delagator.progress(processedBytes, totalBytes, processedCount, totalCount, fileTransfer));
-        }
-        
-        @Override
-        public void error(String cause, FileTransfer fileTransfer) {
-            SwingUtilities.invokeLater(() -> delagator.error(cause, fileTransfer));
-        }
-        
-        @Override
-        public void done(FileTransfer fileTransfer) {
-            SwingUtilities.invokeLater(() -> delagator.done(fileTransfer));
-        }
-    }
-    
-    
     class Compose implements FileTransferProgress {
         
         private final FileTransferProgress[] delegator;

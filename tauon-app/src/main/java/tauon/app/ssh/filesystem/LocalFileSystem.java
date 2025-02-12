@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.LocalOperationException;
-import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.TauonOperationException;
 import tauon.app.util.misc.PathUtils;
 
@@ -22,6 +21,16 @@ public class LocalFileSystem implements FileSystem {
     private static final Logger LOG = LoggerFactory.getLogger(LocalFileSystem.class);
     
     public static final String PROTO_LOCAL_FILE = "local";
+    
+    private static final LocalFileSystem instance = new LocalFileSystem();
+    
+    public static LocalFileSystem getInstance(){
+        return instance;
+    }
+    
+    private LocalFileSystem(){
+    
+    }
 
     @Override
     public void chmod(int perm, String path) {
@@ -133,16 +142,7 @@ public class LocalFileSystem implements FileSystem {
         System.out.println("Creating folder: " + path);
         new File(path).mkdirs();
     }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
-    public boolean isConnected() {
-        return true;
-    }
-
+    
     @Override
     public boolean mkdirs(String absPath) {
         return new File(absPath).mkdirs();

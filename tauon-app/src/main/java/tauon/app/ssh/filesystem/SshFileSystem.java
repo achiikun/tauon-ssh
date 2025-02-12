@@ -9,7 +9,6 @@ import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
 import tauon.app.exceptions.TauonOperationException;
-import tauon.app.ssh.TauonRemoteSessionInstance;
 import tauon.app.util.misc.PathUtils;
 
 import java.io.*;
@@ -21,13 +20,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SshFileSystem implements FileSystem {
     private static final Logger LOG = LoggerFactory.getLogger(SshFileSystem.class);
     
+    public interface Requester{
+        SFTPClient getSftpClient(boolean force) throws RemoteOperationException, SessionClosedException, OperationCancelledException, InterruptedException;
+    }
+    
     public static final String PROTO_SFTP = "sftp";
     
-    private final TauonRemoteSessionInstance ssh;
+    private final Requester ssh;
     private String home;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public SshFileSystem(TauonRemoteSessionInstance ssh) {
+    public SshFileSystem(Requester ssh) {
         this.ssh = ssh;
     }
 
@@ -39,20 +42,20 @@ public class SshFileSystem implements FileSystem {
         T operateReturn(SFTPClient sftp) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException, IOException;
     }
     
-    private void getConnectedSftpClient(Operator operator) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
-        ssh.ensureConnected();
-        try{
-            operator.operate(ssh.getSftpClient());
-        } catch (SFTPException e) {
-            if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
-                throw new RemoteOperationException.PermissionDenied(e);
-            }else{
-                throw new RemoteOperationException.SFTPException(e);
-            }
-        } catch (IOException e) {
-            throw new RemoteOperationException.RealIOException(e);
-        }
-    }
+//    private void getConnectedSftpClient(Operator operator) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
+//        ssh.ensureConnected(force);
+//        try{
+//            operator.operate(ssh.getSftpClient());
+//        } catch (SFTPException e) {
+//            if (e.getStatusCode() == Response.StatusCode.PERMISSION_DENIED) {
+//                throw new RemoteOperationException.PermissionDenied(e);
+//            }else{
+//                throw new RemoteOperationException.SFTPException(e);
+//            }
+//        } catch (IOException e) {
+//            throw new RemoteOperationException.RealIOException(e);
+//        }
+//    }
     
     private <T> T getConnectedSftpClientReturn(OperatorReturn<T> operatorReturn) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
         return getConnectedSftpClientReturn(null, operatorReturn);
@@ -62,9 +65,8 @@ public class SshFileSystem implements FileSystem {
         synchronized (ssh) {
             boolean force = false;
             while (true) {
-                ssh.ensureConnected(force);
                 try {
-                    return operatorReturn.operateReturn(ssh.getSftpClient());
+                    return operatorReturn.operateReturn(ssh.getSftpClient(force));
                 } catch (SFTPException e) {
                     if (path != null && (
                             e.getStatusCode() == Response.StatusCode.NO_SUCH_FILE
@@ -93,9 +95,8 @@ public class SshFileSystem implements FileSystem {
         synchronized (ssh) {
             boolean force = false;
             while (true) {
-                ssh.ensureConnected(force);
                 try {
-                    operator.operate(ssh.getSftpClient());
+                    operator.operate(ssh.getSftpClient(force));
                     return;
                 } catch (SFTPException e) {
                     if (e.getStatusCode() == Response.StatusCode.NO_SUCH_FILE
@@ -280,10 +281,10 @@ public class SshFileSystem implements FileSystem {
             
     }
 
-    @Override
-    public void close() {
-        this.closed.set(true);
-    }
+//    @Override
+//    public void close() {
+//        this.closed.set(true);
+//    }
 
     @Override
     public String getHome() throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
@@ -569,12 +570,7 @@ public class SshFileSystem implements FileSystem {
 //        }
 
     }
-
-    @Override
-    public boolean isConnected() {
-        return !closed.get() && ssh.isConnected();
-    }
-
+    
     @Override
     public String getProtocol() {
         return PROTO_SFTP;

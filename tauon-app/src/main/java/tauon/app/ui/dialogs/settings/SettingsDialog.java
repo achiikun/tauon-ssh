@@ -6,8 +6,8 @@ package tauon.app.ui.dialogs.settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
-import tauon.app.services.SettingsService;
-import tauon.app.services.SessionService;
+import tauon.app.services.SettingsConfigManager;
+import tauon.app.services.SitesConfigManager;
 import tauon.app.settings.Settings;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
@@ -31,7 +31,7 @@ import java.util.Map;
 import com.jediterm.core.Color;
 
 import static tauon.app.services.LanguageService.getBundle;
-import static tauon.app.services.SettingsService.getSettings;
+import static tauon.app.services.SettingsConfigManager.getSettings;
 
 /**
  * @author subhro
@@ -562,7 +562,7 @@ public class SettingsDialog extends JDialog {
     }
 
     private void applySettingsAndClose() {
-        boolean saved = SettingsService.getInstance().setAndSave(settings -> {
+        boolean saved = SettingsConfigManager.getInstance().setAndSave(settings -> {
             
             settings.setTerminalBell(this.chkAudibleBell.isSelected());
             settings.setPuttyLikeCopyPaste(this.chkPuttyLikeCopyPaste.isSelected());
@@ -835,7 +835,7 @@ public class SettingsDialog extends JDialog {
                 }
                 
                 try {
-                    if (!SessionService.getInstance().changeStorePassword(
+                    if (!SitesConfigManager.getInstance().changeStorePassword(
                             password,
                             new PasswordPromptHelper(this)
                     )) {
@@ -862,7 +862,7 @@ public class SettingsDialog extends JDialog {
                     return;
                 }
                 
-                SettingsService.getInstance().setAndSave(
+                SettingsConfigManager.getInstance().setAndSave(
                         settings -> settings.setUsingMasterPassword(true)
                 );
                 
@@ -872,7 +872,7 @@ public class SettingsDialog extends JDialog {
             } else {
                 
                 try {
-                    if (!SessionService.getInstance().changeStorePassword(
+                    if (!SitesConfigManager.getInstance().changeStorePassword(
                             new char[0],
                             new PasswordPromptHelper(this)
                     )) {
@@ -899,7 +899,7 @@ public class SettingsDialog extends JDialog {
                     return;
                 }
                 
-                SettingsService.getInstance().setAndSave(
+                SettingsConfigManager.getInstance().setAndSave(
                         settings -> settings.setUsingMasterPassword(false)
                 );
                 
@@ -921,7 +921,7 @@ public class SettingsDialog extends JDialog {
                 }
                 
                 try {
-                    if (!SessionService.getInstance().changeStorePassword(
+                    if (!SitesConfigManager.getInstance().changeStorePassword(
                             password,
                             new PasswordPromptHelper(this)
                     )) {

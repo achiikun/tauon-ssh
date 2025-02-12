@@ -4,7 +4,7 @@ import tauon.app.App;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.components.misc.SkinnedTextField;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -25,10 +25,10 @@ public class RemoteKeyPanel extends JPanel {
     private final Consumer<?> callback2;
     private final DefaultListModel<String> model;
     private final JList<String> jList;
-    private SessionInfo info;
+    private SiteInfo info;
     private Consumer<String> callback3;
 
-    public RemoteKeyPanel(SessionInfo info, Consumer<?> callback1,
+    public RemoteKeyPanel(SiteInfo info, Consumer<?> callback1,
                           Consumer<?> callback2, Consumer<String> callback3) {
         super(new BorderLayout());
         this.info = info;

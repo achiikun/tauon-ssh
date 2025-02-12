@@ -3,18 +3,18 @@ package tauon.app.ssh;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.settings.PortForwardingRule;
 import tauon.app.settings.HopEntry;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public interface GuiHandle<C> {
+public interface GuiHandle extends SSHCommandRunner.SudoPasswordPrompter {
     
     void reportException(Throwable cause);
     
     void reportPortForwardingFailed(PortForwardingRule portForwardingState, IOException e);
     
-    BlockHandle blockUi(C client, UserCancelHandle userCancelHandle);
+    BlockHandle blockUi(Object client, UserCancelHandle userCancelHandle);
     
     String promptUser(HopEntry info, AtomicBoolean remember);
     
@@ -22,13 +22,11 @@ public interface GuiHandle<C> {
     
     char[] promptPassword(HopEntry info, String user, AtomicBoolean remember, boolean isRetrying) throws OperationCancelledException;
     
-    char[] getSUDOPassword(boolean isRetrying) throws OperationCancelledException;
-    
     void showMessage(String name, String instruction);
     
     String promptInput(String prompt, boolean echo);
     
-    void saveInfo(SessionInfo info);
+    void saveInfo(SiteInfo info);
     
     interface BlockHandle{
         void unblock();
@@ -38,11 +36,11 @@ public interface GuiHandle<C> {
         void userCancelled(BlockHandle blockHandle);
     }
     
-    abstract class Delegate<C> implements GuiHandle<C> {
+    abstract class Delegate implements GuiHandle {
         
-        private final GuiHandle<?> delagator;
+        private final GuiHandle delagator;
         
-        public Delegate(GuiHandle<?> delagator) {
+        public Delegate(GuiHandle delagator) {
             this.delagator = delagator;
         }
         
@@ -65,8 +63,8 @@ public interface GuiHandle<C> {
         }
         
         @Override
-        public char[] getSUDOPassword(boolean isRetrying) throws OperationCancelledException {
-            return delagator.getSUDOPassword(isRetrying);
+        public char[] promptSudoPassword(boolean isRetrying) throws OperationCancelledException {
+            return delagator.promptSudoPassword(isRetrying);
         }
         
         public void reportPortForwardingFailed(PortForwardingRule portForwardingState, IOException e) {
@@ -83,7 +81,7 @@ public interface GuiHandle<C> {
         }
         
         @Override
-        public void saveInfo(SessionInfo info) {
+        public void saveInfo(SiteInfo info) {
             delagator.saveInfo(info);
         }
     }

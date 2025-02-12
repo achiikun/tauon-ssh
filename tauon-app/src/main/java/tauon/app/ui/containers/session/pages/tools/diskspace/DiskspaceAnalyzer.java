@@ -6,7 +6,9 @@ package tauon.app.ui.containers.session.pages.tools.diskspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
-import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.page.subpage.Subpage;
@@ -25,9 +27,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -220,10 +220,19 @@ public class DiskspaceAnalyzer extends Subpage {
         cardLayout.show(this, "firstPage");
     }
 
-    private void listPartitions(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) {
+    private void listPartitions(SSHConnectionHandler instance, IStopper stopFlag) {
         try {
             StringBuilder output = new StringBuilder();
-            if (instance.exec("export POSIXLY_CORRECT=1;df -P -k", stopFlag, output) == 0) {
+            
+            SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                    .withCommand("df -P -k")
+                    .withStdoutAppendable(output)
+                    .withEnvVar("POSIXLY_CORRECT", "1")
+                    .withStopper(stopFlag);
+            
+            instance.exec(sshCommandRunner);
+            
+            if (sshCommandRunner.getResult() == 0) {
                 List<PartitionEntry> list = new ArrayList<>();
                 boolean first = true;
                 for (String line : output.toString().split("\n")) {
@@ -255,8 +264,8 @@ public class DiskspaceAnalyzer extends Subpage {
     }
 
     private void listVolumes() {
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.submitSSHOperationStoppable(instance -> {
+        IStopper.Default stopFlag = new IStopper.Default();
+        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
             System.out.println("Listing partitions");
             listPartitions(instance, stopFlag);
         }, stopFlag);
@@ -265,21 +274,35 @@ public class DiskspaceAnalyzer extends Subpage {
     private void analyze(String path) {
         this.lastAnalyzedPath = path;
         System.out.println("Analyzing path: " + path);
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        IStopper.Default stopFlag = new IStopper.Default();
         cardLayout.show(this, "Results");
-        holder.submitSSHOperationStoppable(instance -> {
-            DiskAnalysisTask task = new DiskAnalysisTask(path, chkRunAsSuperUser1.isSelected(), stopFlag, res -> {
-                SwingUtilities.invokeLater(() -> {
-                    if (res != null) {
-                        System.out.println("Result found");
-                        DefaultMutableTreeNode root = new DefaultMutableTreeNode(res, true);
-                        root.setAllowsChildren(true);
-                        createTree(root, res);
-                        treeModel.setRoot(root);
-                    }
-                });
-            }, instance);
+        
+//        DiskAnalysisTask task = new DiskAnalysisTask(path, chkRunAsSuperUser1.isSelected(), stopFlag, res -> {
+//            SwingUtilities.invokeLater(() -> {
+//                if (res != null) {
+//                    System.out.println("Result found");
+//                    DefaultMutableTreeNode root = new DefaultMutableTreeNode(res, true);
+//                    root.setAllowsChildren(true);
+//                    createTree(root, res);
+//                    treeModel.setRoot(root);
+//                }
+//            });
+//        }, sshConnectionHandler);
+//        task.run();
+        
+        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+            DiskAnalysisTask task = new DiskAnalysisTask(path, chkRunAsSuperUser1.isSelected(), stopFlag, guiHandle, instance);
             task.run();
+            DiskUsageEntry res = task.getRoot();
+            if(res != null){
+                SwingUtilities.invokeLater(() -> {
+                    System.out.println("Result found");
+                    DefaultMutableTreeNode root = new DefaultMutableTreeNode(res, true);
+                    root.setAllowsChildren(true);
+                    createTree(root, res);
+                    treeModel.setRoot(root);
+                });
+            }
         }, stopFlag);
     }
 

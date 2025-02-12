@@ -3,7 +3,10 @@ package tauon.app.ui.containers.session.pages.files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
-import tauon.app.services.SettingsService;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
+import tauon.app.services.SettingsConfigManager;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ui.components.closabletabs.TabHandle;
@@ -61,7 +64,7 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
             }
             if (text != null && !text.isEmpty()) {
                 addBack(this.path);
-                render(text, SettingsService.getSettings().isDirectoryCache());
+                render(text, SettingsConfigManager.getSettings().isDirectoryCache());
             }
         });
         Box smallToolbar = Box.createHorizontalBox();
@@ -87,7 +90,7 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
         btnBack.addActionListener(e -> {
             String item = history.prevElement();
             addNext(this.path);
-            render(item, SettingsService.getSettings().isDirectoryCache());
+            render(item, SettingsConfigManager.getSettings().isDirectoryCache());
         });
 
         btnNext = new JButton();
@@ -97,7 +100,7 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
         btnNext.addActionListener(e -> {
             String item = history.nextElement();
             addBack(this.path);
-            render(item, SettingsService.getSettings().isDirectoryCache());
+            render(item, SettingsConfigManager.getSettings().isDirectoryCache());
         });
 
         JButton btnHome = new JButton();
@@ -244,7 +247,7 @@ public abstract class AbstractFileBrowserView extends JPanel implements FolderVi
         return this.overflowMenuHandler;
     }
 
-    public abstract FileSystem getFileSystem();
+    public abstract FileSystem getFileSystem() throws OperationCancelledException, RemoteOperationException, InterruptedException, SessionClosedException;
 
     public void refreshViewMode() {
         this.folderView.refreshViewMode();

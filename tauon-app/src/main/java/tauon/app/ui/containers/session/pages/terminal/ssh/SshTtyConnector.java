@@ -3,12 +3,9 @@ package tauon.app.ui.containers.session.pages.terminal.ssh;
 import com.jediterm.terminal.Questioner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.App;
 import tauon.app.exceptions.OperationCancelledException;
-import tauon.app.services.SettingsService;
-import tauon.app.ssh.filesystem.SSHRemoteFileOutputStream;
-import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.settings.SessionInfo;
+import tauon.app.services.SettingsConfigManager;
+import tauon.app.ssh.SSHConnectionHandler;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Shell;
@@ -31,7 +28,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
     private InputStream myInputStream = null;
     private OutputStream myOutputStream = null;
     private SessionChannel shell;
-    private Session channel;
+    private Session session;
     private final AtomicBoolean isInitiated = new AtomicBoolean(false);
     private final AtomicBoolean isCancelled = new AtomicBoolean(false);
     private final AtomicBoolean stopFlag = new AtomicBoolean(false);
@@ -39,17 +36,11 @@ public class SshTtyConnector implements DisposableTtyConnector {
     private Dimension myPendingPixelSize;
 
     private final String initialCommand;
-    private final SessionInfo info;
-    private final SessionContentPanel sessionContentPanel;
+    private final SSHConnectionHandler.SessionHandle sshConnectionHandler;
 
-    public SshTtyConnector(SessionInfo info, String initialCommand, SessionContentPanel sessionContentPanel) {
+    public SshTtyConnector(String initialCommand, SSHConnectionHandler.SessionHandle sshConnectionHandler) {
         this.initialCommand = initialCommand;
-        this.info = info;
-        this.sessionContentPanel = sessionContentPanel;
-    }
-
-    public SshTtyConnector(SessionInfo info, SessionContentPanel sessionContentPanel) {
-        this(info, null, sessionContentPanel);
+        this.sshConnectionHandler = sshConnectionHandler;
     }
 
     @Override
@@ -58,23 +49,29 @@ public class SshTtyConnector implements DisposableTtyConnector {
 //            this.wr = new SshClient2(this.info, App.getInputBlocker(), sessionContentPanel);
 //            this.wr.connect();
             // Let's use the same connection and open a session
-            this.channel = sessionContentPanel.openSession();
-            this.channel.setAutoExpand(true);
+            this.session = sshConnectionHandler.getSession(false);
+            this.session.setAutoExpand(true);
 
-            this.channel.allocatePTY(SettingsService.getSettings().getTerminalType(), SettingsService.getSettings().getTermWidth(),
-                    SettingsService.getSettings().getTermHeight(), 0, 0, Collections.emptyMap());
+            this.session.allocatePTY(
+                    SettingsConfigManager.getSettings().getTerminalType(),
+                    SettingsConfigManager.getSettings().getTermWidth(),
+                    SettingsConfigManager.getSettings().getTermHeight(),
+                    0,
+                    0,
+                    Collections.emptyMap()
+            );
             
 //            this.channel.reqX11Forwarding("MIT-MAGIC-COOKIE-1", "b0956167c9ad8f34c8a2788878307dc9", 0);
 
             try{
-                this.channel.setEnvVar("LANG", "en_US.UTF-8");
+                this.session.setEnvVar("LANG", "en_US.UTF-8");
             } catch (Exception e) {
                 e.printStackTrace();
                 System.err.println("Cannot set environment variable Lang: " + e.getMessage());
             }
 
 
-            this.shell = (SessionChannel) this.channel.startShell();
+            this.shell = (SessionChannel) this.session.startShell();
 
             myInputStream = shell.getInputStream();
             myOutputStream = shell.getOutputStream();
@@ -104,7 +101,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
         try {
             stopFlag.set(true);
             System.out.println("Terminal wrapper disconnecting");
-            this.channel.close();
+            this.session.close();
 //            wr.disconnect();
         } catch (Exception e) {
         }
@@ -114,7 +111,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
     public void resize(Dimension termSize, Dimension pixelSize) {
         myPendingTermSize = termSize;
         myPendingPixelSize = pixelSize;
-        if (channel != null) {
+        if (session != null) {
             resizeImmediately();
         }
 
@@ -138,7 +135,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
 
     @Override
     public boolean isConnected() {
-        return channel != null && channel.isOpen() && isInitiated.get();
+        return session != null && session.isOpen() && isInitiated.get();
     }
 
     @Override
@@ -168,7 +165,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
     }
 
     public boolean isBusy() {
-        return channel.isOpen();
+        return session.isOpen();
     }
 
     public boolean isCancelled() {

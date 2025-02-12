@@ -5,31 +5,28 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.ui.containers.session.pages.terminal.snippets.SnippetItem;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
-import static tauon.app.util.misc.Constants.*;
+import static tauon.app.util.misc.Constants.PINNED_LOGS;
 
-public final class BookmarkManager {
+public final class PinnedLogsConfigManager {
     
-    private static final Logger LOG = LoggerFactory.getLogger(BookmarkManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PinnedLogsConfigManager.class);
     
-    private static BookmarkManager INSTANCE = null;
+    private static PinnedLogsConfigManager INSTANCE = null;
     
     private boolean loaded = false;
-    private Map<String, List<String>> bookmarkMap = new HashMap<>();
+    private Map<String, List<String>> pinnedLogsMap = new HashMap<>();
     
-    public static BookmarkManager getInstance() {
+    public static PinnedLogsConfigManager getInstance() {
         if(INSTANCE == null){
-            INSTANCE = new BookmarkManager();
+            INSTANCE = new PinnedLogsConfigManager();
         }
         return INSTANCE;
     }
     
-    private BookmarkManager() {
+    private PinnedLogsConfigManager() {
 
     }
     
@@ -37,11 +34,11 @@ public final class BookmarkManager {
         if(!loaded){
             loaded = true;
             
-            boolean success = ConfigFilesService.getInstance().loadOrBackup(BOOKMARKS_FILE, file -> {
+            boolean success = ConfigFilesService.getInstance().loadOrBackup(PINNED_LOGS, file -> {
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 if (file.exists()) {
-                    bookmarkMap = objectMapper.readValue(file, new TypeReference<>() {});
+                    pinnedLogsMap = objectMapper.readValue(file, new TypeReference<>() {});
                 }
             });
             
@@ -49,18 +46,18 @@ public final class BookmarkManager {
                 LOG.error("Error loading snippets.");
             
         }
-        return loaded;
+        return true;
     }
 
     public Map<String, List<String>> getAll() {
         load();
-        return Collections.synchronizedMap(bookmarkMap);
+        return Collections.synchronizedMap(pinnedLogsMap);
     }
 
     public boolean save() {
-        return ConfigFilesService.getInstance().saveAndKeepOldIfFails(SNIPPETS_FILE, file -> {
+        return ConfigFilesService.getInstance().saveAndKeepOldIfFails(PINNED_LOGS, file -> {
             ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.writeValue(file, bookmarkMap);
+            objectMapper.writeValue(file, pinnedLogsMap);
         });
     }
 
@@ -69,12 +66,12 @@ public final class BookmarkManager {
             id = "";
         }
         load();
-        List<String> bookmarks = bookmarkMap.get(id);
+        List<String> bookmarks = pinnedLogsMap.get(id);
         if (bookmarks == null) {
             bookmarks = new ArrayList<>();
         }
         bookmarks.add(path);
-        bookmarkMap.put(id, bookmarks);
+        pinnedLogsMap.put(id, bookmarks);
         save();
     }
 
@@ -83,22 +80,22 @@ public final class BookmarkManager {
             id = "";
         }
         load();
-        List<String> bookmarks = bookmarkMap.get(id);
-        if (bookmarks == null) {
-            bookmarks = new ArrayList<>();
+        List<String> pinnedLogs = pinnedLogsMap.get(id);
+        if (pinnedLogs == null) {
+            pinnedLogs = new ArrayList<>();
         }
-        bookmarks.addAll(path);
-        bookmarkMap.put(id, bookmarks);
+        pinnedLogs.addAll(path);
+        pinnedLogsMap.put(id, pinnedLogs);
         save();
     }
 
-    public List<String> getBookmarks(String id) {
+    public List<String> getPinnedLogs(String id) {
         if (id == null) {
             id = "";
         }
         load();
         
-        List<String> bookmarks = bookmarkMap.get(id);
+        List<String> bookmarks = pinnedLogsMap.get(id);
         if (bookmarks != null) {
             return new ArrayList<>(bookmarks);
         }

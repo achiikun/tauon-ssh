@@ -3,6 +3,7 @@ package tauon.app.ui.components.glasspanes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.ssh.IStopper;
 import tauon.app.ui.containers.session.pages.tools.search.SearchPanel;
 
 import javax.swing.*;
@@ -16,7 +17,7 @@ public class SessionInputBlocker extends JPanel {
     public static final Color TRANSPARENT = new Color(255, 255, 255, 0);
     private double angle = 0.0;
     private final JButton btn = new JButton();
-    private AtomicBoolean stopFlag;
+    private IStopper.Handle stopFlag;
     private final Color c1 = new Color(3, 155, 229);
     private final Stroke basicStroke = new BasicStroke(15);
     private final Timer timer;
@@ -43,7 +44,7 @@ public class SessionInputBlocker extends JPanel {
         btn.addActionListener(e -> {
             System.out.println("Stop button clicked: " + stopFlag);
             if (stopFlag != null) {
-                stopFlag.set(true);
+                stopFlag.stop();
             }
         });
         btn.addMouseListener(new MouseAdapter() {
@@ -121,7 +122,7 @@ public class SessionInputBlocker extends JPanel {
         if(stopFlag == null)
             return;
         
-        if((stopFlag.get() || time <= minTime) && btn.getForeground().getAlpha() == 255) {
+        if((stopFlag.isStopped() || time <= minTime) && btn.getForeground().getAlpha() == 255) {
             btn.setForeground(TRANSPARENT);
             return;
         }
@@ -139,7 +140,7 @@ public class SessionInputBlocker extends JPanel {
         }
     }
     
-    public void startAnimation(AtomicBoolean stopFlag) {
+    public void startAnimation(IStopper.Handle stopFlag) {
         this.time = 0;
         this.statePressedBtn = false;
         this.stateHoverBtn = false;
@@ -183,7 +184,7 @@ public class SessionInputBlocker extends JPanel {
         int x = getWidth() / 2 - 70 / 2;
         int y = getHeight() / 2 - 70 / 2;
         if (btn.isVisible()) {
-            g2.setColor(stopFlag.get() ? Color.RED : Color.BLACK);
+            g2.setColor(stopFlag.isStopped() ? Color.RED : Color.BLACK);
             g2.fillOval(x + 5, y + 5, 70 - 10, 70 - 10);
         }
         g2.setColor(c1);

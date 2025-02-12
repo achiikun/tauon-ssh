@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static tauon.app.services.SettingsService.getSettings;
+import static tauon.app.services.SettingsConfigManager.getSettings;
 
 public class FormatUtils {
     private static final SimpleDateFormat FMT = new SimpleDateFormat("yyyyMMdd");

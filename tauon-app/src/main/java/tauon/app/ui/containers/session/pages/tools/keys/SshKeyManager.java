@@ -9,11 +9,12 @@ import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
 import tauon.app.exceptions.TauonOperationException;
-import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ssh.SSHCommandRunner;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ssh.filesystem.OutputTransferChannel;
 import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
@@ -23,16 +24,15 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SshKeyManager {
     
     private static final Logger LOG = LoggerFactory.getLogger(SshKeyManager.class);
     
-    public static SshKeyHolder getKeyDetails(SessionContentPanel content, TauonRemoteSessionInstance instance) throws OperationCancelledException, TauonOperationException, InterruptedException, SessionClosedException {
+    public static SshKeyHolder getKeyDetails(SessionContentPanel content, SSHConnectionHandler instance) throws OperationCancelledException, TauonOperationException, InterruptedException, SessionClosedException {
         SshKeyHolder holder = new SshKeyHolder();
         loadLocalKey(getPubKeyPath(content.getInfo()), holder);
-        loadRemoteKeys(holder, instance.getSshFs());
+        loadRemoteKeys(holder, instance.getSshFileSystem());
         return holder;
     }
 
@@ -78,7 +78,7 @@ public class SshKeyManager {
         holder.setRemoteAuthorizedKeys(out.toString(StandardCharsets.UTF_8));
     }
 
-    public static void generateKeys(SshKeyHolder holder, TauonRemoteSessionInstance instance, boolean local) throws TauonOperationException, IOException, OperationCancelledException, InterruptedException, SessionClosedException {
+    public static void generateKeys(SshKeyHolder holder, SSHConnectionHandler instance, boolean local) throws TauonOperationException, IOException, OperationCancelledException, InterruptedException, SessionClosedException {
         if (holder.getLocalPublicKey() != null && JOptionPane.showConfirmDialog(null,
                 "WARNING: This will overwrite the existing SSH key"
                         + "\n\nIf the key was being used to connect to other servers," + "\nconnection will fail."
@@ -130,28 +130,36 @@ public class SshKeyManager {
         loadLocalKey(pubKeyPath.toString(), holder);
     }
 
-    public static void generateRemoteKeys(TauonRemoteSessionInstance instance, SshKeyHolder holder, String passPhrase)
+    public static void generateRemoteKeys(SSHConnectionHandler instance, SshKeyHolder holder, String passPhrase)
             throws TauonOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
         String path1 = "$HOME/.ssh/id_rsa"; // TODO not hardcode this
         String path = path1 + ".pub";
 
         // Deleting $HOME/.ssh/id_rsa
-        instance.getSshFs().deleteFile(path1, false);
+        instance.getSshFileSystem().deleteFile(path1, false);
 
         // Deleting $HOME/.ssh/id_rsa.pub
-        instance.getSshFs().deleteFile(path, false);
+        instance.getSshFileSystem().deleteFile(path, false);
         
         String cmd = "ssh-keygen -q -N \"" + passPhrase + "\" -f \"" + path1 + "\"";
         
         StringBuilder output = new StringBuilder();
-        int ret;
-        if ((ret = instance.exec(cmd, new AtomicBoolean(false), output)) != 0) {
+        
+        SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                .withCommand(cmd)
+                .withStdoutAppendable(output);
+        
+        instance.exec(sshCommandRunner);
+        
+        int ret = sshCommandRunner.getResult();
+        
+        if (ret != 0) {
             throw new RemoteOperationException.ErrorReturnCode(cmd, ret);
         }
-        loadRemoteKeys(holder, instance.getSshFs());
+        loadRemoteKeys(holder, instance.getSshFileSystem());
     }
 
-    private static String getPubKeyPath(SessionInfo info) {
+    private static String getPubKeyPath(SiteInfo info) {
         if (info.getPrivateKeyFile() != null && !info.getPrivateKeyFile().isEmpty()) {
             String path = PathUtils.combine(
                     PathUtils.getParent(info.getPrivateKeyFile()),

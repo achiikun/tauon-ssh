@@ -6,12 +6,13 @@ package tauon.app.ui.containers.session.pages.info.processview;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
-import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ui.components.page.subpage.Subpage;
 import tauon.app.ui.components.tablerenderers.ByteCountValue;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.util.misc.ScriptLoader;
-import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,7 +59,7 @@ public class ProcessViewer extends Subpage {
     
     }
     
-    private void updateProcessList(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
+    private void updateProcessList(SSHConnectionHandler instance, IStopper stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
         List<ProcessTableEntry> list = getProcessList(instance, stopFlag);
         SwingUtilities.invokeLater(() -> {
             // update ui ps
@@ -67,11 +68,16 @@ public class ProcessViewer extends Subpage {
     }
 
     private void runCommand(String cmd, ProcessListPanel.CommandMode mode) {
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        IStopper.Handle stopFlag = new IStopper.Default();
         switch (mode) {
             case KILL_AS_USER:
-                holder.submitSSHOperationStoppable(instance -> {
-                    if (instance.exec(cmd, stopFlag, null, null) != 0) {
+                holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+                    SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                            .withCommand(cmd)
+                            .withStopper(stopFlag);
+                    instance.exec(sshCommandRunner);
+                    
+                    if (sshCommandRunner.getResult() != 0) {
                         if (!holder.isSessionClosed()) {
                             JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                         }
@@ -81,8 +87,15 @@ public class ProcessViewer extends Subpage {
                 }, stopFlag);
                 break;
             case KILL_AS_ROOT:
-                holder.submitSSHOperationStoppable(instance -> {
-                    if (SudoUtils.runSudo(cmd, instance) != 0) {
+                holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
+                    SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                            .withCommand(cmd)
+                            .withStopper(stopFlag)
+                            .withSudo(guiHandle);
+                    
+                    instance.exec(sshCommandRunner);
+                    
+                    if (sshCommandRunner.getResult() != 0) {
                         if (!holder.isSessionClosed()) {
                             JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
                         }
@@ -92,23 +105,36 @@ public class ProcessViewer extends Subpage {
                 }, stopFlag);
                 break;
             case LIST_PROCESS:
-                holder.submitSSHOperationStoppable(instance -> {
+                holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
                     updateProcessList(instance, stopFlag);
                 }, stopFlag);
                 break;
         }
     }
 
-    public List<ProcessTableEntry> getProcessList(TauonRemoteSessionInstance instance, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
-        StringBuilder out = new StringBuilder();
-        StringBuilder err = new StringBuilder();
-        int ret = instance.exec(ScriptLoader.loadShellScript("/scripts/ps.sh"),
-                // "ps -e -o pid=pid -o pcpu -o rss -o etime -o ppid -o user -o nice -o args -ww
-                // --sort pid",
-                stopFlag, out, err);
-        if (ret != 0)
+    public List<ProcessTableEntry> getProcessList(SSHConnectionHandler instance, IStopper stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
+        SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                .withCommand(ScriptLoader.loadShellScript("/scripts/ps.sh"))
+                .withStdoutString()
+                .withStopper(stopFlag);
+        
+        instance.exec(sshCommandRunner);
+        
+        int ret = sshCommandRunner.getResult();
+        if(ret != 0){
             throw new RemoteOperationException.ErrorReturnCode("ps.sh", ret, "Error while getting metrics");
-        return parseProcessList(out.toString());
+        }
+        return parseProcessList(sshCommandRunner.getStdoutString());
+        
+//        StringBuilder out = new StringBuilder();
+//        StringBuilder err = new StringBuilder();
+//        int ret = instance.exec(ScriptLoader.loadShellScript("/scripts/ps.sh"),
+//                // "ps -e -o pid=pid -o pcpu -o rss -o etime -o ppid -o user -o nice -o args -ww
+//                // --sort pid",
+//                stopFlag, out, err);
+//        if (ret != 0)
+//            throw new RemoteOperationException.ErrorReturnCode("ps.sh", ret, "Error while getting metrics");
+//        return parseProcessList(out.toString());
     }
 
     private List<ProcessTableEntry> parseProcessList(String text) {

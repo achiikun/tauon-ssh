@@ -8,25 +8,25 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static tauon.app.util.misc.Constants.PINNED_LOGS;
+import static tauon.app.util.misc.Constants.*;
 
-public final class PinnedLogsManager {
+public final class BookmarkConfigManager {
     
-    private static final Logger LOG = LoggerFactory.getLogger(PinnedLogsManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BookmarkConfigManager.class);
     
-    private static PinnedLogsManager INSTANCE = null;
+    private static BookmarkConfigManager INSTANCE = null;
     
     private boolean loaded = false;
-    private Map<String, List<String>> pinnedLogsMap = new HashMap<>();
+    private Map<String, List<String>> bookmarkMap = new HashMap<>();
     
-    public static PinnedLogsManager getInstance() {
+    public static BookmarkConfigManager getInstance() {
         if(INSTANCE == null){
-            INSTANCE = new PinnedLogsManager();
+            INSTANCE = new BookmarkConfigManager();
         }
         return INSTANCE;
     }
     
-    private PinnedLogsManager() {
+    private BookmarkConfigManager() {
 
     }
     
@@ -34,11 +34,11 @@ public final class PinnedLogsManager {
         if(!loaded){
             loaded = true;
             
-            boolean success = ConfigFilesService.getInstance().loadOrBackup(PINNED_LOGS, file -> {
+            boolean success = ConfigFilesService.getInstance().loadOrBackup(BOOKMARKS_FILE, file -> {
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 if (file.exists()) {
-                    pinnedLogsMap = objectMapper.readValue(file, new TypeReference<>() {});
+                    bookmarkMap = objectMapper.readValue(file, new TypeReference<>() {});
                 }
             });
             
@@ -46,18 +46,18 @@ public final class PinnedLogsManager {
                 LOG.error("Error loading snippets.");
             
         }
-        return true;
+        return loaded;
     }
 
     public Map<String, List<String>> getAll() {
         load();
-        return Collections.synchronizedMap(pinnedLogsMap);
+        return Collections.synchronizedMap(bookmarkMap);
     }
 
     public boolean save() {
-        return ConfigFilesService.getInstance().saveAndKeepOldIfFails(PINNED_LOGS, file -> {
+        return ConfigFilesService.getInstance().saveAndKeepOldIfFails(SNIPPETS_FILE, file -> {
             ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.writeValue(file, pinnedLogsMap);
+            objectMapper.writeValue(file, bookmarkMap);
         });
     }
 
@@ -66,12 +66,12 @@ public final class PinnedLogsManager {
             id = "";
         }
         load();
-        List<String> bookmarks = pinnedLogsMap.get(id);
+        List<String> bookmarks = bookmarkMap.get(id);
         if (bookmarks == null) {
             bookmarks = new ArrayList<>();
         }
         bookmarks.add(path);
-        pinnedLogsMap.put(id, bookmarks);
+        bookmarkMap.put(id, bookmarks);
         save();
     }
 
@@ -80,22 +80,22 @@ public final class PinnedLogsManager {
             id = "";
         }
         load();
-        List<String> pinnedLogs = pinnedLogsMap.get(id);
-        if (pinnedLogs == null) {
-            pinnedLogs = new ArrayList<>();
+        List<String> bookmarks = bookmarkMap.get(id);
+        if (bookmarks == null) {
+            bookmarks = new ArrayList<>();
         }
-        pinnedLogs.addAll(path);
-        pinnedLogsMap.put(id, pinnedLogs);
+        bookmarks.addAll(path);
+        bookmarkMap.put(id, bookmarks);
         save();
     }
 
-    public List<String> getPinnedLogs(String id) {
+    public List<String> getBookmarks(String id) {
         if (id == null) {
             id = "";
         }
         load();
         
-        List<String> bookmarks = pinnedLogsMap.get(id);
+        List<String> bookmarks = bookmarkMap.get(id);
         if (bookmarks != null) {
             return new ArrayList<>(bookmarks);
         }

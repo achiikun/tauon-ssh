@@ -2,9 +2,12 @@ package tauon.app.ui.containers.session.pages.files;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.services.SettingsService;
-import tauon.app.settings.SessionInfo;
-import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
+import tauon.app.services.SettingsConfigManager;
+import tauon.app.settings.SiteInfo;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.LocalFileSystem;
@@ -39,7 +42,7 @@ public class FileBrowser extends Page {
     private final ClosableTabbedPanel leftTabs;
     private final ClosableTabbedPanel rightTabs;
     private final SessionContentPanel holder;
-    private final SessionInfo info;
+    private final SiteInfo info;
     private final Map<String, List<FileInfo>> sshDirCache = new HashMap<>();
     private final AtomicBoolean init = new AtomicBoolean(false);
     private final JPopupMenu popup;
@@ -50,12 +53,16 @@ public class FileBrowser extends Page {
     private Box statusBox;
     
     private ThreadPoolExecutor backgroundTransferPool;
-
-    public FileBrowser(SessionInfo info, SessionContentPanel holder) {
+    private final SshFileSystem sshFileSystem;
+    private final SSHConnectionHandler sshConnectionHandler;
+    
+    public FileBrowser(SiteInfo info, SessionContentPanel holder, SSHConnectionHandler sshConnectionHandler) {
 
         this.info = info;
         this.holder = holder;
-
+        this.sshFileSystem = sshConnectionHandler.getSshFileSystem();
+        this.sshConnectionHandler = sshConnectionHandler;
+        
         JMenuItem localMenuItem = new JMenuItem("Local file browser");
         JMenuItem remoteMenuItem = new JMenuItem("Remote file browser");
 
@@ -98,7 +105,7 @@ public class FileBrowser extends Page {
         horizontalSplitter.setRightComponent(this.rightTabs);
         horizontalSplitter.setDividerSize(5);
 
-        if (SettingsService.getSettings().isDualPaneMode()) {
+        if (SettingsConfigManager.getSettings().isDualPaneMode()) {
             switchToDualPaneMode();
         } else {
             switchToSinglePanelMode();
@@ -153,15 +160,15 @@ public class FileBrowser extends Page {
         }
     }
 
-    public SshFileSystem getSSHFileSystem() {
-        return this.getHolder().getSshFs();
+    public SshFileSystem getSshFileSystem() {
+        return sshFileSystem;
     }
 
 //    public TauonRemoteSessionInstance getSessionInstance() {
 //        return this.holder.getRemoteSessionInstance();
 //    }
 
-    public SessionInfo getInfo() {
+    public SiteInfo getInfo() {
         return info;
     }
 
@@ -174,7 +181,7 @@ public class FileBrowser extends Page {
 //        this.ongoingFileTransfer =
         
         holder.getAppWindow().getFileTransferManager().startFileTransfer(
-                new FileTransfer(sourceFs, targetFs, files, targetFolder, SettingsService.getSettings().getConflictAction(), holder),
+                new FileTransfer(sourceFs, targetFs, files, targetFolder, SettingsConfigManager.getSettings().getConflictAction(), holder),
                 false,
                 new FileTransferProgress.Adapter(){
 
@@ -249,7 +256,7 @@ public class FileBrowser extends Page {
     public boolean handleLocalDrop(DndTransferData transferData, FileSystem currentFileSystem,
                                    String currentPath) {
         // TODO i18n
-        if (SettingsService.getSettings().isConfirmBeforeMoveOrCopy()
+        if (SettingsConfigManager.getSettings().isConfirmBeforeMoveOrCopy()
                 && JOptionPane.showConfirmDialog(null, "Move/copy files?") != JOptionPane.YES_OPTION) {
             return false;
         }
@@ -265,11 +272,11 @@ public class FileBrowser extends Page {
             }
 
             if (source.getFileBrowser() == this) {
-                if (SettingsService.getSettings().getFileTransferMode() == Constants.TransferMode.BACKGROUND) {
+                if (SettingsConfigManager.getSettings().getFileTransferMode() == Constants.TransferMode.BACKGROUND) {
                     downloadInBackground(transferData.getFiles(), currentPath);
                     return true;
                 }
-                FileSystem sourceFs = this.getSSHFileSystem();
+                FileSystem sourceFs = this.getSshFileSystem();
                 if (sourceFs == null) {
                     return false;
                 }
@@ -283,13 +290,13 @@ public class FileBrowser extends Page {
         }
     }
     
-    public void downloadInBackground(FileInfo[] remoteFiles, String targetLocalDirectory) {
-        FileSystem targetFs = new LocalFileSystem();
-        TauonRemoteSessionInstance instance = getHolder().createBackgroundSession();
-        SshFileSystem sourceFs = instance.getSshFs();
+    public void downloadInBackground(FileInfo[] remoteFiles, String targetLocalDirectory) throws OperationCancelledException, RemoteOperationException, InterruptedException, SessionClosedException {
+        FileSystem targetFs = LocalFileSystem.getInstance();
+//        TauonRemoteSessionInstance instance = getHolder().createBackgroundSession();
+        SSHConnectionHandler.TempSshFileSystem sourceFs = sshConnectionHandler.openTempSshFileSystem();
         
         FileTransfer transfer = new FileTransfer(sourceFs, targetFs, remoteFiles, targetLocalDirectory,
-                SettingsService.getSettings().getConflictAction(),
+                SettingsConfigManager.getSettings().getConflictAction(),
                 getHolder());
         getHolder().getAppWindow().getFileTransferManager().startFileTransfer(
                 transfer,
@@ -297,23 +304,23 @@ public class FileBrowser extends Page {
                 new FileTransferProgress.Adapter(){
                     @Override
                     public void done(FileTransfer fileTransfer) {
-                        getHolder().returnToSessionCache(instance);
+                        sourceFs.dispose();
                     }
                     
                     @Override
                     public void error(String cause, FileTransfer fileTransfer) {
-                        getHolder().returnToSessionCache(instance);
+                        sourceFs.dispose();
                     }
                 }
         );
     }
     
-    public void uploadInBackground(FileInfo[] localFiles, String targetRemoteDirectory) {
-        TauonRemoteSessionInstance instance = getHolder().createBackgroundSession();
-        FileSystem sourceFs = new LocalFileSystem();
-        FileSystem targetFs = instance.getSshFs();
+    public void uploadInBackground(FileInfo[] localFiles, String targetRemoteDirectory) throws RemoteOperationException, SessionClosedException {
+//        TauonRemoteSessionInstance instance = getHolder().createBackgroundSession();
+        FileSystem sourceFs = LocalFileSystem.getInstance();
+        SSHConnectionHandler.TempSshFileSystem targetFs = sshConnectionHandler.openTempSshFileSystem();
         FileTransfer transfer = new FileTransfer(sourceFs, targetFs, localFiles, targetRemoteDirectory,
-                SettingsService.getSettings().getConflictAction(),
+                SettingsConfigManager.getSettings().getConflictAction(),
                 getHolder());
         getHolder().getAppWindow().getFileTransferManager().startFileTransfer(
                 transfer,
@@ -321,12 +328,12 @@ public class FileBrowser extends Page {
                 new FileTransferProgress.Adapter(){
                     @Override
                     public void done(FileTransfer fileTransfer) {
-                        getHolder().returnToSessionCache(instance);
+                        targetFs.dispose();
                     }
                     
                     @Override
                     public void error(String cause, FileTransfer fileTransfer) {
-                        getHolder().returnToSessionCache(instance);
+                        targetFs.dispose();
                     }
                 }
         );
@@ -359,14 +366,14 @@ public class FileBrowser extends Page {
     public synchronized ThreadPoolExecutor getBackgroundTransferPool() {
         if (this.backgroundTransferPool == null) {
             this.backgroundTransferPool = new ThreadPoolExecutor(
-                    SettingsService.getSettings().getBackgroundTransferQueueSize(),
-                    SettingsService.getSettings().getBackgroundTransferQueueSize(), 0, TimeUnit.NANOSECONDS,
+                    SettingsConfigManager.getSettings().getBackgroundTransferQueueSize(),
+                    SettingsConfigManager.getSettings().getBackgroundTransferQueueSize(), 0, TimeUnit.NANOSECONDS,
                     new LinkedBlockingQueue<>());
         } else {
-            if (this.backgroundTransferPool.getMaximumPoolSize() != SettingsService.getSettings()
+            if (this.backgroundTransferPool.getMaximumPoolSize() != SettingsConfigManager.getSettings()
                     .getBackgroundTransferQueueSize()) {
                 this.backgroundTransferPool
-                        .setMaximumPoolSize(SettingsService.getSettings().getBackgroundTransferQueueSize());
+                        .setMaximumPoolSize(SettingsConfigManager.getSettings().getBackgroundTransferQueueSize());
             }
         }
         return this.backgroundTransferPool;

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.settings.NamedItem;
 import tauon.app.settings.SessionFolder;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.ui.dialogs.sessions.SavedSessionTree;
 import tauon.app.util.misc.Constants;
 
@@ -25,11 +25,11 @@ import java.util.Map;
 
 import static tauon.app.services.LanguageService.getBundle;
 
-public class SessionService {
+public class SitesConfigManager {
     
-    private static final Logger LOG = LoggerFactory.getLogger(SessionService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SitesConfigManager.class);
     
-    private static SessionService INSTANCE = null;
+    private static SitesConfigManager INSTANCE = null;
     
     private SavedSessionTree savedSessionTree;
     
@@ -38,9 +38,9 @@ public class SessionService {
     private boolean passwordsUnlocked;
     private char[] masterPassword;
     
-    public static SessionService getInstance() {
+    public static SitesConfigManager getInstance() {
         if(INSTANCE == null){
-            INSTANCE = new SessionService();
+            INSTANCE = new SitesConfigManager();
         }
         return INSTANCE;
     }
@@ -148,7 +148,7 @@ public class SessionService {
     
     private static void populatePasswordsInto(SessionFolder folder, Map<String, PasswordEntry> passwordMap) {
         
-        for (SessionInfo info : folder.getItems()) {
+        for (SiteInfo info : folder.getItems()) {
             try {
                 PasswordEntry password = passwordMap.get(info.getId());
                 
@@ -201,7 +201,7 @@ public class SessionService {
 //    }
     
     private static void setPasswords(SessionFolder folder, Map<String, PasswordEntry> passwordMap) {
-        for (SessionInfo info : folder.getItems()) {
+        for (SiteInfo info : folder.getItems()) {
             setPassword(info.getId(), info.getPassword(), info.getHopPasswords(), passwordMap);
         }
         for (SessionFolder f : folder.getFolders()) {
@@ -228,7 +228,7 @@ public class SessionService {
         if(promptTryAgain)
             masterPassword = null;
         
-        if (SettingsService.getSettings().isUsingMasterPassword()) {
+        if (SettingsConfigManager.getSettings().isUsingMasterPassword()) {
             if(masterPassword == null){
                 masterPassword = passwordPromptConsumer.promptMasterPassword(creatingPassword, promptTryAgain);
             }
@@ -357,8 +357,8 @@ public class SessionService {
         Enumeration<TreeNode> childrens = node.children();
         while (childrens.hasMoreElements()) {
             DefaultMutableTreeNode c = (DefaultMutableTreeNode) childrens.nextElement();
-            if (c.getUserObject() instanceof SessionInfo) {
-                folder.getItems().add((SessionInfo) c.getUserObject());
+            if (c.getUserObject() instanceof SiteInfo) {
+                folder.getItems().add((SiteInfo) c.getUserObject());
             } else {
                 folder.getFolders().add(convertModelFromTree(c));
             }
@@ -371,7 +371,7 @@ public class SessionService {
         item.setName(folder.getName());
         item.setId(folder.getId());
         DefaultMutableTreeNode node = new DefaultMutableTreeNode(item);
-        for (SessionInfo info : folder.getItems()) {
+        for (SiteInfo info : folder.getItems()) {
             DefaultMutableTreeNode c = new DefaultMutableTreeNode(info.copy());
             c.setAllowsChildren(false);
             node.add(c);
@@ -383,7 +383,7 @@ public class SessionService {
         return node;
     }
     
-    public void setPasswordsFrom(SessionInfo session) {
+    public void setPasswordsFrom(SiteInfo session) {
         setPassword(session.getId(), session.getPassword(), session.getHopPasswords(), passwordMap);
     }
     

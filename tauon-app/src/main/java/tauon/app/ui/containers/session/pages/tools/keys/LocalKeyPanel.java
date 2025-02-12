@@ -3,7 +3,7 @@ package tauon.app.ui.containers.session.pages.tools.keys;
 import tauon.app.App;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.components.misc.SkinnedTextField;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 import static tauon.app.services.LanguageService.getBundle;
 
 public class LocalKeyPanel extends JPanel {
-    private final SessionInfo info;
+    private final SiteInfo info;
     private final JTextField txtKeyFile;
     private final JButton btnGenNewKey;
     private final JButton btnRefresh;
@@ -21,7 +21,7 @@ public class LocalKeyPanel extends JPanel {
     private final Consumer<?> callback1;
     private final Consumer<?> callback2;
 
-    public LocalKeyPanel(SessionInfo info, Consumer<?> callback1,
+    public LocalKeyPanel(SiteInfo info, Consumer<?> callback1,
                          Consumer<?> callback2) {
         super(new BorderLayout());
         this.info = info;

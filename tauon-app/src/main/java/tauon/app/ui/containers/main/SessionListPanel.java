@@ -7,14 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.App;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.event.ListDataEvent;
 import java.awt.*;
@@ -140,7 +139,7 @@ public class SessionListPanel extends JPanel {
         }
     }
     
-    public void createSession(SessionInfo info) {
+    public void createSession(SiteInfo info) {
         SessionContentPanel panel = new SessionContentPanel(info, window);
         sessionListModel.insertElementAt(panel, 0);
 
@@ -158,19 +157,23 @@ public class SessionListPanel extends JPanel {
     public void removeSession(int index) {
         if (JOptionPane.showConfirmDialog(window, getBundle().getString("app.session.action.disconnect_session")) == JOptionPane.YES_OPTION) {
             SessionContentPanel sessionContentPanel = sessionListModel.get(index);
-            sessionContentPanel.close();
-            window.removeSession(sessionContentPanel);
-            window.revalidate();
-            window.repaint();
-            sessionListModel.remove(index);
-            if (sessionListModel.size() == 0) {
-                return;
-            }
-            if (index == sessionListModel.size()) {
-                sessionList.setSelectedIndex(index - 1);
-            } else {
-                sessionList.setSelectedIndex(index);
-            }
+            sessionContentPanel.closeAsync((success) -> {
+                if(success) {
+                    window.removeSession(sessionContentPanel);
+                    window.revalidate();
+                    window.repaint();
+                    sessionListModel.remove(index);
+                    if (sessionListModel.isEmpty()) {
+                        return;
+                    }
+                    if (index == sessionListModel.size()) {
+                        sessionList.setSelectedIndex(index - 1);
+                    } else {
+                        sessionList.setSelectedIndex(index);
+                    }
+                }
+            });
+            
         }
     }
     
@@ -233,7 +236,7 @@ public class SessionListPanel extends JPanel {
         
         public void showOn(SessionContentPanel sessionContentPanel, Rectangle cellRectangle) {
             
-            SessionInfo info = sessionContentPanel.getInfo();
+            SiteInfo info = sessionContentPanel.getInfo();
             
             lblText.setText(info.getName());
             lblHost.setText(info.getHost());
@@ -322,7 +325,7 @@ public class SessionListPanel extends JPanel {
         public Component getListCellRendererComponent(JList<? extends SessionContentPanel> list,
                                                       SessionContentPanel value, int index, boolean isSelected, boolean cellHasFocus) {
 
-            SessionInfo info = value.getInfo();
+            SiteInfo info = value.getInfo();
             
             lblText.setText(info.getName());
             lblHost.setText(info.getHost());

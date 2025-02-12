@@ -1,6 +1,6 @@
 package tauon.app.settings.importers;
 
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,11 +18,11 @@ public class SSHConfigImporter {
     static final String IDENTITY_FILE_TEXT = "IdentityFile";
     static final String USER_TEXT = "User";
 
-    public static List<SessionInfo> getSessionFromFile(File file) throws FileNotFoundException {
-        List<SessionInfo> sessionInfoList = new ArrayList<>();
+    public static List<SiteInfo> getSessionFromFile(File file) throws FileNotFoundException {
+        List<SiteInfo> siteInfoList = new ArrayList<>();
         Scanner myReader = new Scanner(file);
         String linea = myReader.hasNextLine() ? myReader.nextLine() : null;
-        SessionInfo info = new SessionInfo();
+        SiteInfo info = new SiteInfo();
         if (linea.contains(HOST_TEXT)) {
             info.setName(sanitizeString(linea, HOST_TEXT));
         }
@@ -38,17 +38,17 @@ public class SSHConfigImporter {
                 info.setPrivateKeyFile(sanitizeString(linea, IDENTITY_FILE_TEXT));
             } else if (linea.contains(HOST_TEXT)) {
                 if (info.getName() != null) {
-                    sessionInfoList.add(info);
+                    siteInfoList.add(info);
                 }
-                info = new SessionInfo();
+                info = new SiteInfo();
                 info.setName(sanitizeString(linea, HOST_TEXT));
             }
         }
         if (info.getName() != null) {
-            sessionInfoList.add(info);
+            siteInfoList.add(info);
         }
 
-        return sessionInfoList;
+        return siteInfoList;
     }
 
     public static String sanitizeString(String line, String key) {

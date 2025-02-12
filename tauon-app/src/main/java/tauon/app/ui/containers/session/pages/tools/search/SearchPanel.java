@@ -6,7 +6,9 @@ package tauon.app.ui.containers.session.pages.tools.search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
-import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.page.subpage.Subpage;
@@ -29,7 +31,6 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -182,18 +183,18 @@ public class SearchPanel extends Subpage {
                 scriptBuffer.append("export UNCOMPRESS=1\n");
             }
         }
-
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        
+        IStopper.Handle stopFlag = new IStopper.Default();
 //        this.holder.disableUi(stopFlag);
 //        holder.executor.submit(() -> findAsync(scriptBuffer, stopFlag));
-        holder.submitSSHOperationStoppable(instance -> {
+        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
             System.out.println("Listing partitions");
             findAsync(instance, scriptBuffer, stopFlag);
         }, stopFlag);
         
     }
 
-    private void findAsync(TauonRemoteSessionInstance instance, StringBuilder scriptBuffer, AtomicBoolean stopFlag) {
+    private void findAsync(SSHConnectionHandler instance, StringBuilder scriptBuffer, IStopper stopFlag) {
         SwingUtilities.invokeLater(() -> {
             model.clear();
             lblStat.setText(getBundle().getString("app.tools_file_search.label.searching"));
@@ -204,8 +205,7 @@ public class SearchPanel extends Subpage {
         System.out.println("Starting search.. ");
         try {
             if (searchScript == null) {
-                searchScript = ScriptLoader
-                        .loadShellScript("/scripts/search.sh");
+                searchScript = ScriptLoader.loadShellScript("/scripts/search.sh");
             }
 
             scriptBuffer.append(searchScript);
@@ -214,9 +214,15 @@ public class SearchPanel extends Subpage {
             System.out.println(findCmd);
 
             StringBuilder output = new StringBuilder();
-
-            if (instance.exec(findCmd, stopFlag,
-                    output) != 0) {
+            
+            SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                    .withCommand(findCmd)
+                    .withStdoutAppendable(output)
+                    .withStopper(stopFlag);
+            
+            instance.exec(sshCommandRunner);
+            
+            if (sshCommandRunner.getResult() != 0) {
                 throw new RuntimeException();
             }
 
@@ -225,15 +231,14 @@ public class SearchPanel extends Subpage {
             String[] lines = output.toString().split("\n");
             SwingUtilities.invokeLater(() -> {
                 for (String line : lines) {
-                    if (line.length() > 0) {
+                    if (!line.isEmpty()) {
                         SearchResult res = parseOutput(line);
                         if (res != null) {
                             model.add(res);
                         }
                     }
                 }
-                lblCount.setText(
-                        String.format("%d items", model.getRowCount()));
+                lblCount.setText(String.format("%d items", model.getRowCount()));
             });
 
             lblStat.setText(getBundle().getString("app.tools_file_search.label.idle"));

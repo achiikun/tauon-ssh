@@ -9,7 +9,7 @@ package tauon.app.ui.components.glasspanes;
  */
 public interface InputBlocker {
     
-    void blockInput(Runnable cancellable);
+    void blockInput(String label, Runnable cancellable);
 
     void unblockInput();
 }

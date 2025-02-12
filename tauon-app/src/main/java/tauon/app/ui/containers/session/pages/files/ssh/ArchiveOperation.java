@@ -5,8 +5,9 @@ import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
-import tauon.app.ssh.TauonRemoteSessionInstance;
-import tauon.app.ui.components.glasspanes.AppInputBlocker;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
@@ -14,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ArchiveOperation {
     private static final Logger LOG = LoggerFactory.getLogger(ArchiveOperation.class);
@@ -90,7 +90,7 @@ public class ArchiveOperation {
         }
     }
 
-    public boolean extractArchive(TauonRemoteSessionInstance client, String archivePath, String targetFolder, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
+    public boolean extractArchive(SSHConnectionHandler client, String archivePath, String targetFolder, IStopper stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
         String command = getExtractCommand(archivePath);
         if (command == null) {
             LOG.error("Unsupported file type: {}", archivePath);
@@ -107,14 +107,22 @@ public class ArchiveOperation {
         LOG.debug("Invoke command: {}", command);
         
         StringBuilder output = new StringBuilder();
-        boolean ret = client.exec(command, stopFlag, output) == 0;
+        
+        SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                .withCommand(command)
+                .withStdoutAppendable(output)
+                .withStopper(stopFlag);
+        
+        client.exec(sshCommandRunner);
+        
+        boolean ret = sshCommandRunner.getResult() == 0;
         
         LOG.debug("Output: {}", output);
         
         return ret;
     }
 
-    public boolean createArchive(TauonRemoteSessionInstance client, List<String> files, String targetFolder, AtomicBoolean stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException {
+    public boolean createArchive(SSHConnectionHandler client, List<String> files, String targetFolder, IStopper stopFlag) throws RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
         String text = files.size() > 1 ? PathUtils.getFileName(targetFolder)
                 : files.get(0);
         JTextField txtFileName = new JTextField(text);
@@ -146,7 +154,15 @@ public class ArchiveOperation {
             LOG.debug("Invoke command: {}", cd + compressCmd);
             
             StringBuilder output = new StringBuilder();
-            boolean ret = client.exec(cd + compressCmd, stopFlag, output) == 0;
+            
+            SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                    .withCommand(cd + compressCmd)
+                    .withStdoutAppendable(output)
+                    .withStopper(stopFlag);
+            
+            client.exec(sshCommandRunner);
+            
+            boolean ret = sshCommandRunner.getResult() == 0;
             
             LOG.debug("Output: {}", output);
             

@@ -12,14 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
-import tauon.app.services.SettingsService;
+import tauon.app.services.SettingsConfigManager;
 import tauon.app.settings.Settings;
-import tauon.app.ui.containers.session.SessionContentPanel;
+import tauon.app.ssh.GuiHandle;
 import tauon.app.util.misc.FontUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.nio.charset.StandardCharsets;
 
 import com.jediterm.core.Color;
 
@@ -32,16 +31,16 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
     
     private final ColorPalette palette;
     
-    private final SessionContentPanel session;
+    private final GuiHandle guiHandle;
     
     /**
      *
      */
-    public CustomizedSettingsProvider(SessionContentPanel session) {
-        this.session = session;
+    public CustomizedSettingsProvider(GuiHandle guiHandle) {
+        this.guiHandle = guiHandle;
         
         Color[] colors = new Color[16];
-        int[] colorArr = SettingsService.getSettings().getPalleteColors();
+        int[] colorArr = SettingsConfigManager.getSettings().getPalleteColors();
         for (int i = 0; i < 16; i++) {
             colors[i] = new Color(colorArr[i]);
         }
@@ -88,33 +87,33 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
 
     @Override
     public TextStyle getDefaultStyle() {
-        return new TextStyle(getTerminalColor(SettingsService.getSettings().getDefaultColorFg()),
-                getTerminalColor(SettingsService.getSettings().getDefaultColorBg()));
+        return new TextStyle(getTerminalColor(SettingsConfigManager.getSettings().getDefaultColorFg()),
+                getTerminalColor(SettingsConfigManager.getSettings().getDefaultColorBg()));
     }
 
     @Override
     public TextStyle getFoundPatternColor() {
-        return new TextStyle(getTerminalColor(SettingsService.getSettings().getDefaultFoundFg()),
-                getTerminalColor(SettingsService.getSettings().getDefaultFoundBg()));
+        return new TextStyle(getTerminalColor(SettingsConfigManager.getSettings().getDefaultFoundFg()),
+                getTerminalColor(SettingsConfigManager.getSettings().getDefaultFoundBg()));
     }
 
     @Override
     public TextStyle getSelectionColor() {
-        return new TextStyle(getTerminalColor(SettingsService.getSettings().getDefaultSelectionFg()),
-                getTerminalColor(SettingsService.getSettings().getDefaultSelectionBg()));
+        return new TextStyle(getTerminalColor(SettingsConfigManager.getSettings().getDefaultSelectionFg()),
+                getTerminalColor(SettingsConfigManager.getSettings().getDefaultSelectionBg()));
         //
     }
 
     @Override
     public TextStyle getHyperlinkColor() {
-        return new TextStyle(getTerminalColor(SettingsService.getSettings().getDefaultHrefFg()),
-                getTerminalColor(SettingsService.getSettings().getDefaultHrefBg()));
+        return new TextStyle(getTerminalColor(SettingsConfigManager.getSettings().getDefaultHrefFg()),
+                getTerminalColor(SettingsConfigManager.getSettings().getDefaultHrefBg()));
 
     }
 
     @Override
     public boolean emulateX11CopyPaste() {
-        return SettingsService.getSettings().isPuttyLikeCopyPaste();
+        return SettingsConfigManager.getSettings().isPuttyLikeCopyPaste();
     }
 
     @Override
@@ -124,30 +123,30 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
 
     @Override
     public boolean pasteOnMiddleMouseClick() {
-        return SettingsService.getSettings().isPuttyLikeCopyPaste();
+        return SettingsConfigManager.getSettings().isPuttyLikeCopyPaste();
     }
 
     @Override
     public boolean copyOnSelect() {
-        return SettingsService.getSettings().isPuttyLikeCopyPaste();
+        return SettingsConfigManager.getSettings().isPuttyLikeCopyPaste();
     }
 
     @Override
     public Font getTerminalFont() {
-        System.out.println("Called terminal font: " + SettingsService.getSettings().getTerminalFontName());
-        return FontUtils.loadTerminalFont(SettingsService.getSettings().getTerminalFontName())
+        System.out.println("Called terminal font: " + SettingsConfigManager.getSettings().getTerminalFontName());
+        return FontUtils.loadTerminalFont(SettingsConfigManager.getSettings().getTerminalFontName())
                 .getFont()
-                .deriveFont(Font.PLAIN, SettingsService.getSettings().getTerminalFontSize());
+                .deriveFont(Font.PLAIN, SettingsConfigManager.getSettings().getTerminalFontSize());
     }
 
     @Override
     public float getTerminalFontSize() {
-        return SettingsService.getSettings().getTerminalFontSize();
+        return SettingsConfigManager.getSettings().getTerminalFontSize();
     }
 
     @Override
     public boolean audibleBell() {
-        return SettingsService.getSettings().isTerminalBell();
+        return SettingsConfigManager.getSettings().isTerminalBell();
     }
 
     public final TerminalColor getTerminalColor(int rgb) {
@@ -182,21 +181,21 @@ public class CustomizedSettingsProvider extends DefaultSettingsProvider {
     
     private KeyStroke getKeyStroke(String key) {
         return KeyStroke.getKeyStroke(
-                SettingsService.getSettings().getKeyCodeMap().get(key),
-                SettingsService.getSettings().getKeyModifierMap().get(key)
+                SettingsConfigManager.getSettings().getKeyCodeMap().get(key),
+                SettingsConfigManager.getSettings().getKeyModifierMap().get(key)
         );
     }
     
     @Override
     public String getSudoPassword() {
         try {
-            return String.valueOf(session.getSUDOPassword(false));
+            return String.valueOf(guiHandle.promptSudoPassword(false));
         } catch (OperationCancelledException e) {
             return ""; // If returned null, jediterm fails
         }
     }
     
     public FontUtils.TerminalFont getCustomTerminalFont() {
-        return FontUtils.loadTerminalFont(SettingsService.getSettings().getTerminalFontName());
+        return FontUtils.loadTerminalFont(SettingsConfigManager.getSettings().getTerminalFontName());
     }
 }

@@ -2,7 +2,7 @@ package tauon.app.settings.importers;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.util.misc.RegUtil;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -66,7 +66,7 @@ public class PuttyImporter {
                 } else {
                     proxyType = 0;
                 }
-                SessionInfo info = new SessionInfo();
+                SiteInfo info = new SiteInfo();
                 info.setName(key);
                 info.setHost(host);
                 info.setPort(port);

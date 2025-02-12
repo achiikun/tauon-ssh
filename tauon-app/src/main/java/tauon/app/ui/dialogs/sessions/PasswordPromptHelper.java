@@ -1,6 +1,6 @@
 package tauon.app.ui.dialogs.sessions;
 
-import tauon.app.services.SessionService;
+import tauon.app.services.SitesConfigManager;
 import tauon.app.exceptions.OperationCancelledException;
 
 import javax.swing.*;
@@ -8,7 +8,7 @@ import java.awt.*;
 
 import static tauon.app.services.LanguageService.getBundle;
 
-public class PasswordPromptHelper implements SessionService.PasswordPromptConsumer {
+public class PasswordPromptHelper implements SitesConfigManager.PasswordPromptConsumer {
     private final Component parent;
     
     public PasswordPromptHelper(Component parent) {

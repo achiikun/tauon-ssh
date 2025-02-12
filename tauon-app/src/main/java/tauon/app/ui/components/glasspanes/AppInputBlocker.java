@@ -24,7 +24,7 @@ public class AppInputBlocker extends JDialog implements InputBlocker, ActionList
 
     private final JPanel jPanel = new JPanel(null);
     
-    private final JLabel connectingLabel = new JLabel(getBundle().getString("app.ui.status.connecting"));
+    private final JLabel connectingLabel = new JLabel("");
     
     private final JButton cancelButton = new JButton();
     
@@ -67,15 +67,18 @@ public class AppInputBlocker extends JDialog implements InputBlocker, ActionList
     }
     
     @Override
-    public void blockInput(Runnable cancellable) {
+    public void blockInput(String label, Runnable cancellable) {
         SwingUtilities.invokeLater(() -> {
-            LOG.trace("Making dialog visible and blocking input.");
+            LOG.trace("Making dialog visible and blocking input with label={}.", label);
+            connectingLabel.setText(label);
             
             this.remove(jPanel);
             
             setSize(200, 100);
             this.setLocationRelativeTo(window);
+            
             connectingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            connectingLabel.invalidate();
             
             this.add(jPanel);
             

@@ -3,7 +3,8 @@
  */
 package tauon.app.ui.containers.session.pages.info.sysload;
 
-import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.ssh.SSHCommandRunner;
+import tauon.app.ssh.SSHConnectionHandler;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,15 +24,27 @@ public class LinuxMetrics {
     private long prevTotal;
     private String os;
 
-    public void updateMetrics(TauonRemoteSessionInstance instance) throws Exception {
-        StringBuilder out = new StringBuilder();
-        StringBuilder err = new StringBuilder();
-        int ret = instance.exec(
-                "uname; head -1 /proc/stat;grep -E \"MemTotal|MemFree|Cached|SwapTotal|SwapFree\" /proc/meminfo",
-                new AtomicBoolean(), out, err);
-        if (ret != 0)
+    public void updateMetrics(SSHConnectionHandler instance) throws Exception {
+        SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                .withCommand("uname; head -1 /proc/stat;grep -E \"MemTotal|MemFree|Cached|SwapTotal|SwapFree\" /proc/meminfo")
+                .withStdoutString();
+        
+        instance.exec(sshCommandRunner);
+        
+        int ret = sshCommandRunner.getResult();
+        if(ret != 0){
             throw new Exception("Error while getting metrics");
-        updateStats(out.toString());
+        }
+        updateStats(sshCommandRunner.getStdoutString());
+        
+//        StringBuilder out = new StringBuilder();
+//        StringBuilder err = new StringBuilder();
+//        int ret = instance.exec(
+//                "uname; head -1 /proc/stat;grep -E \"MemTotal|MemFree|Cached|SwapTotal|SwapFree\" /proc/meminfo",
+//                new AtomicBoolean(), out, err);
+//        if (ret != 0)
+//            throw new Exception("Error while getting metrics");
+//        updateStats(out.toString());
     }
 
     private void updateStats(String str) {

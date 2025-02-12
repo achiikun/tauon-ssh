@@ -11,7 +11,7 @@ import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import javax.swing.*;
@@ -74,7 +74,7 @@ public class Remote2RemoteTransferDialog extends JDialog {
 
         btnAddKnown.addActionListener(e -> {
             try {
-                SessionInfo info = new NewSessionDlg(this).newSession();
+                SiteInfo info = new NewSessionDlg(this).newSession();
                 
                 if (info != null) {
                     RemoteServerEntry ent = getEntryDetails(info.getHost(), info.getUser(), info.getRemoteFolder(),

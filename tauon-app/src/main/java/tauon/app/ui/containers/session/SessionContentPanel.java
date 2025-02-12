@@ -4,21 +4,19 @@
 package tauon.app.ui.containers.session;
 
 import com.intellij.util.ui.UIUtil;
-import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.exceptions.*;
-import tauon.app.services.SessionService;
-import tauon.app.services.SettingsService;
+import tauon.app.services.SitesConfigManager;
+import tauon.app.services.SettingsConfigManager;
 import tauon.app.settings.HopEntry;
 import tauon.app.settings.PortForwardingRule;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.ssh.*;
 import tauon.app.ssh.filesystem.FileInfo;
-import tauon.app.ssh.filesystem.SshFileSystem;
 import tauon.app.ui.components.glasspanes.ProgressGlasspane;
 import tauon.app.ui.components.glasspanes.SessionInputBlocker;
 import tauon.app.ui.components.misc.SkinnedTextField;
@@ -43,8 +41,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -57,11 +53,11 @@ import static tauon.app.services.LanguageService.getBundle;
  * @author subhro
  *
  */
-public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle<TauonRemoteSessionInstance> {
+public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle {
     private static final Logger LOG = LoggerFactory.getLogger(SessionContentPanel.class);
     
     public final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final SessionInfo info;
+    private final SiteInfo info;
     private final AppWindow appWindow;
     
     private final UUID uuid = UUID.randomUUID();
@@ -83,37 +79,47 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     
     private final AtomicBoolean closed = new AtomicBoolean(false);
     
-    private final Deque<TauonRemoteSessionInstance> cachedSessions = new LinkedList<>();
-    private final TauonRemoteSessionInstance remoteSessionInstance;
+//    private final Deque<TauonRemoteSessionInstance> cachedSessions = new LinkedList<>();
+//    @Deprecated
+//    private final TauonRemoteSessionInstance remoteSessionInstance = null;
+    
+    private final SSHConnectionHandler sshConnectionHandler;
     
     
     /**
      *
      */
-    public SessionContentPanel(SessionInfo info, AppWindow appWindow) {
+    public SessionContentPanel(SiteInfo info, AppWindow appWindow) {
         super(new BorderLayout());
         
         this.info = info;
         this.appWindow = appWindow;
         
-        this.remoteSessionInstance = new TauonRemoteSessionInstance(
+//        this.remoteSessionInstance = new TauonRemoteSessionInstance(
+//                info,
+//                this,
+//                new MyPasswordFinder(),
+//                true,
+//                appWindow.hostKeyVerifier);
+        
+        this.sshConnectionHandler = new SSHConnectionHandler(
                 info,
                 this,
                 new MyPasswordFinder(),
-                true,
-                appWindow.hostKeyVerifier);
+                appWindow.hostKeyVerifier
+        );
         
         Box contentTabs = Box.createHorizontalBox();
         contentTabs.setBorder(new MatteBorder(0, 0, 1, 0, App.skin.getDefaultBorderColor()));
-
-        fileBrowser = new FileBrowser(info, this);
+        
+        terminalHolder = new TerminalHolder(this, sshConnectionHandler);
+        fileBrowser = new FileBrowser(info, this, sshConnectionHandler);
         logViewer = new LogViewer(this);
-        terminalHolder = new TerminalHolder(info, this);
         processViewer = new InfoPage(this);
         toolsPage = new ToolsPage(this);
 
         Page[] pageArr = null;
-        if (SettingsService.getSettings().isFirstFileBrowserView()) {
+        if (SettingsConfigManager.getSettings().isFirstFileBrowserView()) {
             pageArr = new Page[]{fileBrowser, terminalHolder, logViewer,
                     processViewer, toolsPage};
         } else {
@@ -177,7 +183,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     /**
      * @return the info
      */
-    public SessionInfo getInfo() {
+    public SiteInfo getInfo() {
         return info;
     }
 
@@ -188,16 +194,16 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
 //        return remoteSessionInstance;
 //    }
 
-    private void disableUi() {
-        SwingUtilities.invokeLater(() -> {
+    private void disableUi() throws InterruptedException, InvocationTargetException {
+        UIUtil.invokeAndWaitIfNeeded(() -> {
             this.sessionInputBlocker.startAnimation(null);
             this.rootPane.setGlassPane(this.sessionInputBlocker);
             this.sessionInputBlocker.setVisible(true);
         });
     }
     
-    private void disableUi(AtomicBoolean stopFlag) {
-        SwingUtilities.invokeLater(() -> {
+    private void disableUi(IStopper.Handle stopFlag) throws InterruptedException, InvocationTargetException {
+        UIUtil.invokeAndWaitIfNeeded(() -> {
             this.sessionInputBlocker.startAnimation(stopFlag);
             this.rootPane.setGlassPane(this.sessionInputBlocker);
             this.sessionInputBlocker.setVisible(true);
@@ -205,7 +211,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     private void enableUi() {
-        SwingUtilities.invokeLater(() -> {
+        UIUtil.invokeLaterIfNeeded(() -> {
             this.sessionInputBlocker.stopAnimation();
             this.sessionInputBlocker.setVisible(false);
         });
@@ -239,19 +245,23 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
 
     public void openTerminal(String command) {
         showPage(this.terminalHolder.getClientProperty("pageId") + "");
-        this.terminalHolder.openNewTerminal(command);
-    }
-    
-    public Session openSession() throws Exception {
-        remoteSessionInstance.ensureConnected();
         try {
-            return remoteSessionInstance.openSession();
-        }catch (RemoteOperationException.NotConnected e){
-            LOG.error("Open session assured that you are not connected. Force a new connection.", e);
-            remoteSessionInstance.ensureConnected(true);
-            return remoteSessionInstance.openSession();
+            this.terminalHolder.openNewTerminal(command);
+        } catch (SessionClosedException e) {
+            this.reportException(e);
         }
     }
+    
+//    public Session openSession() throws Exception {
+//        remoteSessionInstance.ensureConnected();
+//        try {
+//            return remoteSessionInstance.openSession();
+//        }catch (RemoteOperationException.NotConnected e){
+//            LOG.error("Open session assured that you are not connected. Force a new connection.", e);
+//            remoteSessionInstance.ensureConnected(true);
+//            return remoteSessionInstance.openSession();
+//        }
+//    }
     
     /**
      * @return the closed
@@ -260,60 +270,58 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         return closed.get();
     }
 
-    public void close() {
-        if(closed.getAndSet(true))
+    public void closeAsync(Consumer<Boolean> onClosed) {
+        if(closed.getAndSet(true)) {
+            onClosed.accept(false);
             return;
-        
-        try {
-            this.terminalHolder.close();
-        } catch (Exception e) {
-            LOG.error("Error while closing Terminal", e);
         }
         
-        this.fileBrowser.close();
-        
         try {
-            this.remoteSessionInstance.close();
-        } catch (Exception e) {
-            LOG.error("Error while closing the main session instance");
-        }
-        try {
-            this.cachedSessions.forEach(c -> {
-                try {
-                    c.close();
-                } catch (InterruptedException | IOException e) {
-                    LOG.error("Error while closing a cached session instance");
-                }
-            });
-        } catch (Exception e2) {
-            LOG.error("Error while closing the cached session instances");
+            disableUi();
+        } catch (InterruptedException | InvocationTargetException e) {
+            LOG.error("Error while disabling the Ui.", e);
         }
         
-        this.executor.shutdownNow();
-        
-        try {
-            if(!this.executor.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS)){
-                LOG.error("The background executor was not fully shutdown");
+        executor.submit(() -> {
+            
+            try{
+                this.sshConnectionHandler.close();
+            } catch (Exception e) {
+                LOG.error("Error while closing the main session instance.", e);
+                onClosed.accept(false);
+            } finally {
+                SwingUtilities.invokeLater(() -> {
+                    try {
+                        try {
+                            this.terminalHolder.close();
+                        } catch (Exception e) {
+                            LOG.error("Error while closing Terminal", e);
+                        }
+                        
+                        this.fileBrowser.close();
+                        
+                        this.executor.shutdownNow();
+                        
+                        try {
+                            if (!this.executor.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS)) {
+                                LOG.error("The background executor was not fully shutdown");
+                            }
+                        } catch (InterruptedException e1) {
+                            LOG.error("Error while closing the background executor pool", e1);
+                        }
+                        
+                        appWindow.getInputBlocker().unblockInput();
+                        
+                    }finally {
+                        enableUi();
+                        onClosed.accept(true);
+                    }
+                    
+                });
             }
-        } catch (InterruptedException e1) {
-            LOG.error("Error while closing the background executor pool", e1);
-        }
+            
+        });
         
-    }
-
-    public synchronized TauonRemoteSessionInstance createBackgroundSession() {
-        if (this.cachedSessions.isEmpty()) {
-            return new TauonRemoteSessionInstance(
-                    info, this, new MyPasswordFinder(), false,
-                    appWindow.hostKeyVerifier
-            );
-        }
-        return this.cachedSessions.pop();
-    }
-
-    public synchronized void returnToSessionCache(TauonRemoteSessionInstance session) {
-        if(!session.isSessionClosed())
-            this.cachedSessions.push(session);
     }
 
     @Override
@@ -389,7 +397,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     @Override
-    public char[] getSUDOPassword(boolean isRetrying) throws OperationCancelledException {
+    public char[] promptSudoPassword(boolean isRetrying) throws OperationCancelledException {
         if(!isRetrying){
             // TODO set SUDO in a separate field
             return this.info.getPassword().toCharArray();
@@ -404,10 +412,13 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     @Override
-    public BlockHandle blockUi(TauonRemoteSessionInstance client, UserCancelHandle userCancelHandle) {
-        if(client == this.remoteSessionInstance) {
+    public BlockHandle blockUi(Object client, UserCancelHandle userCancelHandle) {
+        if(client == this.sshConnectionHandler){//this.remoteSessionInstance) {
             BlockHandle block = () -> appWindow.getInputBlocker().unblockInput();
-            appWindow.getInputBlocker().blockInput(() -> userCancelHandle.userCancelled(block));
+            appWindow.getInputBlocker().blockInput(
+                    getBundle().getString("app.ui.status.connecting"),
+                    () -> userCancelHandle.userCancelled(block)
+            );
             return block;
         }
         return () -> {}; // No block
@@ -452,16 +463,126 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         return uuid;
     }
     
-    public void runSSHOperation(ISSHOperator consumer) {
+//    public void runSSHOperation(ISSHOperator consumer) {
+//
+//        boolean force = false;
+//        while (true) {
+//            try {
+//                remoteSessionInstance.ensureConnected(force);
+//
+//                try {
+//                    try {
+//                        consumer.operate(remoteSessionInstance);
+//                    }catch (IOException e){
+//                        throw new RemoteOperationException.RealIOException(e);
+//                    }
+//                    return;
+//                } catch (SessionClosedException exception) {
+//                    // Report error
+//                    LOG.error("Session was closed", exception);
+//                } catch (RemoteOperationException.NotConnected | RemoteOperationException.RealIOException ignored) {
+//                    // Reconnect
+//                    // Don't return (while true will re-execute ensureConnected forcing connection
+//                    continue;
+//                } catch (TauonOperationException exception) {
+//                    LOG.error("Going to show the exception to the user.", exception);
+//                    AlertDialogUtils.showError(this, exception.getUserMessage());
+//                }
+//
+//            } catch (OperationCancelledException | AlreadyFailedException | InterruptedException e) {
+//                // Do nothing
+//                return;
+//            } catch (SessionClosedException e) {
+//                LOG.error("Session was closed", e);
+//            }
+//
+//            return;
+//        }
+//    }
+//
+//    public <R> R runSSHOperation(ISSHOperatorRet<R> consumer, R defaultIfFailedOrCancelled) throws Exception {
+//        remoteSessionInstance.ensureConnected();
+//        try {
+//            try {
+//                return consumer.operate(remoteSessionInstance);
+//            }catch (IOException e){
+//                throw new RemoteOperationException.RealIOException(e);
+//            }
+//        }catch (OperationCancelledException | AlreadyFailedException ignored){
+//            return defaultIfFailedOrCancelled;
+//        }
+//    }
+
+//    public void submitSSHOperation(ISSHOperator consumer) {
+//        submitSSHOperationStoppable(consumer, null);
+//    }
+
+//    public void submitSSHOperationStoppable(ISSHOperator consumer, AtomicBoolean stopFlag) {
+//        executor.submit(() -> {
+//
+//            boolean force = false;
+//            while (true) {
+//                try {
+//                    remoteSessionInstance.ensureConnected(force);
+//
+//                    force = true;
+//                    disableUi(IStopper.of(stopFlag));
+//                    try {
+//                        try {
+//                            consumer.operate(remoteSessionInstance);
+//                        }catch (IOException e){
+//                            throw new RemoteOperationException.RealIOException(e);
+//                        }
+//                    } catch (SessionClosedException exception) {
+//                        // Report error
+//                        LOG.error("Session was closed", exception);
+//                    } catch (RemoteOperationException.NotConnected | RemoteOperationException.RealIOException ignored) {
+//                        // Reconnect
+//                        // Don't return (while true will re-execute ensureConnected forcing connection
+//                        continue;
+//                    } catch (TauonOperationException exception) {
+//                        LOG.error("Going to show the exception to the user.", exception);
+//                        AlertDialogUtils.showError(this, exception.getUserMessage());
+//                    } finally {
+//                        enableUi();
+//                    }
+//
+//                } catch (OperationCancelledException | AlreadyFailedException | InterruptedException e) {
+//                    // Do nothing
+//                } catch (SessionClosedException e) {
+//                    LOG.error("Session was closed", e);
+//                }
+//
+//                return;
+//            }
+////            try {
+////                remoteSessionInstance.ensureConnected();
+////                disableUi(stopFlag);
+////                try {
+////                    consumer.operate(remoteSessionInstance);
+////                } catch (OperationCancelledException | AlreadyFailedException ignored) {
+////
+////                } catch (Exception e) {
+////                    LOG.error("Operation failed", e);
+////                } finally {
+////                    enableUi();
+////                }
+////            } catch (Exception e) {
+////                LOG.error("Connection failed", e);
+////            }
+//        });
+//    }
+
+    public void runSSHOperation2(ISSHOperator2 consumer) {
         
         boolean force = false;
         while (true) {
             try {
-                remoteSessionInstance.ensureConnected(force);
+                sshConnectionHandler.ensureConnected(force);
                 
                 try {
                     try {
-                        consumer.operate(remoteSessionInstance);
+                        consumer.operate(this, sshConnectionHandler);
                     }catch (IOException e){
                         throw new RemoteOperationException.RealIOException(e);
                     }
@@ -489,36 +610,30 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         }
     }
     
-    public <R> R runSSHOperation(ISSHOperatorRet<R> consumer, R defaultIfFailedOrCancelled) throws Exception {
-        remoteSessionInstance.ensureConnected();
-        try {
-            try {
-                return consumer.operate(remoteSessionInstance);
-            }catch (IOException e){
-                throw new RemoteOperationException.RealIOException(e);
-            }
-        }catch (OperationCancelledException | AlreadyFailedException ignored){
-            return defaultIfFailedOrCancelled;
-        }
+    public void submitSSHOperation2(ISSHOperator2 consumer) {
+        submitSSHOperationStoppable2(consumer, null);
     }
     
-    public void submitSSHOperation(ISSHOperator consumer) {
-        submitSSHOperationStoppable(consumer, null);
-    }
-    
-    public void submitSSHOperationStoppable(ISSHOperator consumer, AtomicBoolean stopFlag) {
+    public void submitSSHOperationStoppable2(ISSHOperator2 consumer, IStopper.Handle stopFlag) {
         executor.submit(() -> {
             
             boolean force = false;
             while (true) {
                 try {
-                    remoteSessionInstance.ensureConnected(force);
+                    // Ensures connection before doing nothing, but when the operation request a new session, it will again ensure connection
+                    sshConnectionHandler.ensureConnected(force);
                     
                     force = true;
-                    disableUi(stopFlag);
+                    
+                    try {
+                        disableUi(stopFlag);
+                    } catch (InterruptedException | InvocationTargetException e) {
+                        LOG.error("Error while disabling the Ui. This error should never be thrown.", e);
+                    }
+                    
                     try {
                         try {
-                            consumer.operate(remoteSessionInstance);
+                            consumer.operate(this, sshConnectionHandler);
                         }catch (IOException e){
                             throw new RemoteOperationException.RealIOException(e);
                         }
@@ -564,7 +679,13 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     
     public void submitLocalOperation(ILocalOperator consumer) {
         executor.submit(() -> {
-            disableUi();
+            
+            try {
+                disableUi();
+            } catch (InterruptedException | InvocationTargetException e) {
+                LOG.error("Error while disabling the Ui. This error should never be thrown.", e);
+            }
+            
             try {
                 consumer.operate();
             } catch (OperationCancelledException | AlreadyFailedException | InterruptedException ignored) {
@@ -584,10 +705,6 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
 //                enableUi();
 //            }
         });
-    }
-    
-    public SshFileSystem getSshFs() {
-        return remoteSessionInstance.getSshFs();
     }
     
 //    public String getSudoPassword() {
@@ -663,10 +780,10 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     }
     
     @Override
-    public void saveInfo(SessionInfo info) {
-        SessionService.getInstance().setPasswordsFrom(info);
+    public void saveInfo(SiteInfo info) {
+        SitesConfigManager.getInstance().setPasswordsFrom(info);
         try {
-            SessionService.getInstance().save(new PasswordPromptHelper(this));
+            SitesConfigManager.getInstance().save(new PasswordPromptHelper(this));
         } catch (OperationCancelledException ignored) {
         
         }

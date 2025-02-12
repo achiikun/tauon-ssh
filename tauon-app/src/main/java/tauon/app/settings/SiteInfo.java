@@ -4,9 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
-public class SessionInfo extends HopEntry implements Serializable {
+public class SiteInfo extends HopEntry implements Serializable {
     
     private String localFolder;
     private String remoteFolder;
@@ -27,10 +26,10 @@ public class SessionInfo extends HopEntry implements Serializable {
     private List<HopEntry> jumpHosts = new ArrayList<>();
     private List<PortForwardingRule> portForwardingRules = new ArrayList<>();
     
-    public SessionInfo(String id, String host, int port, String user, String password, String keypath) {
+    public SiteInfo(String id, String host, int port, String user, String password, String keypath) {
         super(id, host, port, user, password, keypath);
     }
-    public SessionInfo() {
+    public SiteInfo() {
     
     }
     
@@ -81,8 +80,8 @@ public class SessionInfo extends HopEntry implements Serializable {
         this.favouriteRemoteFolders = favouriteFolders;
     }
 
-    public SessionInfo copy() {
-        SessionInfo info = (SessionInfo) super.copyTo(new SessionInfo());
+    public SiteInfo copy() {
+        SiteInfo info = (SiteInfo) super.copyTo(new SiteInfo());
         info.setLocalFolder(this.localFolder);
         info.setRemoteFolder(this.remoteFolder);
         
@@ -235,7 +234,7 @@ public class SessionInfo extends HopEntry implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SessionInfo that = (SessionInfo) o;
+        SiteInfo that = (SiteInfo) o;
         return Objects.equals(getHost(), that.getHost());
     }
 

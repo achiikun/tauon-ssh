@@ -6,6 +6,8 @@ package tauon.app.ui.containers.session.pages.tools.nettools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.containers.session.SessionContentPanel;
@@ -17,7 +19,6 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -122,15 +123,23 @@ public class NetworkToolsPage extends Subpage {
     }
 
     private void executeAsync(String cmd) {
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        IStopper.Handle stopFlag = new IStopper.Default();
 //        holder.disableUi(stopFlag);
-        holder.submitSSHOperationStoppable(instance -> {
+        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
             StringBuilder outText = new StringBuilder();
             try {
                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
                 ByteArrayOutputStream berr = new ByteArrayOutputStream();
-                if (instance.execBin(cmd, stopFlag,
-                        bout, berr) == 0) {
+                
+                SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                        .withCommand(cmd)
+                        .withStopper(stopFlag)
+                        .withStdoutStream(bout)
+                        .withStderrStream(berr);
+                
+                instance.exec(sshCommandRunner);
+                
+                if (sshCommandRunner.getResult() == 0) {
                     outText.append(bout.toString(StandardCharsets.UTF_8)).append("\n");
                     System.out.println("Command stdout: " + outText);
                 } else {

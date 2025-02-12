@@ -8,39 +8,33 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.settings.Settings;
-import tauon.app.ui.containers.main.BackgroundTransferPanel;
 import tauon.app.ui.containers.session.pages.terminal.snippets.SnippetItem;
-import tauon.app.util.misc.Constants;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static tauon.app.util.misc.Constants.SNIPPETS_FILE;
-import static tauon.app.util.misc.Constants.CONFIG_DIR;
 
 /**
  * @author subhro
  *
  */
-public class SnippetManager {
+public class SnippetsConfigManager {
     
-    private static final Logger LOG = LoggerFactory.getLogger(SnippetManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SnippetsConfigManager.class);
     
-    private static SnippetManager INSTANCE = null;
+    private static SnippetsConfigManager INSTANCE = null;
     
     private boolean loaded = false;
     private List<SnippetItem> snippetItems = new ArrayList<>();
     
-    private SnippetManager() {
+    private SnippetsConfigManager() {
     
     }
     
-    public static SnippetManager getInstance() {
+    public static SnippetsConfigManager getInstance() {
         if(INSTANCE == null){
-            INSTANCE = new SnippetManager();
+            INSTANCE = new SnippetsConfigManager();
         }
         return INSTANCE;
     }

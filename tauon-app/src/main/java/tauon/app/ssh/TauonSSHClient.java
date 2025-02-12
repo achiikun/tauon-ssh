@@ -20,11 +20,11 @@ import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
-import tauon.app.services.SessionService;
-import tauon.app.services.SettingsService;
+import tauon.app.services.SitesConfigManager;
+import tauon.app.services.SettingsConfigManager;
 import tauon.app.settings.HopEntry;
 import tauon.app.settings.PortForwardingRule;
-import tauon.app.settings.SessionInfo;
+import tauon.app.settings.SiteInfo;
 import tauon.app.ui.containers.main.GraphicalHostKeyVerifier;
 import tauon.app.util.misc.ExceptionUtils;
 import tauon.app.util.misc.PlatformUtils;
@@ -59,8 +59,8 @@ public class TauonSSHClient {
     
     private static final Logger LOG = LoggerFactory.getLogger(TauonSSHClient.class);
     
-    private final SessionInfo info;
-    private final GuiHandle<TauonSSHClient> guiHandle;
+    private final SiteInfo info;
+    private final GuiHandle guiHandle;
     private final PasswordFinder passwordFinder;
     private final ExecutorService executor;
     private final boolean openPortForwarding;
@@ -76,7 +76,7 @@ public class TauonSSHClient {
     private final List<PortForwardingState> portForwardingStates = new ArrayList<>();
     
     public TauonSSHClient(
-            SessionInfo info, GuiHandle<TauonSSHClient> guiHandle, PasswordFinder passwordFinder, ExecutorService executor, boolean openPortForwarding, GraphicalHostKeyVerifier hostKeyVerifier
+            SiteInfo info, GuiHandle guiHandle, PasswordFinder passwordFinder, ExecutorService executor, boolean openPortForwarding, GraphicalHostKeyVerifier hostKeyVerifier
     ) {
         this.hostKeyVerifier = hostKeyVerifier;
         this.info = info;
@@ -258,6 +258,26 @@ public class TauonSSHClient {
         return sftp;
     }
     
+    public synchronized SFTPClient newSftpClient() throws RemoteOperationException, SessionClosedException {
+        if (closed.get()) {
+            throw new SessionClosedException();
+        }
+        
+        if(!isConnected()){
+            throw new RemoteOperationException.NotConnected();
+        }
+        
+        try {
+            SFTPClient sftp = sshConnectedHop.sshj.newSFTPClient();
+            sftp.getSFTPEngine().setTimeoutMs(sshConnectedHop.sshj.getTimeout());
+            sftp.getSFTPEngine().getSubsystem().setAutoExpand(true);
+            return sftp;
+        } catch (IOException e) {
+            throw new RemoteOperationException.RealIOException(e);
+        }
+        
+    }
+    
     public synchronized Session openSession() throws RemoteOperationException, SessionClosedException {
         if (closed.get()) {
             throw new SessionClosedException();
@@ -271,6 +291,7 @@ public class TauonSSHClient {
             
             Session session = sshConnectedHop.sshj.startSession();
             
+            // TODO Look if XMING for windows works out-of-the-box, it's not bad to require it
             if(info.isXForwardingEnabled()) {
                 
                 Random r = new Random();
@@ -289,7 +310,7 @@ public class TauonSSHClient {
             return session;
             
         } catch (ConnectionException e) {
-            throw new RemoteOperationException.NotConnected(e);
+            throw new RemoteOperationException.NotConnected(e); // TODO throw timeout
         }catch (TransportException e) {
             LOG.error("Exception while starting session.", e);
             throw new RemoteOperationException.RealIOException(e);
@@ -382,12 +403,15 @@ public class TauonSSHClient {
                 ///////
                 
                 DefaultConfig defaultConfig = new DefaultConfig();
-                if (SettingsService.getSettings().isConnectionKeepAlive()) {
+                if (SettingsConfigManager.getSettings().isConnectionKeepAlive()) {
                     System.out.println("enabled KeepAliveProvider");
                     defaultConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
                 }
                 this.sshj = new SSHClient(defaultConfig);
                 this.sshj.getConnection().setTimeoutMs(10000); // TODO parametrize
+                if (SettingsConfigManager.getSettings().isConnectionKeepAlive()) {
+                    this.sshj.getConnection().getKeepAlive().setKeepAliveInterval(5); // TODO parametrize
+                }
                 
                 if(info.isXForwardingEnabled()){
                     
@@ -406,8 +430,8 @@ public class TauonSSHClient {
                     
                 }
                 
-                this.sshj.setConnectTimeout(SettingsService.getSettings().getConnectionTimeout() * 1000);
-                this.sshj.setTimeout(SettingsService.getSettings().getConnectionTimeout() * 1000);
+                this.sshj.setConnectTimeout(SettingsConfigManager.getSettings().getConnectionTimeout() * 1000);
+                this.sshj.setTimeout(SettingsConfigManager.getSettings().getConnectionTimeout() * 1000);
                 if (info.getJumpHosts().isEmpty() || index >= info.getJumpHosts().size()) {
                     this.setupProxyAndSocketFactory();
                     this.sshj.addHostKeyVerifier(hostKeyVerifier);
@@ -420,7 +444,7 @@ public class TauonSSHClient {
                         LOG.debug("adding host key verifier");
                         this.sshj.addHostKeyVerifier(hostKeyVerifier);
                         LOG.debug("Host key verifier added");
-                        if (info.getJumpType() == SessionInfo.JumpType.TcpForwarding) {
+                        if (info.getJumpType() == SiteInfo.JumpType.TcpForwarding) {
                             LOG.debug("tcp forwarding...");
                             this.connectViaTcpForwarding();
                         } else {
@@ -494,7 +518,7 @@ public class TauonSSHClient {
                                 this.authPublicKey(index, userPassCache.user);
                                 if(rememberUser.get()){
                                     info.setUser(userPassCache.user);
-                                    SessionService.getInstance().setPasswordsFrom(info);
+                                    SitesConfigManager.getInstance().setPasswordsFrom(info);
                                 }
                                 return; // All right
                             } catch (OperationCancelledException e) {

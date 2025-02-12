@@ -3,7 +3,7 @@ package tauon.app.ui.containers.session.pages.terminal.snippets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
-import tauon.app.services.SnippetManager;
+import tauon.app.services.SnippetsConfigManager;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 
@@ -98,9 +98,9 @@ public class SnippetPanel extends JPanel {
                             "Please enter name and command");
                     return;
                 }
-                SnippetManager.getInstance().getSnippetItems().add(new SnippetItem(
+                SnippetsConfigManager.getInstance().getSnippetItems().add(new SnippetItem(
                         txtName.getText(), txtCommand.getText()));
-                SnippetManager.getInstance().saveSnippets();
+                SnippetsConfigManager.getInstance().saveSnippets();
             }
             closeSnippetCallback.accept(null);
         });
@@ -135,7 +135,7 @@ public class SnippetPanel extends JPanel {
                 }
                 snippetItem.setCommand(txtCommand.getText());
                 snippetItem.setName(txtName.getText());
-                SnippetManager.getInstance().saveSnippets();
+                SnippetsConfigManager.getInstance().saveSnippets();
             }
             closeSnippetCallback.accept(null);
         });
@@ -148,8 +148,8 @@ public class SnippetPanel extends JPanel {
             }
 
             SnippetItem snippetItem = listModel.get(index);
-            SnippetManager.getInstance().getSnippetItems().remove(snippetItem);
-            SnippetManager.getInstance().saveSnippets();
+            SnippetsConfigManager.getInstance().getSnippetItems().remove(snippetItem);
+            SnippetsConfigManager.getInstance().saveSnippets();
             loadSnippets();
             closeSnippetCallback.accept(null);
         });
@@ -205,7 +205,7 @@ public class SnippetPanel extends JPanel {
 
     public void loadSnippets() {
         this.snippetList.clear();
-        this.snippetList.addAll(SnippetManager.getInstance().getSnippetItems());
+        this.snippetList.addAll(SnippetsConfigManager.getInstance().getSnippetItems());
         System.out.println("Snippet size: " + snippetList.size());
         filter();
     }

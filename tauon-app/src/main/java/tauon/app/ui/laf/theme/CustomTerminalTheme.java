@@ -5,11 +5,10 @@ package tauon.app.ui.laf.theme;
 
 import com.jediterm.terminal.TerminalColor;
 import com.jediterm.terminal.TextStyle;
-import tauon.app.App;
 
 import com.jediterm.core.Color;
 
-import static tauon.app.services.SettingsService.getSettings;
+import static tauon.app.services.SettingsConfigManager.getSettings;
 
 /**
  * @author subhro

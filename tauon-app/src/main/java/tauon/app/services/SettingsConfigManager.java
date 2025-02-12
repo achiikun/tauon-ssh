@@ -7,15 +7,15 @@ import org.jetbrains.annotations.NotNull;
 import tauon.app.settings.Settings;
 import tauon.app.util.misc.Constants;
 
-public class SettingsService {
+public class SettingsConfigManager {
     
-    private static SettingsService INSTANCE = null;
+    private static SettingsConfigManager INSTANCE = null;
     
     private Settings settings;
     
-    public static SettingsService getInstance() {
+    public static SettingsConfigManager getInstance() {
         if(INSTANCE == null){
-            INSTANCE = new SettingsService();
+            INSTANCE = new SettingsConfigManager();
         }
         return INSTANCE;
     }
@@ -35,7 +35,7 @@ public class SettingsService {
         
     }
     
-    private SettingsService(){
+    private SettingsConfigManager(){
     
     }
     
@@ -76,7 +76,7 @@ public class SettingsService {
 //        }
 //        settings = new Settings();
 //    }
-    
+
 //    public static synchronized Settings loadSettings2() {
 //        File file = new File(CONFIG_DIR, CONFIG_DB_FILE);
 //        ObjectMapper objectMapper = new ObjectMapper();

@@ -5,17 +5,17 @@ package tauon.app.ui.containers.session.pages.info.sysinfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextArea;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
-import tauon.app.ui.containers.session.pages.logviewer.LogContent;
 import tauon.app.util.misc.ScriptLoader;
 
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author subhro
@@ -38,16 +38,24 @@ public class SysInfoPanel extends Subpage {
         JScrollPane scrollPane = new SkinnedScrollPane(textArea);
         this.add(scrollPane);
 
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        IStopper.Handle stopFlag = new IStopper.Default();
 //        holder.disableUi(stopFlag);
-        holder.submitSSHOperationStoppable(instance -> {
+        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
 //            try {
-                StringBuilder output = new StringBuilder();
-                int ret = instance.exec(ScriptLoader.loadShellScript("/scripts/linux-sysinfo.sh"), stopFlag, output);
+            
+            SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                    .withCommand(ScriptLoader.loadShellScript("/scripts/linux-sysinfo.sh"))
+                    .withStdoutString()
+                    .withStopper(stopFlag);
+            
+            instance.exec(sshCommandRunner);
+            
+            int ret = sshCommandRunner.getResult();
+            
                 if (ret == 0) {
                     try {
                         SwingUtilities.invokeAndWait(() -> {
-                            textArea.setText(output.toString());
+                            textArea.setText(sshCommandRunner.getStdoutString());
                             textArea.setCaretPosition(0);
                         });
                     } catch (InvocationTargetException e) {

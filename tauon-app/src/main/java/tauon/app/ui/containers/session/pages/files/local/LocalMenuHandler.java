@@ -1,10 +1,9 @@
 package tauon.app.ui.containers.session.pages.files.local;
 
-import tauon.app.exceptions.LocalOperationException;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
-import tauon.app.services.BookmarkManager;
+import tauon.app.services.BookmarkConfigManager;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.util.misc.PathUtils;
@@ -18,8 +17,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -240,7 +237,7 @@ public class LocalMenuHandler {
     private void delete(FileInfo[] selectedFiles, String baseFolder) {
         fileBrowser.getHolder().submitLocalOperation(() -> {
             for (FileInfo f : selectedFiles) {
-                new LocalFileSystem().delete(f);
+                LocalFileSystem.getInstance().delete(f);
             }
             fileBrowserView.render(baseFolder);
         });
@@ -337,7 +334,7 @@ public class LocalMenuHandler {
         
         mBookmark.addActionListener(e -> {
             String path = popupMenu.getName();
-            BookmarkManager.getInstance().addEntry(null, path);
+            BookmarkConfigManager.getInstance().addEntry(null, path);
         });
         return popupMenu;
     }

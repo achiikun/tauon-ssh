@@ -6,19 +6,20 @@ package tauon.app.ui.containers.session.pages.info.portview;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.AlreadyFailedException;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.components.page.subpage.Subpage;
-import tauon.app.util.ssh.SudoUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -183,50 +184,67 @@ public class PortViewer extends Subpage {
     }
 
     private void getListingSockets() {
-        String cmd = LSOF_COMMAND;
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        IStopper.Handle stopFlag = new IStopper.Default();
 //        holder.disableUi(stopFlag);
 
         boolean elevated = this.getUseSuperUser();
 //        if (cmd != null) {
-            holder.submitSSHOperationStoppable(instance -> {
+            holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
 //                try {
-                    StringBuilder output = new StringBuilder();
-                    if (elevated) {
-                        try {
-                            if (SudoUtils.runSudoWithOutput(cmd, stopFlag, instance, output, new StringBuilder()) == 0) {
-                                java.util.List<SocketEntry> list = this
-                                        .parseSocketList(output.toString());
-                                SwingUtilities.invokeAndWait(() -> setSocketData(list));
-                                return;
-                            }
-                        } catch (Exception ex) {
-                            // TODO LOG.error();
-                            ex.printStackTrace();
-                            if (!holder.isSessionClosed()) {
-                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
-                            }
-                            throw new AlreadyFailedException();
-                        }
-                    } else {
-                        System.out.println("Command was: " + cmd);
-                        try {
-                            if (instance.exec(cmd, stopFlag, output) == 0) {
-                                System.out.println("Command was: " + cmd + " " + output);
-                                java.util.List<SocketEntry> list = this.parseSocketList(output.toString());
-                                SwingUtilities.invokeAndWait(() -> setSocketData(list));
-                                return;
-                            }
-                            System.out.println("Error: " + output);
-                        } catch (Exception ex) {
-                            // TODO LOG.error();
-                            ex.printStackTrace();
-                            if (!holder.isSessionClosed()) {
-                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
-                            }
-                            throw new AlreadyFailedException();
-                        }
+                
+                SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                        .withCommand(LSOF_COMMAND)
+                        .withStdoutString()
+                        .withStopper(stopFlag)
+                        .withSudo(elevated ? guiHandle : null);
+                
+                instance.exec(sshCommandRunner);
+                
+                if(sshCommandRunner.getResult() == 0){
+                    java.util.List<SocketEntry> list = this.parseSocketList(sshCommandRunner.getStdoutString());
+                    try {
+                        SwingUtilities.invokeAndWait(() -> setSocketData(list));
+                    }catch (InvocationTargetException e){
+                        e.printStackTrace();
+                        throw new AlreadyFailedException();
                     }
+                }
+                
+//                    if (elevated) {
+//                        try {
+//                            if (SudoUtils.runSudoWithOutput(cmd, stopFlag, instance, output, new StringBuilder()) == 0) {
+//                                java.util.List<SocketEntry> list = this
+//                                        .parseSocketList(output.toString());
+//                                SwingUtilities.invokeAndWait(() -> setSocketData(list));
+//                                return;
+//                            }
+//                        } catch (Exception ex) {
+//                            // TODO LOG.error();
+//                            ex.printStackTrace();
+//                            if (!holder.isSessionClosed()) {
+//                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
+//                            }
+//                            throw new AlreadyFailedException();
+//                        }
+//                    } else {
+//                        System.out.println("Command was: " + cmd);
+//                        try {
+//                            if (instance.exec(cmd, stopFlag, output) == 0) {
+//                                System.out.println("Command was: " + cmd + " " + output);
+//                                java.util.List<SocketEntry> list = this.parseSocketList(output.toString());
+//                                SwingUtilities.invokeAndWait(() -> setSocketData(list));
+//                                return;
+//                            }
+//                            System.out.println("Error: " + output);
+//                        } catch (Exception ex) {
+//                            // TODO LOG.error();
+//                            ex.printStackTrace();
+//                            if (!holder.isSessionClosed()) {
+//                                JOptionPane.showMessageDialog(null, getBundle().getString("general.message.operation_failed"));
+//                            }
+//                            throw new AlreadyFailedException();
+//                        }
+//                    }
 //                } catch (Exception e) {
 //                    e.printStackTrace();
 //                } finally {

@@ -24,7 +24,7 @@ public class ProgressGlasspane extends JPanel implements FileTransferProgress {
             .derive(1.0f);
     private final Box b12 = Box.createVerticalBox();
     private Consumer<Boolean> stopCallback;
-
+    
     public ProgressGlasspane() {
         BoxLayout layout = new BoxLayout(this, BoxLayout.PAGE_AXIS);
         setLayout(layout);
@@ -65,19 +65,19 @@ public class ProgressGlasspane extends JPanel implements FileTransferProgress {
         });
         setFocusTraversalKeysEnabled(false);
     }
-
+    
     public void clear() {
         prg.setValue(0);
     }
-
+    
     public int getSource() {
         return dragSource;
     }
-
+    
     public void setSource(int source) {
         this.dragSource = source;
     }
-
+    
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -95,7 +95,7 @@ public class ProgressGlasspane extends JPanel implements FileTransferProgress {
         g2.setColor(getBackground());
         g.fillRoundRect(x - 10, y - 10, w + 20, h + 20, 5, 5);
     }
-
+    
     /**
      * @param stopCallback the stopCallback to set
      */
@@ -113,23 +113,29 @@ public class ProgressGlasspane extends JPanel implements FileTransferProgress {
     
     @Override
     public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount, FileTransfer fileTransfer) {
-        if (totalBytes == 0) {
-            this.prg.setValue(0);
-        } else {
-            this.prg.setValue((int) ((processedBytes * 100) / totalBytes));
-        }
+        SwingUtilities.invokeLater(() -> {
+            if (totalBytes == 0) {
+                this.prg.setValue(0);
+            } else {
+                this.prg.setValue((int) ((processedBytes * 100) / totalBytes));
+            }
+        });
     }
     
     @Override
     public void error(String cause, FileTransfer fileTransfer) {
-        setVisible(false);
+        SwingUtilities.invokeLater(() -> {
+            setVisible(false);
+        });
     }
     
     @Override
     public void done(FileTransfer fileTransfer) {
-        setVisible(false);
-        fileTransfer.getSession().revalidate();
-        fileTransfer.getSession().repaint();
+        SwingUtilities.invokeLater(() -> {
+            setVisible(false);
+            fileTransfer.getSession().revalidate();
+            fileTransfer.getSession().repaint();
+        });
     }
     
 }

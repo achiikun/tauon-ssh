@@ -2,7 +2,7 @@ package tauon.app.ui.containers.session.pages.files.local;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.services.SettingsService;
+import tauon.app.services.SettingsConfigManager;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.LocalFileSystem;
@@ -11,8 +11,6 @@ import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.view.addressbar.AddressBar;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
-import tauon.app.ui.containers.session.pages.tools.keys.KeyPage;
-import tauon.app.util.misc.PathUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -51,7 +49,7 @@ public class LocalFileBrowserView extends AbstractFileBrowserView {
         System.out.println("Path: " + path);
         fileBrowser.getHolder().executor.submit(() -> {
             try {
-                this.fs = new LocalFileSystem();
+                this.fs = LocalFileSystem.getInstance();
                 //Validate if local path exists, if not set the home path
                 if (this.path == null || Files.notExists(Paths.get(this.path)) || !Files.isDirectory(Paths.get(this.path))) {
                     System.err.println("The file path doesn't exists " + this.path);
@@ -87,7 +85,7 @@ public class LocalFileBrowserView extends AbstractFileBrowserView {
                 System.out.println("clicked");
             }
         });
-        if (SettingsService.getSettings().isShowPathBar()) {
+        if (SettingsConfigManager.getSettings().isShowPathBar()) {
             addressBar.switchToPathBar();
         } else {
             addressBar.switchToText();
@@ -189,6 +187,6 @@ public class LocalFileBrowserView extends AbstractFileBrowserView {
     }
 
     public FileSystem getFileSystem() {
-        return new LocalFileSystem();
+        return LocalFileSystem.getInstance();
     }
 }

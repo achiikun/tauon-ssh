@@ -10,8 +10,10 @@ import tauon.app.App;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
-import tauon.app.services.SettingsService;
-import tauon.app.ssh.TauonRemoteSessionInstance;
+import tauon.app.services.SettingsConfigManager;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
+import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ui.components.closabletabs.TabHandle;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
@@ -34,7 +36,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 
@@ -115,8 +116,8 @@ public class LogContent extends JPanel {
         textArea.setEditable(false);
         textArea.setBackground(App.skin.getSelectedTabColor());
         textArea.setWrapStyleWord(true);
-        textArea.setFont(textArea.getFont().deriveFont((float) SettingsService.getSettings().getLogViewerFont()));
-        this.textArea.setLineWrap(SettingsService.getSettings().isLogViewerUseWordWrap());
+        textArea.setFont(textArea.getFont().deriveFont((float) SettingsConfigManager.getSettings().getLogViewerFont()));
+        this.textArea.setLineWrap(SettingsConfigManager.getSettings().isLogViewerUseWordWrap());
         
         gutter = new TextGutter(textArea);
         JScrollPane scrollPane = new SkinnedScrollPane(textArea);
@@ -127,14 +128,14 @@ public class LogContent extends JPanel {
         
         chkLineWrap.addActionListener(e -> {
             this.textArea.setLineWrap(chkLineWrap.isSelected());
-            SettingsService.getInstance().setAndSave(settings ->
+            SettingsConfigManager.getInstance().setAndSave(settings ->
                     settings.setLogViewerUseWordWrap(chkLineWrap.isSelected())
             );
         });
         
-        chkLineWrap.setSelected(SettingsService.getSettings().isLogViewerUseWordWrap());
+        chkLineWrap.setSelected(SettingsConfigManager.getSettings().isLogViewerUseWordWrap());
         
-        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(SettingsService.getSettings().getLogViewerFont(), 5, 255, 1);
+        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(SettingsConfigManager.getSettings().getLogViewerFont(), 5, 255, 1);
         JSpinner spFontSize = new JSpinner(spinnerNumberModel);
         spFontSize.setMaximumSize(spFontSize.getPreferredSize());
         spFontSize.addChangeListener(e -> {
@@ -143,7 +144,7 @@ public class LogContent extends JPanel {
             gutter.setFont(textArea.getFont());
             gutter.revalidate();
             gutter.repaint();
-            SettingsService.getInstance().setAndSave(settings ->
+            SettingsConfigManager.getInstance().setAndSave(settings ->
                     settings.setLogViewerFont(fontSize)
             );
         });
@@ -201,8 +202,8 @@ public class LogContent extends JPanel {
         logSearchPanel = new PagedLogSearchPanel(new SearchListener() {
             @Override
             public void search(String text) {
-                AtomicBoolean stopFlag = new AtomicBoolean(false);
-                holder.submitSSHOperationStoppable(instance -> {
+                IStopper.Handle stopFlag = new IStopper.Default();
+                holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
                     try (RandomAccessFile searchIndex = LogContent.this.search(instance, text, stopFlag)) {
                         long len = searchIndex.length();
                         SwingUtilities.invokeAndWait(() -> logSearchPanel.setResults(searchIndex, len));
@@ -262,8 +263,8 @@ public class LogContent extends JPanel {
     }
     
     private void initPages() {
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.submitSSHOperationStoppable(instance -> {
+        IStopper.Handle stopFlag = new IStopper.Default();
+        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
             try {
                 if ((indexFile(instance, true, stopFlag)) || (indexFile(instance, false, stopFlag))) {
                     this.totalLines = this.raf.length() / 16;
@@ -312,7 +313,7 @@ public class LogContent extends JPanel {
 //        });
     }
     
-    private String getPageText(TauonRemoteSessionInstance instance, long page, AtomicBoolean stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException {
+    private String getPageText(SSHConnectionHandler instance, long page, IStopper stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
         long lineStart = page * LINE_PER_PAGE;
         long lineEnd = lineStart + LINE_PER_PAGE - 1;
         
@@ -361,32 +362,49 @@ public class LogContent extends JPanel {
         System.out.println("Command: " + command);
         StringBuilder output = new StringBuilder();
         
-        int ret;
-        if ((ret = instance.exec(command.toString(), stopFlag, output)) == 0) {
+        SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                .withCommand(command.toString())
+                .withStdoutAppendable(output)
+                .withStopper(stopFlag);
+        
+        instance.exec(sshCommandRunner);
+        
+        int ret = sshCommandRunner.getResult();
+        if (ret == 0) {
             return output.toString();
         } else {
             throw new RemoteOperationException.ErrorReturnCode(command.toString(), ret);
         }
     }
     
-    private boolean indexFile(TauonRemoteSessionInstance instance, boolean xz, AtomicBoolean stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException {
+    private boolean indexFile(SSHConnectionHandler instance, boolean xz, IStopper.Handle stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException, InterruptedException {
         File tempFile = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
         System.out.println("Temp file: " + tempFile);
         try (OutputStream outputStream = new FileOutputStream(tempFile)) {
             String command = "LANG=C awk '{len=length($0); print len; }' \"" + remoteFile + "\" | " + (xz ? "xz" : "gzip") + " |cat";
-            if (instance.execBin(command, stopFlag, outputStream, null) == 0) {
-                
-                try (
-                        InputStream inputStream = new FileInputStream(tempFile);
-                        InputStream gzIn = xz ? new XZInputStream(inputStream) : new GZIPInputStream(inputStream)
-                ) {
-                    this.indexFile = createIndexFile(gzIn);
-                    this.raf = new RandomAccessFile(this.indexFile, "r");
-                    return true;
-                }
+            
+            SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                    .withCommand(command)
+                    .withStdoutStream(outputStream)
+                    .withStopper(stopFlag);
+            
+            instance.exec(sshCommandRunner);
+            
+            if(sshCommandRunner.getResult() != 0){
+                return false;
             }
+            
         }
-        return false;
+        
+        try (
+                InputStream inputStream = new FileInputStream(tempFile);
+                InputStream gzIn = xz ? new XZInputStream(inputStream) : new GZIPInputStream(inputStream)
+        ) {
+            this.indexFile = createIndexFile(gzIn);
+            this.raf = new RandomAccessFile(this.indexFile, "r");
+            return true;
+        }
+        
     }
     
     private static File createIndexFile(InputStream inputStream) throws IOException {
@@ -448,8 +466,8 @@ public class LogContent extends JPanel {
     }
     
     public void loadPage(int line) {
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
-        holder.submitSSHOperationStoppable(instance -> {
+        IStopper.Handle stopFlag = new IStopper.Default();
+        holder.submitSSHOperationStoppable2((guiHandle, instance) -> {
             try{
                 String pageText = getPageText(instance, this.currentPage, stopFlag);
                 SwingUtilities.invokeAndWait(() -> {
@@ -498,7 +516,7 @@ public class LogContent extends JPanel {
         return true;
     }
     
-    private RandomAccessFile search(TauonRemoteSessionInstance instance, String text, AtomicBoolean stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException {
+    private RandomAccessFile search(SSHConnectionHandler instance, String text, IStopper stopFlag) throws IOException, RemoteOperationException, OperationCancelledException, SessionClosedException {
         byte[] longBytes = new byte[8];
         File tempFile = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
         StringBuilder command = new StringBuilder();
@@ -507,8 +525,16 @@ public class LogContent extends JPanel {
         try (OutputStream outputStream = new FileOutputStream(tempFile)) {
             
             File searchIndexes = Files.createTempFile("muon" + UUID.randomUUID(), "index").toFile();
-            int ret;
-            if ((ret = instance.execBin(command.toString(), stopFlag, outputStream, null)) == 0) {
+            
+            SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                    .withCommand(command.toString())
+                    .withStdoutStream(outputStream)
+                    .withStopper(stopFlag);
+            
+            instance.exec(sshCommandRunner);
+            
+            int ret = sshCommandRunner.getResult();
+            if (ret == 0) {
                 try (
                         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(tempFile)));
                         OutputStream out = new FileOutputStream(searchIndexes);
@@ -532,6 +558,8 @@ public class LogContent extends JPanel {
             } else {
                 throw new RemoteOperationException.ErrorReturnCode(command.toString(), ret);
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
     

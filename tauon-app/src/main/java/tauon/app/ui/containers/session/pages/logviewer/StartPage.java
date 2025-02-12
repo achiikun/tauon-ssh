@@ -4,7 +4,7 @@
 package tauon.app.ui.containers.session.pages.logviewer;
 
 import tauon.app.App;
-import tauon.app.services.PinnedLogsManager;
+import tauon.app.services.PinnedLogsConfigManager;
 import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.util.misc.CollectionHelper;
@@ -43,7 +43,7 @@ public class StartPage extends JPanel {
         this.sessionId = sessionId;
         List<String> pinnedLogs = CollectionHelper
                 .arrayList("/var/log/gpu-manager.log", "/var/log/syslog");
-        pinnedLogs.addAll(PinnedLogsManager.getInstance().getPinnedLogs(sessionId));
+        pinnedLogs.addAll(PinnedLogsConfigManager.getInstance().getPinnedLogs(sessionId));
 
         this.finalPinnedLogs = pinnedLogs;
 
@@ -62,8 +62,8 @@ public class StartPage extends JPanel {
             if (logPath != null) {
                 finalPinnedLogs.add(logPath);
                 pinnedLogsModel.addElement(logPath);
-                PinnedLogsManager.getInstance().getAll().put(sessionId, finalPinnedLogs);
-                PinnedLogsManager.getInstance().save();
+                PinnedLogsConfigManager.getInstance().getAll().put(sessionId, finalPinnedLogs);
+                PinnedLogsConfigManager.getInstance().save();
             }
         });
         btnDelLog.addActionListener(e -> {
@@ -139,8 +139,8 @@ public class StartPage extends JPanel {
     public void pinLog(String logPath) {
         pinnedLogsModel.addElement(logPath);
         finalPinnedLogs.add(logPath);
-        PinnedLogsManager.getInstance().getAll().put(sessionId, finalPinnedLogs);
-        PinnedLogsManager.getInstance().save();
+        PinnedLogsConfigManager.getInstance().getAll().put(sessionId, finalPinnedLogs);
+        PinnedLogsConfigManager.getInstance().save();
     }
 
     static class PinnedLogsRenderer extends JLabel

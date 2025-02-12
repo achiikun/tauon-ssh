@@ -26,7 +26,7 @@ public class LocalFileOperations {
         if (text == null || text.length() < 1) {
             return false;
         }
-        LocalFileSystem fs = new LocalFileSystem();
+        LocalFileSystem fs = LocalFileSystem.getInstance();
         try {
             fs.createFile(PathUtils.combine(folder, text, File.separator));
             return true;
@@ -44,7 +44,7 @@ public class LocalFileOperations {
         if (text == null || text.length() < 1) {
             return false;
         }
-        FileSystem fs = new LocalFileSystem();
+        FileSystem fs = LocalFileSystem.getInstance();
         try {
             fs.mkdir(PathUtils.combine(folder, text, fs.getSeparator()));
             return true;

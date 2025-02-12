@@ -3,6 +3,8 @@ package tauon.app.ui.containers.session.pages.files.ssh;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.ssh.IStopper;
+import tauon.app.ssh.SSHCommandRunner;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
@@ -327,7 +329,7 @@ public class PropertiesDialog extends JDialog {
     }
 
     private void calculateDirSize() {
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        IStopper.Handle stopFlag = new IStopper.Default();
         JDialog dlg = new JDialog(this);
         dlg.setModal(true);
         JLabel lbl = new JLabel("Calculating...");
@@ -337,7 +339,7 @@ public class PropertiesDialog extends JDialog {
             @Override
             public void windowClosing(WindowEvent e) {
                 lbl.setText("Cancelling...");
-                stopFlag.set(true);
+                stopFlag.stop();
             }
         });
         dlg.pack();
@@ -360,7 +362,7 @@ public class PropertiesDialog extends JDialog {
     }
 
     private void calculateFreeSpace() {
-        AtomicBoolean stopFlag = new AtomicBoolean(false);
+        IStopper.Handle stopFlag = new IStopper.Default();
         JDialog dlg = new JDialog(this);
         dlg.setModal(true);
         JLabel lbl = new JLabel("Calculating...");
@@ -370,7 +372,7 @@ public class PropertiesDialog extends JDialog {
             @Override
             public void windowClosing(WindowEvent e) {
                 lbl.setText("Cancelling...");
-                stopFlag.set(true);
+                stopFlag.stop();
             }
         });
         dlg.pack();
@@ -391,23 +393,27 @@ public class PropertiesDialog extends JDialog {
         }
     }
 
-    public void calcSize(FileInfo[] files, BiConsumer<Long, Boolean> biConsumer,
-                         AtomicBoolean stopFlag) {
+    public void calcSize(FileInfo[] files, BiConsumer<Long, Boolean> biConsumer, IStopper.Handle stopFlag) {
         StringBuilder command = new StringBuilder();
-        command.append(
-                "export POSIXLY_CORRECT=1; export BLOCKSIZE=512; du -s ");
+        command.append("export POSIXLY_CORRECT=1; export BLOCKSIZE=512; du -s ");
         for (FileInfo fileInfo : files) {
-            command.append("\"" + fileInfo.getPath() + "\" ");
+            command.append("\"").append(fileInfo.getPath()).append("\" ");
         }
         System.out.println("Command to execute: " + command);
-        fileBrowser.getHolder().submitSSHOperationStoppable(instance -> {
+        fileBrowser.getHolder().submitSSHOperationStoppable2((guiHandle, instance) -> {
             try {
                 long total = 0;
-                StringBuilder output = new StringBuilder();
-                boolean ret = instance.exec(
-                        command.toString(), stopFlag, output,
-                        new StringBuilder()) == 0;
-                if (stopFlag.get()) {
+                
+                SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                        .withCommand(command.toString())
+                        .withStdoutString()
+                        .withStopper(stopFlag);
+                
+                instance.exec(sshCommandRunner);
+                
+                boolean ret = sshCommandRunner.getResult() == 0;
+                
+                if (stopFlag.isStopped()) {
                     biConsumer.accept(0L, false);
                     return;
                 }
@@ -417,7 +423,7 @@ public class PropertiesDialog extends JDialog {
                                 "Some errors encountered during the operation");
                     }
                 }
-                for (String line : output.toString().split("\n")) {
+                for (String line : sshCommandRunner.getStdoutString().split("\n")) {
                     Matcher matcher = duPattern.matcher(line.trim());
                     if (matcher.find()) {
                         total += Long.parseLong(matcher.group(1).trim()) * 512;
@@ -432,21 +438,26 @@ public class PropertiesDialog extends JDialog {
         }, stopFlag);
     }
 
-    public void calcFreeSpace(FileInfo[] files,
-                              BiConsumer<String, Boolean> biConsumer, AtomicBoolean stopFlag) {
+    public void calcFreeSpace(FileInfo[] files, BiConsumer<String, Boolean> biConsumer, IStopper.Handle stopFlag) {
         StringBuilder command = new StringBuilder();
         command.append(
                 "export POSIXLY_CORRECT=1; export BLOCKSIZE=1024; df -P -k \""
                         + files[0].getPath() + "\"");
         System.out.println("Command to execute: " + command);
-        fileBrowser.getHolder().submitSSHOperationStoppable(instance -> {
+        fileBrowser.getHolder().submitSSHOperationStoppable2((guiHandle, instance) -> {
             try {
-                StringBuilder output = new StringBuilder();
-                boolean ret = instance.exec(
-                        command.toString(), stopFlag, output,
-                        new StringBuilder()) == 0;
-                System.out.println(output);
-                if (stopFlag.get()) {
+                
+                SSHCommandRunner sshCommandRunner = new SSHCommandRunner()
+                        .withCommand(command.toString())
+                        .withStdoutString()
+                        .withStopper(stopFlag);
+                
+                instance.exec(sshCommandRunner);
+                
+                boolean ret = sshCommandRunner.getResult() == 0;
+                
+                System.out.println(sshCommandRunner.getStdoutString());
+                if (stopFlag.isStopped()) {
                     System.out.println("stop flag");
                     biConsumer.accept(null, false);
                     return;
@@ -458,7 +469,7 @@ public class PropertiesDialog extends JDialog {
                     }
 
                 }
-                String[] lines = output.toString().split("\n");
+                String[] lines = sshCommandRunner.getStdoutString().split("\n");
                 if (lines.length >= 2) {
                     Matcher matcher = dfPattern.matcher(lines[1]);
                     if (matcher.find()) {
@@ -506,7 +517,7 @@ public class PropertiesDialog extends JDialog {
         fileBrowser.getHolder().executor.submit(() -> {
             try {
                 for (FileInfo path : paths) {
-                    fileBrowser.getSSHFileSystem().chmod(perm, path.getPath());
+                    fileBrowser.getSshFileSystem().chmod(perm, path.getPath());
                     System.out.println("Permissions changed");
                 }
                 modified.set(true);

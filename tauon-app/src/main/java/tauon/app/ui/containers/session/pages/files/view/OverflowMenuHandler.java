@@ -1,7 +1,7 @@
 package tauon.app.ui.containers.session.pages.files.view;
 
-import tauon.app.services.BookmarkManager;
-import tauon.app.services.SettingsService;
+import tauon.app.services.BookmarkConfigManager;
+import tauon.app.services.SettingsConfigManager;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.local.LocalFileBrowserView;
@@ -33,7 +33,7 @@ public class OverflowMenuHandler {
         ksHideShow = KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK);
 
         mShowHiddenFiles = new JCheckBoxMenuItem(getBundle().getString("app.files.action.show_hidden_files"));
-        mShowHiddenFiles.setSelected(SettingsService.getSettings().isShowHiddenFilesByDefault());
+        mShowHiddenFiles.setSelected(SettingsConfigManager.getSettings().isShowHiddenFilesByDefault());
 
         aHideShow = new AbstractAction() {
             @Override
@@ -61,7 +61,7 @@ public class OverflowMenuHandler {
     public void loadFavourites() {
         this.favouriteLocations.removeAll();
         String id = fileBrowserView instanceof LocalFileBrowserView ? null : fileBrowser.getInfo().getId();
-        for (String path : BookmarkManager.getInstance().getBookmarks(id)) {
+        for (String path : BookmarkConfigManager.getInstance().getBookmarks(id)) {
             JMenuItem item = new JMenuItem(PathUtils.getFileName(path));
             item.setName(path);
             this.favouriteLocations.add(item);

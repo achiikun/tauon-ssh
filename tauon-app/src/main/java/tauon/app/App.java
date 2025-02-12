@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.InitializationException;
 import tauon.app.services.ConfigFilesService;
-import tauon.app.services.SettingsService;
+import tauon.app.services.SettingsConfigManager;
 import tauon.app.ui.containers.main.AppWindow;
 import tauon.app.ui.laf.AppSkin;
 import tauon.app.ui.laf.AppSkinDark;
@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static tauon.app.services.LanguageService.getBundle;
-import static tauon.app.services.SettingsService.getSettings;
+import static tauon.app.services.SettingsConfigManager.getSettings;
 
 /**
  * Hello world!
@@ -41,7 +41,7 @@ public class App {
 
     static {
         System.setProperty("java.net.useSystemProxies", "true");
-        System.setProperty("log4j.debug", "true");
+//        System.setProperty("log4j.debug", "true");
     }
     
     private App(){
@@ -63,7 +63,7 @@ public class App {
         Security.setProperty("crypto.policy", "unlimited");
         
         ConfigFilesService.getInstance().initialize();
-        SettingsService.getInstance().initialize();
+        SettingsConfigManager.getInstance().initialize();
         getBundle();
         
         if (getSettings().isManualScaling()) {
@@ -73,7 +73,7 @@ public class App {
         
         if (getSettings().getEditors().isEmpty()) {
             LOG.info("Searching for known editors...");
-            SettingsService.getInstance().setAndSave(
+            SettingsConfigManager.getInstance().setAndSave(
                     settings -> settings.setEditors(PlatformUtils.getKnownEditors())
             );
             LOG.info("Searching for known editors...done");
