@@ -125,14 +125,18 @@ public class SSHCommandRunner {
             String prompt = UUID.randomUUID().toString();
             byte[] bytePrompt = prompt.getBytes(StandardCharsets.US_ASCII);
             
-            String fullCommand;
+            StringBuilder fullCommandStringBuilder = new StringBuilder();
             
             session.setAutoExpand(true);
             
             if(envVars != null){
                 for(Map.Entry<String, String> e: envVars.entrySet()){
-                    session.setEnvVar(e.getKey(), e.getValue());
+                    // TODO This doesn't work, know why
+//                    session.setEnvVar(e.getKey(), e.getValue());
+                    
+                    fullCommandStringBuilder.append(e.getKey()).append("=").append(e.getValue()).append(";");
                 }
+                
             }
             
             // https://github.com/hierynomus/sshj/issues/285
@@ -142,11 +146,12 @@ public class SSHCommandRunner {
                 // Sudo NOT needs to allocate a pty, this action provokes the stderr to be mixed with stdout,
                 // By setting -S option, the password sending works fine
 //                session.allocatePTY("vt100", 80, 24, 0, 0, Collections.emptyMap());
-                fullCommand = "sudo -S" + (envVars != null ? " -E" : "") + " -p '" + prompt + "' " + command;
+                fullCommandStringBuilder.append("sudo -S").append(envVars != null ? " -E" : "").append(" -p '").append(prompt).append("' ").append(command);
             }else{
-                fullCommand = command;
+                fullCommandStringBuilder.append(command);
             }
             
+            String fullCommand = fullCommandStringBuilder.toString();
             try (final Session.Command cmd = session.exec(fullCommand)) {
                 LOG.debug("Command and Session started: {}", fullCommand);
                 
@@ -324,8 +329,8 @@ public class SSHCommandRunner {
                 throw new RemoteOperationException.RealIOException(e);
             }
             
-        } catch (IOException e) {
-            throw new RemoteOperationException.RealIOException(e);
+//        } catch (IOException e) {
+//            throw new RemoteOperationException.RealIOException(e);
         } finally {
             closeFutures(stdoutFuture, stderrFuture);
         }
