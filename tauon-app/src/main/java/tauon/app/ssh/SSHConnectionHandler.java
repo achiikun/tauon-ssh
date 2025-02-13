@@ -86,7 +86,7 @@ public class SSHConnectionHandler {
         
         this.executorService = Executors.newCachedThreadPool(namedThreadFactory);
         
-        this.mainSsh = new TauonSSHClient(info, guiHandle, passwordFinder, executorService, true, hostKeyVerifier);
+        this.mainSsh = new TauonSSHClient(info, guiHandleDelegate, passwordFinder, executorService, true, hostKeyVerifier);
         
     }
     
