@@ -22,7 +22,7 @@ public class Settings {
     };
     
     private boolean usingMasterPassword = false;
-    private Constants.TransferMode fileTransferMode = Constants.TransferMode.NORMAL;
+//    private Constants.TransferMode fileTransferMode = Constants.TransferMode.NORMAL;
     private Constants.ConflictAction conflictAction = Constants.ConflictAction.AUTORENAME;
     private boolean confirmBeforeDelete = true;
     private boolean startMaximized = true;
@@ -586,13 +586,15 @@ public class Settings {
         this.backgroundTransferQueueSize = backgroundTransferQueueSize;
     }
 
-    public Constants.TransferMode getFileTransferMode() {
-        return fileTransferMode;
-    }
-
-    public void setFileTransferMode(Constants.TransferMode fileTransferMode) {
-        this.fileTransferMode = fileTransferMode;
-    }
+//    @Deprecated
+//    public Constants.TransferMode getFileTransferMode() {
+//        return fileTransferMode;
+//    }
+//
+//    @Deprecated
+//    public void setFileTransferMode(Constants.TransferMode fileTransferMode) {
+//        this.fileTransferMode = fileTransferMode;
+//    }
 
     public Constants.ConflictAction getConflictAction() {
         return conflictAction;
@@ -669,16 +671,16 @@ public class Settings {
     
     
 
-    @JsonSetter("fileTransferMode")
-    public void setOldFileTransferMode(String s) {
-        if (s == null) {
-            fileTransferMode = Constants.TransferMode.NORMAL;
-        } else if (s.equalsIgnoreCase("prompt")) {
-            fileTransferMode = Constants.TransferMode.NORMAL;
-        } else {
-            fileTransferMode = Constants.TransferMode.valueOf(s);
-        }
-    }
+//    @JsonSetter("fileTransferMode")
+//    public void setOldFileTransferMode(String s) {
+//        if (s == null) {
+//            fileTransferMode = Constants.TransferMode.NORMAL;
+//        } else if (s.equalsIgnoreCase("prompt")) {
+//            fileTransferMode = Constants.TransferMode.NORMAL;
+//        } else {
+//            fileTransferMode = Constants.TransferMode.valueOf(s);
+//        }
+//    }
 
     @JsonSetter("conflictAction")
     public void setOldConflictAction(String s) {

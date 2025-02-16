@@ -10,10 +10,13 @@ import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.services.ConfigFilesService;
 import tauon.app.services.SettingsConfigManager;
 import tauon.app.settings.SiteInfo;
+import tauon.app.ssh.filesystem.transfer.FileTransferLocalToRemote;
+import tauon.app.ssh.filesystem.transfer.FileTransferRemoteToLocal;
 import tauon.app.ui.components.glasspanes.AppInputBlocker;
 import tauon.app.ui.components.glasspanes.InputBlocker;
 import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.containers.session.SessionContentPanel;
+import tauon.app.ssh.filesystem.transfer.FileTransfer;
 import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
@@ -36,6 +39,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.Timer;
 
@@ -64,12 +70,14 @@ public class AppWindow extends JFrame {
 //    private JLabel lblUpdate, lblUpdateText;
     
     private final InputBlocker inputBlocker;
-    private final FileTransferManager fileTransferManager;
+//    private final FileTransferManager fileTransferManager;
     
     public final GraphicalHostKeyVerifier hostKeyVerifier;
 
     private boolean desiredPanelVisible = true; // Variável para controlar o estado de visibilidade
     private boolean panelVisible = true; // Variável para controlar o estado de visibilidade
+    
+    private ThreadPoolExecutor backgroundTransferPool;
     
     /**
      *
@@ -127,17 +135,102 @@ public class AppWindow extends JFrame {
         this.add(this.bottomPanel, BorderLayout.SOUTH);
 
         this.uploadPanel = new BackgroundTransferPanel(count ->
-                SwingUtilities.invokeLater(() ->
-                        lblUploadCount.setText(count + "")));
+                lblUploadCount.setText(count.getActiveItemsCount() + "")
+        );
 
         this.downloadPanel = new BackgroundTransferPanel(count ->
-                SwingUtilities.invokeLater(() ->
-                        lblDownloadCount.setText(count + "")));
+                lblDownloadCount.setText(count.getActiveItemsCount() + "")
+        );
         
-        this.fileTransferManager = new FileTransferManager(this, uploadPanel, downloadPanel);
-        
+//        this.fileTransferManager = new FileTransferManager(this, uploadPanel, downloadPanel);
+    
     }
-
+    
+    public synchronized ThreadPoolExecutor getBackgroundTransferPool() {
+        if (this.backgroundTransferPool == null) {
+            this.backgroundTransferPool = new ThreadPoolExecutor(
+                    SettingsConfigManager.getSettings().getBackgroundTransferQueueSize(),
+                    SettingsConfigManager.getSettings().getBackgroundTransferQueueSize(), 0, TimeUnit.NANOSECONDS,
+                    new LinkedBlockingQueue<>());
+        } else {
+            if (this.backgroundTransferPool.getMaximumPoolSize() != SettingsConfigManager.getSettings()
+                    .getBackgroundTransferQueueSize()) {
+                this.backgroundTransferPool
+                        .setMaximumPoolSize(SettingsConfigManager.getSettings().getBackgroundTransferQueueSize());
+            }
+        }
+        return this.backgroundTransferPool;
+    }
+    
+    public void startFileTransfer(FileTransfer fileTransfer) {
+        
+        FileTransferProgress t;
+        
+        if(fileTransfer instanceof FileTransferLocalToRemote){
+            t = uploadPanel.addNewBackgroundTransfer(fileTransfer);
+        }else if(fileTransfer instanceof FileTransferRemoteToLocal){
+            t = downloadPanel.addNewBackgroundTransfer(fileTransfer);
+        }else{
+            t = null;
+        }
+        
+        if(t == null)
+            fileTransfer.setProgressListener(t);
+        
+        getBackgroundTransferPool().submit(fileTransfer);
+        
+//        FileTransferProgress uiFileTransfer;
+//
+//        if (background) {
+//            if (fileTransfer.isUpload()) {
+//                uiFileTransfer = uploadPanel.addNewBackgroundTransfer(fileTransfer);
+//            } else if (fileTransfer.isDownload()) {
+//                uiFileTransfer = downloadPanel.addNewBackgroundTransfer(fileTransfer);
+//            } else {
+//                // TODO To another server
+//                uiFileTransfer = download.addNewBackgroundTransfer(fileTransfer);
+//            }
+//        } else {
+//
+//            uiFileTransfer = fileTransfer.getSession().startFileTransferModal(onUserStop -> {
+//                fileTransfer.close();
+//            });
+//
+//        }
+//
+//        fileTransfer.getSession().getFileBrowser().getBackgroundTransferPool().submit(
+//                () -> fileTransfer.run(
+//                        new FileTransferProgress.Compose(
+//                                uiFileTransfer,
+//                                new FileTransferProgress.Adapter() {
+//
+//                                    @Override
+//                                    public void error(String cause, Exception e, FileTransfer fileTransfer) {
+//                                        if (!fileTransfer.getSession().isSessionClosed()) {
+//                                            JOptionPane.showMessageDialog(appWindow, getBundle().getString("general.message.operation_failed"));
+//                                        }
+//                                    }
+//
+//                                    @Override
+//                                    public void done(FileTransfer fileTransfer) {
+//                                        // This code is unfocusing the terminal, prefer to update manually than unfocusing the terminal
+////                                        Component focus = fileTransfer.getSession().getAppWindow().getFocusOwner();
+////                                        fileTransfer.getSession().getFileBrowser().notifyTransferDone(fileTransfer);
+////                                        if(focus != null) {
+////                                            SwingUtilities.invokeLater(() -> {
+////                                                Component focus2 = fileTransfer.getSession().getAppWindow().getFocusOwner();
+////                                                fileTransfer.getSession().getTerminalHolder().focusTerminal();
+////                                            });
+////                                        }
+//                                    }
+//                                },
+//                                callback
+//                        )
+//                )
+//        );
+    
+    }
+    
     public void createFirstSessionPanel() {
         try {
             
@@ -286,8 +379,8 @@ public class AppWindow extends JFrame {
     public void removeSession(SessionContentPanel sessionContentPanel) {
         cardPanel.remove(sessionContentPanel);
         // TODO remove responsibility from here
-        uploadPanel.removePendingTransfers(sessionContentPanel);
-        downloadPanel.removePendingTransfers(sessionContentPanel);
+//        uploadPanel.removePendingTransfers(sessionContentPanel);
+//        downloadPanel.removePendingTransfers(sessionContentPanel);
         revalidate();
         repaint();
     }
@@ -477,9 +570,9 @@ public class AppWindow extends JFrame {
         return inputBlocker;
     }
     
-    public FileTransferManager getFileTransferManager() {
-        return fileTransferManager;
-    }
+//    public FileTransferManager getFileTransferManager() {
+//        return fileTransferManager;
+//    }
     
     public SessionContentPanel findSessionById(UUID uuid) {
         return sessionListPanel.findSessionById(uuid);

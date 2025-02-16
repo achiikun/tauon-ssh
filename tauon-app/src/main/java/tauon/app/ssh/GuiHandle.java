@@ -18,6 +18,8 @@ public interface GuiHandle extends SSHCommandRunner.SudoPasswordPrompter {
     
     String promptUser(HopEntry info, AtomicBoolean remember);
     
+    boolean promptConfirmation(String name, String instruction);
+    
     boolean promptReconnect(String name, String host);
     
     char[] promptPassword(HopEntry info, String user, AtomicBoolean remember, boolean isRetrying) throws OperationCancelledException;
@@ -47,6 +49,11 @@ public interface GuiHandle extends SSHCommandRunner.SudoPasswordPrompter {
         @Override
         public void showMessage(String name, String instruction) {
             delegator.showMessage(name, instruction);
+        }
+        
+        @Override
+        public boolean promptConfirmation(String name, String instruction) {
+            return delegator.promptConfirmation(name, instruction);
         }
         
         public void reportException(Throwable cause) {

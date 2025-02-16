@@ -214,12 +214,12 @@ public class SshFileBrowserView extends AbstractFileBrowserView {
 
             if (sourceFs instanceof LocalFileSystem) {
                 System.out.println("Dropped: " + transferData);
-                if (SettingsConfigManager.getSettings().getFileTransferMode() == Constants.TransferMode.BACKGROUND) {
+//                if (SettingsConfigManager.getSettings().getFileTransferMode() == Constants.TransferMode.BACKGROUND) {
                     this.fileBrowser.uploadInBackground(transferData.getFiles(), this.path);
                     return true;
-                }
-                FileSystem targetFs = this.fileBrowser.getSshFileSystem();
-                this.fileBrowser.newFileTransfer(sourceFs, targetFs, transferData.getFiles(), this.path);
+//                }
+//                FileSystem targetFs = this.fileBrowser.getSshFileSystem();
+//                this.fileBrowser.newFileTransfer(sourceFs, targetFs, transferData.getFiles(), this.path);
             } else if (sourceFs == this.fileBrowser.getSshFileSystem()) {
                 // TODO implement this
                 System.out.println("SshFs is of same instance: " + (sourceFs == this.fileBrowser.getSshFileSystem()));

@@ -10,21 +10,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.exceptions.*;
-import tauon.app.services.SitesConfigManager;
 import tauon.app.services.SettingsConfigManager;
+import tauon.app.services.SitesConfigManager;
 import tauon.app.settings.HopEntry;
 import tauon.app.settings.PortForwardingRule;
 import tauon.app.settings.SiteInfo;
 import tauon.app.ssh.*;
 import tauon.app.ssh.filesystem.FileInfo;
-import tauon.app.ui.components.glasspanes.ProgressGlasspane;
 import tauon.app.ui.components.glasspanes.SessionInputBlocker;
 import tauon.app.ui.components.misc.SkinnedTextField;
 import tauon.app.ui.components.misc.TabbedPage;
 import tauon.app.ui.components.page.Page;
 import tauon.app.ui.components.page.PageHolder;
 import tauon.app.ui.containers.main.AppWindow;
-import tauon.app.ui.containers.main.FileTransferProgress;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.info.InfoPage;
 import tauon.app.ui.containers.session.pages.logviewer.LogViewer;
@@ -43,7 +41,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -67,7 +67,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     private final JPanel contentPane;
     private final SessionInputBlocker sessionInputBlocker = new SessionInputBlocker();
     
-    private final ProgressGlasspane progressPanel = new ProgressGlasspane();
+//    private final ProgressGlasspane progressPanel = new ProgressGlasspane();
     
     private final TabbedPage[] pages;
     private final FileBrowser fileBrowser;
@@ -100,7 +100,7 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         contentTabs.setBorder(new MatteBorder(0, 0, 1, 0, App.skin.getDefaultBorderColor()));
         
         terminalHolder = new TerminalHolder(this, sshConnectionHandler);
-        fileBrowser = new FileBrowser(info, this, sshConnectionHandler);
+        fileBrowser = new FileBrowser(info, this);
         logViewer = new LogViewer(this);
         processViewer = new InfoPage(this);
         toolsPage = new ToolsPage(this);
@@ -148,6 +148,10 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     
     public AppWindow getAppWindow() {
         return appWindow;
+    }
+    
+    public SSHConnectionHandler getSshConnectionHandler() {
+        return sshConnectionHandler;
     }
     
     @Override
@@ -201,13 +205,13 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         return fileBrowser;
     }
     
-    public FileTransferProgress startFileTransferModal(Consumer<Boolean> stopCallback) {
-        rootPane.setGlassPane(this.progressPanel);
-        FileTransferProgress h = progressPanel.show(stopCallback);
-        this.revalidate();
-        this.repaint();
-        return h;
-    }
+//    public FileTransferProgress startFileTransferModal(Consumer<Boolean> stopCallback) {
+//        rootPane.setGlassPane(this.progressPanel);
+//        FileTransferProgress h = progressPanel.show(stopCallback);
+//        this.revalidate();
+//        this.repaint();
+//        return h;
+//    }
     
     public void downloadFileToLocal(FileInfo remoteFile, Consumer<File> callback) {
     
@@ -587,6 +591,12 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
     @Override
     public void showMessage(String name, String instruction) {
         JOptionPane.showMessageDialog(this, instruction, name, JOptionPane.PLAIN_MESSAGE);
+    }
+    
+    @Override
+    public boolean promptConfirmation(String name, String instruction) {
+        int r = JOptionPane.showConfirmDialog(this, instruction, name, JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return r == JOptionPane.OK_OPTION;
     }
     
     @Override

@@ -238,7 +238,7 @@ public class SSHConnectionHandler {
                 closeSessionSync();
         }
         
-        private void closeSessionSync() {
+        public void closeSessionSync() {
             Session session1 = this.session;
             this.session = null;
             if (session1 != null) {
@@ -248,6 +248,11 @@ public class SSHConnectionHandler {
                     throw new RuntimeException(e);
                 }
             }
+        }
+        
+        public boolean isSessionOpen() {
+            Session session1 = this.session;
+            return  session1 != null && session1.isOpen();
         }
     }
     

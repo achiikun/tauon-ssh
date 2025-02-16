@@ -300,9 +300,8 @@ public class SshFileSystem implements FileSystem {
     
     @Override
     public void mkdir(String path) throws RemoteOperationException, OperationCancelledException, InterruptedException, SessionClosedException {
-        getConnectedSftpClientReturn(path, sftp -> {
+        getConnectedSftpClient(path, sftp -> {
             sftp.mkdir(path);
-            return null;
         });
     }
     

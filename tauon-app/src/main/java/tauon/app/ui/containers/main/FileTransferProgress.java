@@ -1,17 +1,13 @@
 package tauon.app.ui.containers.main;
 
-import tauon.app.ui.containers.session.pages.files.transfer.FileTransfer;
-
-import javax.swing.*;
-
 public interface FileTransferProgress {
-    void init(long totalSize, long files, FileTransfer fileTransfer);
+    void init(long totalSize, long files);
 
-    void progress(long processedBytes, long totalBytes, long processedCount, long totalCount, FileTransfer fileTransfer);
+    void progress(long processedBytes, long totalBytes, long processedCount, long totalCount);
 
-    void error(String cause, FileTransfer fileTransfer);
+    void error(String cause, Exception e);
 
-    void done(FileTransfer fileTransfer);
+    void done();
     
     class Delegate implements FileTransferProgress {
         
@@ -22,24 +18,25 @@ public interface FileTransferProgress {
         }
         
         @Override
-        public void init(long totalSize, long files, FileTransfer fileTransfer) {
-            delagator.init(totalSize, files, fileTransfer);
+        public void init(long totalSize, long files) {
+            delagator.init(totalSize, files);
         }
         
         @Override
-        public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount, FileTransfer fileTransfer) {
-            delagator.progress(processedBytes, totalBytes, processedCount, totalCount, fileTransfer);
+        public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount) {
+            delagator.progress(processedBytes, totalBytes, processedCount, totalCount);
         }
         
         @Override
-        public void error(String cause, FileTransfer fileTransfer) {
-            delagator.error(cause, fileTransfer);
+        public void error(String cause, Exception e) {
+            delagator.error(cause, e);
         }
         
         @Override
-        public void done(FileTransfer fileTransfer) {
-            delagator.done(fileTransfer);
+        public void done() {
+            delagator.done();
         }
+        
     }
     
     class Compose implements FileTransferProgress {
@@ -51,31 +48,31 @@ public interface FileTransferProgress {
         }
         
         @Override
-        public void init(long totalSize, long files, FileTransfer fileTransfer) {
+        public void init(long totalSize, long files) {
             for(FileTransferProgress ftp: delegator)
                 if(ftp != null)
-                    ftp.init(totalSize, files, fileTransfer);
+                    ftp.init(totalSize, files);
         }
         
         @Override
-        public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount, FileTransfer fileTransfer) {
+        public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount) {
             for(FileTransferProgress ftp: delegator)
                 if(ftp != null)
-                    ftp.progress(processedBytes, totalBytes, processedCount, totalCount, fileTransfer);
+                    ftp.progress(processedBytes, totalBytes, processedCount, totalCount);
         }
         
         @Override
-        public void error(String cause, FileTransfer fileTransfer) {
+        public void error(String cause, Exception e) {
             for(FileTransferProgress ftp: delegator)
                 if(ftp != null)
-                    ftp.error(cause, fileTransfer);
+                    ftp.error(cause, e);
         }
         
         @Override
-        public void done(FileTransfer fileTransfer) {
+        public void done() {
             for(FileTransferProgress ftp: delegator)
                 if(ftp != null)
-                    ftp.done(fileTransfer);
+                    ftp.done();
         }
     }
     
@@ -83,19 +80,19 @@ public interface FileTransferProgress {
     public class Adapter implements FileTransferProgress {
         
         @Override
-        public void init(long totalSize, long files, FileTransfer fileTransfer) {
+        public void init(long totalSize, long files) {
         }
         
         @Override
-        public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount, FileTransfer fileTransfer) {
+        public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount) {
         }
         
         @Override
-        public void error(String cause, FileTransfer fileTransfer) {
+        public void error(String cause, Exception e) {
         }
         
         @Override
-        public void done(FileTransfer fileTransfer) {
+        public void done() {
         }
     }
 }

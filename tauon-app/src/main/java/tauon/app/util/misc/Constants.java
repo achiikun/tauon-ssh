@@ -51,7 +51,7 @@ public class Constants {
     }
     
     public static void updateStrings() {
-        TransferMode.update();
+//        TransferMode.update();
         ConflictAction.update();
         FileType.update();
     }
@@ -98,41 +98,41 @@ public class Constants {
         }
     }
 
-    public enum TransferMode {
-
-        @JsonEnumDefaultValue
-        NORMAL(0, "app.files.action.transfer_normally"),
-        BACKGROUND(1, "app.files.action.transfer_background");
-
-        private final int key;
-        private String value;
-
-        TransferMode(int pKey, String pValue) {
-            this.key = pKey;
-            this.value = pValue;
-        }
-        
-        private static void update() {
-            NORMAL.setValue(getBundle().getString("app.files.action.transfer_normally"));
-            BACKGROUND.setValue(getBundle().getString("app.files.action.transfer_background"));
-        }
-
-        public int getKey() {
-            return key;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String pValue) {
-            this.value = pValue;
-        }
-
-        @Override
-        public String toString() {
-            return value;
-        }
-    }
+//    public enum TransferMode {
+//
+//        @JsonEnumDefaultValue
+//        NORMAL(0, "app.files.action.transfer_normally"),
+//        BACKGROUND(1, "app.files.action.transfer_background");
+//
+//        private final int key;
+//        private String value;
+//
+//        TransferMode(int pKey, String pValue) {
+//            this.key = pKey;
+//            this.value = pValue;
+//        }
+//
+//        private static void update() {
+//            NORMAL.setValue(getBundle().getString("app.files.action.transfer_normally"));
+//            BACKGROUND.setValue(getBundle().getString("app.files.action.transfer_background"));
+//        }
+//
+//        public int getKey() {
+//            return key;
+//        }
+//
+//        public String getValue() {
+//            return value;
+//        }
+//
+//        public void setValue(String pValue) {
+//            this.value = pValue;
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return value;
+//        }
+//    }
 
 }

@@ -3,17 +3,14 @@ package tauon.app.ui.containers.main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
-import tauon.app.ui.components.glasspanes.AppInputBlocker;
+import tauon.app.ssh.filesystem.transfer.FileTransfer;
 import tauon.app.ui.components.misc.FontAwesomeContants;
-import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.ui.containers.session.pages.files.transfer.FileTransfer;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -22,15 +19,18 @@ public class BackgroundTransferPanel extends JPanel {
     private static final Logger LOG = LoggerFactory.getLogger(BackgroundTransferPanel.class);
     
     private final Box verticalBox;
-    private final AtomicInteger transferCount = new AtomicInteger(0);
-    private final Consumer<Integer> callback;
+    
+    private final AtomicInteger itemsCount = new AtomicInteger(0);
+    private final AtomicInteger activeItemsCount = new AtomicInteger(0);
+    
+    private final Consumer<BackgroundTransferPanel> onItemsCountChanged;
     
     /**
-     * @param activeUpdater callback for notifying number of active transfers
+     * @param onItemsCountChanged callback for notifying number of active transfers
      */
-    public BackgroundTransferPanel(Consumer<Integer> activeUpdater) {
+    public BackgroundTransferPanel(Consumer<BackgroundTransferPanel> onItemsCountChanged) {
         super(new BorderLayout());
-        this.callback = activeUpdater;
+        this.onItemsCountChanged = onItemsCountChanged;
         verticalBox = Box.createVerticalBox();
         JScrollPane jsp = new JScrollPane(verticalBox);
         jsp.setBorder(null);
@@ -39,6 +39,9 @@ public class BackgroundTransferPanel extends JPanel {
     }
     
     public FileTransferProgress addNewBackgroundTransfer(FileTransfer transfer) {
+        itemsCount.incrementAndGet();
+        onItemsCountChanged.accept(this);
+        
         TransferPanelItem item = new TransferPanelItem(transfer);
         item.setAlignmentX(Box.LEFT_ALIGNMENT);
         this.verticalBox.add(item);
@@ -47,28 +50,55 @@ public class BackgroundTransferPanel extends JPanel {
         return item;
     }
     
-    public void removePendingTransfers(SessionContentPanel sessionId) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            try {
-                SwingUtilities.invokeAndWait(() -> stopSession(sessionId));
-            } catch (InvocationTargetException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        } else {
-            stopSession(sessionId);
-        }
+//    public void removePendingTransfers(SessionContentPanel sessionId) {
+//        if (!SwingUtilities.isEventDispatchThread()) {
+//            try {
+//                SwingUtilities.invokeAndWait(() -> stopSession(sessionId));
+//            } catch (InvocationTargetException | InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        } else {
+//            stopSession(sessionId);
+//        }
+//    }
+//
+//    private void stopSession(SessionContentPanel sessionId) {
+//        for (int i = 0; i < this.verticalBox.getComponentCount(); i++) {
+//            Component c = this.verticalBox.getComponent(i);
+//            if (c instanceof TransferPanelItem) {
+//                TransferPanelItem tpi = (TransferPanelItem) c;
+//                if (tpi.fileTransfer.getSession() == sessionId) {
+//                    tpi.stop();
+//                }
+//            }
+//        }
+//    }
+    
+    private void incrementActive(){
+        activeItemsCount.incrementAndGet();
+        onItemsCountChanged.accept(this);
     }
     
-    private void stopSession(SessionContentPanel sessionId) {
-        for (int i = 0; i < this.verticalBox.getComponentCount(); i++) {
-            Component c = this.verticalBox.getComponent(i);
-            if (c instanceof TransferPanelItem) {
-                TransferPanelItem tpi = (TransferPanelItem) c;
-                if (tpi.fileTransfer.getSession() == sessionId) {
-                    tpi.stop();
-                }
-            }
-        }
+    private void decrementActive(){
+        activeItemsCount.decrementAndGet();
+        onItemsCountChanged.accept(this);
+    }
+    
+    public int getActiveItemsCount() {
+        return activeItemsCount.get();
+    }
+    
+    public int getItemsCount() {
+        return itemsCount.get();
+    }
+    
+    private void removeItem(TransferPanelItem transferPanelItem) {
+        itemsCount.decrementAndGet();
+        onItemsCountChanged.accept(this);
+        System.out.println("done transfer");
+        BackgroundTransferPanel.this.verticalBox.remove(transferPanelItem);
+        BackgroundTransferPanel.this.revalidate();
+        BackgroundTransferPanel.this.repaint();
     }
     
     class TransferPanelItem extends JPanel implements FileTransferProgress {
@@ -79,8 +109,6 @@ public class BackgroundTransferPanel extends JPanel {
         
         public TransferPanelItem(FileTransfer transfer) {
             super(new BorderLayout());
-            transferCount.incrementAndGet();
-            callback.accept(transferCount.get());
             this.fileTransfer = transfer;
 
             progressBar = new JProgressBar();
@@ -93,7 +121,9 @@ public class BackgroundTransferPanel extends JPanel {
             removeLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    stop();
+                    if(!fileTransfer.stop()){
+                        BackgroundTransferPanel.this.removeItem(TransferPanelItem.this);
+                    }
                 }
             });
             
@@ -109,41 +139,38 @@ public class BackgroundTransferPanel extends JPanel {
             setMaximumSize(new Dimension(getMaximumSize().width, getPreferredSize().height));
         }
         
-        public void stop() {
-            if(!fileTransfer.stop()){
-                done(fileTransfer);
-            }
-        }
-        
         @Override
-        public void init(long totalSize, long files, FileTransfer fileTransfer) {
-                progressLabel.setText(
-                        String.format("Copying %s to %s", fileTransfer.getSourceName(), fileTransfer.getTargetName()));
+        public void init(long totalSize, long files) {
+//                progressLabel.setText(
+//                        String.format("Copying %s to %s", fileTransfer.getSourceName(), fileTransfer.getTargetName()));
+            SwingUtilities.invokeLater(() -> {
+                incrementActive();
+                progressLabel.setText("Preparing copy...");
                 progressBar.setValue(0);
+            });
         }
         
         @Override
-        public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount,
-                             FileTransfer fileTransfer) {
-                    progressBar.setValue(totalBytes > 0 ? ((int) ((processedBytes * 100) / totalBytes)) : 0);
+        public void progress(long processedBytes, long totalBytes, long processedCount, long totalCount) {
+            SwingUtilities.invokeLater(() -> {
+                progressLabel.setText(String.format("Copying %d out of %d.", processedCount + 1, totalCount));
+                progressBar.setValue(totalBytes > 0 ? ((int) ((processedBytes * 100) / totalBytes)) : 0);
+            });
         }
         
         @Override
-        public void error(String cause, FileTransfer fileTransfer) {
-            transferCount.decrementAndGet();
-            callback.accept(transferCount.get());
-                    progressLabel.setText(String.format("Error while copying from %s to %s", fileTransfer.getSourceName(),
-                    fileTransfer.getTargetName()));
+        public void error(String cause, Exception e) {
+            SwingUtilities.invokeLater(() -> {
+                decrementActive();
+                progressLabel.setText(String.format("Error while copying: %s", e.getMessage()));
+            });
         }
         
         @Override
-        public void done(FileTransfer fileTransfer) {
-            transferCount.decrementAndGet();
-            callback.accept(transferCount.get());
-            System.out.println("done transfer");
-                BackgroundTransferPanel.this.verticalBox.remove(this);
-                BackgroundTransferPanel.this.revalidate();
-                BackgroundTransferPanel.this.repaint();
+        public void done() {
+            decrementActive();
+            BackgroundTransferPanel.this.removeItem(this);
         }
     }
+    
 }

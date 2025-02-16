@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +31,9 @@ public class SshTtyConnector implements DisposableTtyConnector {
     private SessionChannel shell;
     private Session session;
     private final AtomicBoolean isInitiated = new AtomicBoolean(false);
+    @Deprecated
     private final AtomicBoolean isCancelled = new AtomicBoolean(false);
+    @Deprecated
     private final AtomicBoolean stopFlag = new AtomicBoolean(false);
     private Dimension myPendingTermSize;
     private Dimension myPendingPixelSize;
@@ -46,43 +49,58 @@ public class SshTtyConnector implements DisposableTtyConnector {
     @Override
     public boolean init(Questioner q) {
         try {
+            boolean force = false;
+            int retry = 0;
             
-            // Let's use the same connection and open a session
-            this.session = sshConnectionHandler.getSession(false);
-            this.session.setAutoExpand(true);
-
-            this.session.allocatePTY(
-                    SettingsConfigManager.getSettings().getTerminalType(),
-                    SettingsConfigManager.getSettings().getTermWidth(),
-                    SettingsConfigManager.getSettings().getTermHeight(),
-                    0,
-                    0,
-                    Collections.emptyMap()
-            );
-            
-            try{
-                this.session.setEnvVar("LANG", "en_US.UTF-8");
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println("Cannot set environment variable Lang: " + e.getMessage());
+            while (!isInitialized() && retry <= 1) {
+                
+                try {
+                    
+                    // Let's use the same connection and open a session
+                    Session session = sshConnectionHandler.getSession(retry > 0);
+                    retry++;
+                    
+                    session.setAutoExpand(true);
+                    
+                    session.allocatePTY(
+                            SettingsConfigManager.getSettings().getTerminalType(),
+                            SettingsConfigManager.getSettings().getTermWidth(),
+                            SettingsConfigManager.getSettings().getTermHeight(),
+                            0,
+                            0,
+                            Collections.emptyMap()
+                    );
+                    
+                    try {
+                        session.setEnvVar("LANG", "en_US.UTF-8");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println("Cannot set environment variable Lang: " + e.getMessage());
+                    }
+                    
+                    
+                    this.shell = (SessionChannel) session.startShell();
+                    
+                    myInputStream = shell.getInputStream();
+                    myOutputStream = shell.getOutputStream();
+                    myInputStreamReader = new InputStreamReader(myInputStream, StandardCharsets.UTF_8);
+                    
+                    resizeImmediately();
+                    System.out.println("Initiated");
+                    
+                    if (initialCommand != null) {
+                        myOutputStream.write((initialCommand + "\n").getBytes(StandardCharsets.UTF_8));
+                        myOutputStream.flush();
+                    }
+                    
+                    isInitiated.set(true);
+                }catch (TransportException transportException){
+                    if(!(transportException.getCause() instanceof SocketException))
+                        throw transportException; // else retry it
+                }
+                
             }
 
-
-            this.shell = (SessionChannel) this.session.startShell();
-
-            myInputStream = shell.getInputStream();
-            myOutputStream = shell.getOutputStream();
-            myInputStreamReader = new InputStreamReader(myInputStream, StandardCharsets.UTF_8);
-
-            resizeImmediately();
-            System.out.println("Initiated");
-
-            if (initialCommand != null) {
-                myOutputStream.write((initialCommand + "\n").getBytes(StandardCharsets.UTF_8));
-                myOutputStream.flush();
-            }
-
-            isInitiated.set(true);
             return true;
         } catch (Exception e) {
             if(!(e instanceof OperationCancelledException))
@@ -98,7 +116,8 @@ public class SshTtyConnector implements DisposableTtyConnector {
         try {
             stopFlag.set(true);
             System.out.println("Terminal wrapper disconnecting");
-            this.session.close();
+            this.sshConnectionHandler.closeSessionSync();
+            this.shell = null;
         } catch (Exception e) {
         }
     }
@@ -107,10 +126,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
     public void resize(Dimension termSize, Dimension pixelSize) {
         myPendingTermSize = termSize;
         myPendingPixelSize = pixelSize;
-        if (session != null) {
-            resizeImmediately();
-        }
-
+        resizeImmediately();
     }
 
     @Override
@@ -131,7 +147,7 @@ public class SshTtyConnector implements DisposableTtyConnector {
 
     @Override
     public boolean isConnected() {
-        return session != null && session.isOpen() && isInitiated.get();
+        return sshConnectionHandler.isSessionOpen() && isInitiated.get();
     }
 
     @Override
@@ -160,10 +176,12 @@ public class SshTtyConnector implements DisposableTtyConnector {
         return shell != null && shell.isOpen();
     }
 
+    @Deprecated
     public boolean isBusy() {
         return session.isOpen();
     }
-
+    
+    @Deprecated
     public boolean isCancelled() {
         return isCancelled.get();
     }
@@ -182,9 +200,21 @@ public class SshTtyConnector implements DisposableTtyConnector {
     }
 
     private void resizeImmediately() {
-        if (myPendingTermSize != null && myPendingPixelSize != null) {
-            setPtySize(shell, myPendingTermSize.width, myPendingTermSize.height, myPendingPixelSize.width,
-                    myPendingPixelSize.height);
+        if (isRunning() && myPendingTermSize != null && myPendingPixelSize != null) {
+            int col = myPendingTermSize.width;
+            int row = myPendingTermSize.height;
+            int wp = myPendingPixelSize.width;
+            int hp = myPendingPixelSize.height;
+            
+            System.out.println("Exec pty resized:- col: " + col + " row: " + row + " wp: " + wp + " hp: " + hp);
+            
+            try {
+                shell.changeWindowDimensions(col, row, wp, hp);
+            } catch (TransportException e) {
+                // TODO handle exception
+                e.printStackTrace();
+            }
+            
             myPendingTermSize = null;
             myPendingPixelSize = null;
         }

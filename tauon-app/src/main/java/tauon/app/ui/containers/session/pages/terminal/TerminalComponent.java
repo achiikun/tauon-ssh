@@ -21,6 +21,8 @@ public class TerminalComponent extends JPanel {
     
     private final JPanel contentPane;
     private final JediTermWidget term;
+    private final SSHConnectionHandler.SessionHandle sessionHandle;
+    
     private DisposableTtyConnector tty;
     private String name;
     private final Box reconnectionBox;
@@ -31,6 +33,7 @@ public class TerminalComponent extends JPanel {
         setLayout(new BorderLayout());
         System.out.println("Current terminal font: " + SettingsConfigManager.getSettings().getTerminalFontName());
         this.name = name;
+        this.sessionHandle = sessionHandle;
         contentPane = new JPanel(new BorderLayout());
         JRootPane rootPane = new JRootPane();
         rootPane.setContentPane(contentPane);
@@ -63,6 +66,9 @@ public class TerminalComponent extends JPanel {
             contentPane.remove(reconnectionBox);
             contentPane.revalidate();
             contentPane.repaint();
+            
+            // Start a new SshTtyConnector using the same handle,
+            // so getSession() will try to give a new connected Session object
             tty = new SshTtyConnector(initialCommand, sessionHandle);
             term.setTtyConnector(tty);
             // Quick fix: terminal sets cursor invisible if disconnected, set it back to visible after reconnecting
@@ -74,7 +80,7 @@ public class TerminalComponent extends JPanel {
         reconnectionBox.setBorder(new EmptyBorder(10, 10, 10, 10));
         term.addListener((e) -> {
             System.out.println("Disconnected");
-            sessionHandle.dispose();
+            tty.stop();
             SwingUtilities.invokeLater(() -> {
                 contentPane.add(reconnectionBox, BorderLayout.NORTH);
                 contentPane.revalidate();
@@ -105,6 +111,8 @@ public class TerminalComponent extends JPanel {
     public boolean close() {
         System.out.println("Closing terminal..." + name);
         this.term.close();
+        // Dispose the session handle and don't use it again
+        this.sessionHandle.dispose();
         return true;
     }
 

@@ -19,4 +19,18 @@ public abstract class TauonOperationException extends Exception {
     
     public abstract String getUserMessage();
     
+    public static class NotImplemented extends TauonOperationException {
+        
+        private final String userMessage;
+        
+        public NotImplemented(String userMessage){
+            this.userMessage = userMessage;
+        }
+        
+        @Override
+        public String getUserMessage() {
+            return userMessage;
+        }
+    }
+    
 }

@@ -45,7 +45,7 @@ public class SettingsDialog extends JDialog {
     private final JButton btnCancel;
     private final JButton btnReset;
     private final DefaultComboBoxModel<Constants.ConflictAction> conflictOptions = new DefaultComboBoxModel<>(Constants.ConflictAction.values());
-    private final DefaultComboBoxModel<Constants.TransferMode> transferModes = new DefaultComboBoxModel<>(Constants.TransferMode.values());
+//    private final DefaultComboBoxModel<Constants.TransferMode> transferModes = new DefaultComboBoxModel<>(Constants.TransferMode.values());
     private final CardLayout cardLayout;
     private final JPanel cardPanel;
     private final JList<String> navList;
@@ -64,7 +64,7 @@ public class SettingsDialog extends JDialog {
     private JCheckBox chkLogWrap;
     private JSpinner spLogLinesPerPage, spLogFontSize, spConnectionTimeout;
     private JSpinner spSysLoadInterval;
-    private JComboBox<Constants.TransferMode> cmbTransferMode;
+//    private JComboBox<Constants.TransferMode> cmbTransferMode;
     private JComboBox<Constants.ConflictAction> cmbConflictAction;
     private Color defaultForegroundColor = new Color(211,211,211);
     private JTable editorTable;
@@ -232,7 +232,8 @@ public class SettingsDialog extends JDialog {
 
         chkPuttyLikeCopyPaste = new JCheckBox(getBundle().getString("app.settings.terminal.label.copy_like_putty"));
 
-        cmbTermType = new JComboBox<>(new String[]{"xterm-256color", "xterm", "vt100"});
+        // credit to devlinx9 to set ansi as an option
+        cmbTermType = new JComboBox<>(new String[]{"xterm-256color", "xterm", "vt100", "ansi"});
         cmbTermType.setEditable(true);
         d = new Dimension(Math.max(100, cmbTermType.getPreferredSize().width * 2),
                 cmbTermType.getPreferredSize().height);
@@ -450,15 +451,15 @@ public class SettingsDialog extends JDialog {
 
         spSysLoadInterval = new JSpinner(new SpinnerNumberModel(3, 1, Short.MAX_VALUE, 1));
 
-        cmbTransferMode = new JComboBox<>(transferModes);
+//        cmbTransferMode = new JComboBox<>(transferModes);
         cmbConflictAction = new JComboBox<>(conflictOptions);
 
-        Dimension d1 = new Dimension(Math.max(200, cmbTransferMode.getPreferredSize().width * 2),
-                cmbTransferMode.getPreferredSize().height);
-
-        cmbTransferMode.setMaximumSize(d1);
-        cmbTransferMode.setMinimumSize(d1);
-        cmbTransferMode.setPreferredSize(d1);
+        Dimension d1 = new Dimension(Math.max(200, cmbConflictAction.getPreferredSize().width * 2),
+                cmbConflictAction.getPreferredSize().height);
+//
+//        cmbTransferMode.setMaximumSize(d1);
+//        cmbTransferMode.setMinimumSize(d1);
+//        cmbTransferMode.setPreferredSize(d1);
 
         cmbConflictAction.setMaximumSize(d1);
         cmbConflictAction.setMinimumSize(d1);
@@ -536,8 +537,8 @@ public class SettingsDialog extends JDialog {
         vbox.add(createRow(lbl2, Box.createHorizontalGlue(), spLogFontSize));
         vbox.add(Box.createRigidArea(new Dimension(10, 10)));
         vbox.add(createRow(lbl3, Box.createHorizontalGlue(), spSysLoadInterval));
-        vbox.add(Box.createRigidArea(new Dimension(10, 10)));
-        vbox.add(createRow(new JLabel(getBundle().getString("app.settings.general.label.transfer_mode")), Box.createHorizontalGlue(), cmbTransferMode));
+//        vbox.add(Box.createRigidArea(new Dimension(10, 10)));
+//        vbox.add(createRow(new JLabel(getBundle().getString("app.settings.general.label.transfer_mode")), Box.createHorizontalGlue(), cmbTransferMode));
         vbox.add(Box.createRigidArea(new Dimension(10, 10)));
         vbox.add(createRow(new JLabel(getBundle().getString("app.settings.general.label.conflict_action")), Box.createHorizontalGlue(), cmbConflictAction));
         vbox.add(Box.createRigidArea(new Dimension(10, 10)));
@@ -620,8 +621,8 @@ public class SettingsDialog extends JDialog {
             settings.setUiScaling((double) spScaleValue.getValue());
     
             settings.setConflictAction((Constants.ConflictAction) cmbConflictAction.getSelectedItem());
-            settings.setFileTransferMode((Constants.TransferMode) cmbTransferMode.getSelectedItem());
-            
+//            settings.setFileTransferMode((Constants.TransferMode) cmbTransferMode.getSelectedItem());
+        
         });
         if(!saved){
             AlertDialogUtils.showError(this, getBundle().getString("app.settings.message.save_failed"));
@@ -709,25 +710,25 @@ public class SettingsDialog extends JDialog {
 
         spSysLoadInterval.setValue(settings.getSysloadRefreshInterval());
 
-        cmbTransferMode.addActionListener(e -> {
-            if (cmbTransferMode.getSelectedIndex() == 0) {
-                conflictOptions.removeAllElements();
-                for (Constants.ConflictAction conflictAction : Constants.ConflictAction.values()) {
-                    if (conflictAction.getKey() < 4) {
-                        conflictOptions.addElement(conflictAction);
-                    }
-                }
-            } else {
-                conflictOptions.removeAllElements();
-                for (Constants.ConflictAction conflictAction : Constants.ConflictAction.values()) {
-                    if (conflictAction.getKey() < 3) {
-                        conflictOptions.addElement(conflictAction);
-                    }
-                }
-            }
-        });
-
-        cmbTransferMode.setSelectedItem(settings.getFileTransferMode());
+//        cmbTransferMode.addActionListener(e -> {
+//            if (cmbTransferMode.getSelectedIndex() == 0) {
+//                conflictOptions.removeAllElements();
+//                for (Constants.ConflictAction conflictAction : Constants.ConflictAction.values()) {
+//                    if (conflictAction.getKey() < 4) {
+//                        conflictOptions.addElement(conflictAction);
+//                    }
+//                }
+//            } else {
+//                conflictOptions.removeAllElements();
+//                for (Constants.ConflictAction conflictAction : Constants.ConflictAction.values()) {
+//                    if (conflictAction.getKey() < 3) {
+//                        conflictOptions.addElement(conflictAction);
+//                    }
+//                }
+//            }
+//        });
+//
+//        cmbTransferMode.setSelectedItem(settings.getFileTransferMode());
         cmbConflictAction.setSelectedItem(settings.getConflictAction());
 
         this.editorModel.clear();
