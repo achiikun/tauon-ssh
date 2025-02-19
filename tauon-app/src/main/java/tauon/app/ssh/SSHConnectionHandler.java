@@ -100,6 +100,19 @@ public class SSHConnectionHandler {
         if(force || !mainSsh.isConnected()){
             checkNotClosed();
             
+            // Close all file systems
+            fileSystemsClosingLock.lock();
+            try {
+                for (TempSshFileSystem tempSshFileSystem: usingFileSystems){
+                    tempSshFileSystem.closeSync();
+                }
+                for (TempSshFileSystem tempSshFileSystem: availableFileSystems){
+                    tempSshFileSystem.closeSync();
+                }
+            }finally {
+                fileSystemsClosingLock.unlock();
+            }
+            
             while(!mainSsh.connect(force)){
                 // Ask user
                 
@@ -188,7 +201,7 @@ public class SSHConnectionHandler {
     }
     
     public TempSshFileSystem openTempSshFileSystem() throws SessionClosedException {
-        checkNotClosed();
+        checkNotClosed(); // TODO when the client is reconnected, disconnect all availableFileSystems
         
         fileSystemsClosingLock.lock();
         try {
