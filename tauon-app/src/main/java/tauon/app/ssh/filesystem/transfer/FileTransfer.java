@@ -130,7 +130,7 @@ public abstract class FileTransfer implements Runnable{
             }
         }
         
-        filesToTransfer = new ArrayList<>();
+        List<FileInfoHolder> filesToTransfer = new ArrayList<>();
         totalSize = 0;
         
         MkDirTree mkDirTree = new MkDirTree(targetFolder, null);
@@ -145,6 +145,8 @@ public abstract class FileTransfer implements Runnable{
             }
             
         }
+        
+        this.filesToTransfer = filesToTransfer;
         
     }
     
@@ -222,6 +224,10 @@ public abstract class FileTransfer implements Runnable{
     
     public boolean stop() {
         return false;
+    }
+    
+    public boolean isPrepared() {
+        return filesToTransfer != null;
     }
     
     private static class TargetHandler{

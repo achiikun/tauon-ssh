@@ -283,7 +283,9 @@ public class FileBrowser extends Page {
             transfer.prepareTransfer(instance.getSshFileSystem());
         });
         
-        getHolder().getAppWindow().startFileTransfer(transfer);
+        if(transfer.isPrepared()) {
+            getHolder().getAppWindow().startFileTransfer(transfer);
+        }
         
 //                .getFileTransferManager().startFileTransfer(
 //                transfer,
@@ -313,7 +315,9 @@ public class FileBrowser extends Page {
             transfer.prepareTransfer(instance.getSshFileSystem());
         });
         
-        getHolder().getAppWindow().startFileTransfer(transfer);
+        if(transfer.isPrepared()) {
+            getHolder().getAppWindow().startFileTransfer(transfer);
+        }
         
 //        FileSystem sourceFs = LocalFileSystem.getInstance();
 //        SSHConnectionHandler.TempSshFileSystem targetFs = sshConnectionHandler.openTempSshFileSystem();

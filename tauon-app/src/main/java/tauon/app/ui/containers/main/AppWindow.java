@@ -174,7 +174,7 @@ public class AppWindow extends JFrame {
             t = null;
         }
         
-        if(t == null)
+        if(t != null)
             fileTransfer.setProgressListener(t);
         
         getBackgroundTransferPool().submit(fileTransfer);
