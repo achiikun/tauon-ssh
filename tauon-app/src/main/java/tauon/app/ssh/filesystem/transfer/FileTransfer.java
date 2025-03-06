@@ -61,6 +61,16 @@ public abstract class FileTransfer implements Runnable{
             progressListener.progress(processedBytes, totalSize, processedFiles, filesToTransfer.size());
     }
     
+    /**
+     * TODO set this process cancellable
+     * @param sourceFs
+     * @param targetFs
+     * @throws OperationCancelledException
+     * @throws TauonOperationException
+     * @throws InterruptedException
+     * @throws SessionClosedException
+     * @throws AlreadyFailedException
+     */
     protected void prepareTransfer(FileSystem sourceFs, FileSystem targetFs) throws OperationCancelledException, TauonOperationException, InterruptedException, SessionClosedException, AlreadyFailedException {
         
         List<FileInfoDeduplicate> fileInfoDeduplicates = new ArrayList<>();
@@ -138,7 +148,7 @@ public abstract class FileTransfer implements Runnable{
         for(FileInfoDeduplicate file: fileInfoDeduplicates){
             // TODO ask user for dir links, please
             if (file.info.getType() == FileType.DIR || file.info.getType() == FileType.DIR_LINK) {
-                addAllFilesInFolder(sourceFs, file.info, file.proposedName, targetFolder, mkDirTree);
+                addAllFilesInFolder(sourceFs, file.info, file.proposedName, targetFolder, mkDirTree, filesToTransfer);
             } else {
                 filesToTransfer.add(new FileInfoHolder(file, mkDirTree));
                 totalSize += file.info.getSize();
@@ -150,13 +160,13 @@ public abstract class FileTransfer implements Runnable{
         
     }
     
-    private void addAllFilesInFolder(FileSystem sourceFs, FileInfo sourceFolder, String proposedName, String targetFolder, MkDirTree parent) throws OperationCancelledException, TauonOperationException, InterruptedException, SessionClosedException {
+    private void addAllFilesInFolder(FileSystem sourceFs, FileInfo sourceFolder, String proposedName, String targetFolder, MkDirTree parent, List<FileInfoHolder> filesToTransfer) throws OperationCancelledException, TauonOperationException, InterruptedException, SessionClosedException {
         String folderTarget = PathUtils.combineUnix(targetFolder, proposedName == null ? sourceFolder.getName() : proposedName);
         MkDirTree mkDirTree = new MkDirTree(folderTarget, parent);
         List<FileInfo> list = sourceFs.list(sourceFolder.getPath());
         for (FileInfo file : list) {
             if (file.getType() == FileType.DIR) {
-                addAllFilesInFolder(sourceFs, file, null, folderTarget, mkDirTree);
+                addAllFilesInFolder(sourceFs, file, null, folderTarget, mkDirTree, filesToTransfer);
             } else if (file.getType() == FileType.FILE) {
                 filesToTransfer.add(new FileInfoHolder(file, mkDirTree));
                 totalSize += file.getSize();

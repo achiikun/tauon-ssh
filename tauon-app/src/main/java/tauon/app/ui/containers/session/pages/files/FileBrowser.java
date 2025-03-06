@@ -1,32 +1,37 @@
 package tauon.app.ui.containers.session.pages.files;
 
+import com.intellij.util.ui.UIUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.exceptions.*;
+import tauon.app.exceptions.OperationCancelledException;
+import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.exceptions.SessionClosedException;
 import tauon.app.services.SettingsConfigManager;
 import tauon.app.settings.SiteInfo;
+import tauon.app.ssh.GuiHandle;
 import tauon.app.ssh.SSHConnectionHandler;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileSystem;
 import tauon.app.ssh.filesystem.SshFileSystem;
+import tauon.app.ssh.filesystem.transfer.FileTransfer;
 import tauon.app.ssh.filesystem.transfer.FileTransferLocalToRemote;
 import tauon.app.ssh.filesystem.transfer.FileTransferRemoteToLocal;
 import tauon.app.ui.components.closabletabs.ClosableTabbedPanel;
+import tauon.app.ui.components.misc.FontAwesomeContants;
 import tauon.app.ui.components.misc.SkinnedSplitPane;
 import tauon.app.ui.components.page.Page;
-import tauon.app.ui.containers.main.FileTransferProgress;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.files.local.LocalFileBrowserView;
 import tauon.app.ui.containers.session.pages.files.ssh.SshFileBrowserView;
-import tauon.app.ssh.filesystem.transfer.FileTransfer;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
-import tauon.app.ui.components.misc.FontAwesomeContants;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static tauon.app.services.LanguageService.getBundle;
@@ -269,23 +274,57 @@ public class FileBrowser extends Page {
         }
     }
     
+    /**
+     * It only implements the methods that {@link FileTransfer} uses.
+     */
+    private static class ToGuiThread extends GuiHandle.Delegate {
+        
+        public ToGuiThread(GuiHandle delegator) {
+            super(delegator);
+        }
+        
+        @Override
+        public void showMessage(String name, String instruction) {
+            try {
+                UIUtil.invokeAndWaitIfNeeded(() -> {
+                    super.showMessage(name, instruction);
+                });
+            } catch (InterruptedException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        @Override
+        public boolean promptConfirmation(String name, String instruction) {
+            try {
+                return UIUtil.invokeAndWaitIfNeeded(() -> {
+                    return super.promptConfirmation(name, instruction);
+                });
+            } catch (InterruptedException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+    }
+    
     public void downloadInBackground(FileInfo[] remoteFiles, String targetLocalDirectory) throws OperationCancelledException, RemoteOperationException, InterruptedException, SessionClosedException {
 //        FileSystem targetFs = LocalFileSystem.getInstance();
 //        TauonRemoteSessionInstance instance = getHolder().createBackgroundSession();
 //        SSHConnectionHandler.TempSshFileSystem sourceFs = sshConnectionHandler.openTempSshFileSystem();
         
         FileTransferRemoteToLocal transfer = new FileTransferRemoteToLocal(
-                remoteFiles, targetLocalDirectory, getHolder(), sshConnectionHandler,
+                remoteFiles, targetLocalDirectory, new ToGuiThread(getHolder()), sshConnectionHandler,
                 SettingsConfigManager.getSettings().getConflictAction()
         );
         
-        holder.runSSHOperation((guiHandle, instance) -> {
+        holder.submitSSHOperation((guiHandle, instance) -> {
             transfer.prepareTransfer(instance.getSshFileSystem());
+            
+            if(transfer.isPrepared()) {
+                getHolder().getAppWindow().startFileTransfer(transfer);
+            }
+            
         });
-        
-        if(transfer.isPrepared()) {
-            getHolder().getAppWindow().startFileTransfer(transfer);
-        }
         
 //                .getFileTransferManager().startFileTransfer(
 //                transfer,

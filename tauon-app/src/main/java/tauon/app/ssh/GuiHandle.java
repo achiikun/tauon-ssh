@@ -1,8 +1,8 @@
 package tauon.app.ssh;
 
 import tauon.app.exceptions.OperationCancelledException;
-import tauon.app.settings.PortForwardingRule;
 import tauon.app.settings.HopEntry;
+import tauon.app.settings.PortForwardingRule;
 import tauon.app.settings.SiteInfo;
 
 import java.io.IOException;
@@ -44,6 +44,11 @@ public interface GuiHandle extends SSHCommandRunner.SudoPasswordPrompter {
         
         public Delegate(GuiHandle delegator) {
             this.delegator = delegator;
+        }
+        
+        @Override
+        public BlockHandle blockUi(Object client, UserCancelHandle userCancelHandle) {
+            return delegator.blockUi(client, userCancelHandle);
         }
         
         @Override

@@ -34,6 +34,7 @@ public class FileTransferRemoteToLocal extends FileTransfer{
     
     public void run(){
         SSHConnectionHandler.TempSshFileSystem sourceFs = null;
+        LocalFileSystem targetFs = LocalFileSystem.getInstance();
         try {
              sourceFs = sshConnectionHandler.openTempSshFileSystem();
              
@@ -41,12 +42,12 @@ public class FileTransferRemoteToLocal extends FileTransfer{
                 progressListener.init(totalSize, filesToTransfer.size());
              
             InputTransferChannel inc = sourceFs.inputTransferChannel();
-            OutputTransferChannel outc = LocalFileSystem.getInstance().outputTransferChannel();
+            OutputTransferChannel outc = targetFs.outputTransferChannel();
             
             for (FileInfoHolder file : filesToTransfer) {
                 System.out.println("Copying: " + file.info.getPath());
                 
-                copyFile(file, sourceFs, inc, outc);
+                copyFile(file, targetFs, inc, outc);
                 System.out.println("Copying done: " + file.info.getPath());
                 incrementProcessedFiles();
             }
