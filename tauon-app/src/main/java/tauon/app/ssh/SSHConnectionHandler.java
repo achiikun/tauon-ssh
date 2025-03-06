@@ -322,10 +322,12 @@ public class SSHConnectionHandler {
         
         private void closeSync() {
             SFTPClient c = current.getAndSet(null);
-            try {
-                c.close();
-            } catch (IOException e) {
-                LOG.error("Closing a TempSshFileSystem threw an exception.", e);
+            if(c != null) {
+                try {
+                    c.close();
+                } catch (IOException e) {
+                    LOG.error("Closing a TempSshFileSystem threw an exception.", e);
+                }
             }
         }
         
