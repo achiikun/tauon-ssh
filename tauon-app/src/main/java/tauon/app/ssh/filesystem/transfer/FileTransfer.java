@@ -175,7 +175,7 @@ public abstract class FileTransfer implements Runnable{
     }
     
     private void processMkDirs(MkDirTree mkDirTree, FileSystem targetFs) throws OperationCancelledException, TauonOperationException, InterruptedException, SessionClosedException {
-        if(mkDirTree.parent != null && !mkDirTree.processed)
+        if(mkDirTree.parent != null && !mkDirTree.parent.processed)
             processMkDirs(mkDirTree.parent, targetFs);
         targetFs.mkdir(mkDirTree.path);
         mkDirTree.processed = true;
