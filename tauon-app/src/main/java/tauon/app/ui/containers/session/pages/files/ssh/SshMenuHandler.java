@@ -5,21 +5,21 @@ import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.exceptions.LocalOperationException;
 import tauon.app.exceptions.RemoteOperationException;
+import tauon.app.services.BookmarkConfigManager;
 import tauon.app.services.SettingsConfigManager;
 import tauon.app.ssh.IStopper;
 import tauon.app.ssh.SSHCommandRunner;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
+import tauon.app.ui.components.editortablemodel.EditorEntry;
 import tauon.app.ui.components.misc.NativeFileChooser;
-import tauon.app.services.BookmarkConfigManager;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.remote2remote.LocalPipeTransfer;
 import tauon.app.ui.containers.session.pages.files.remote2remote.Remote2RemoteTransferDialog;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
-import tauon.app.ui.components.editortablemodel.EditorEntry;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
 import tauon.app.util.misc.PathUtils;
 import tauon.app.util.misc.PlatformUtils;
@@ -256,7 +256,7 @@ public class SshMenuHandler {
         aPaste = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                handlePaste();
+                fileBrowser.getHolder().runLocalOperation(() -> handlePaste());
             }
         };
         mPaste = new JMenuItem(getBundle().getString("app.files.action.paste"));
@@ -344,18 +344,12 @@ public class SshMenuHandler {
 
         mDownload = new JMenuItem(getBundle().getString("app.files.action.download_files"));
         mDownload.addActionListener(e -> {
-            downloadFiles(folderView.getSelectedFiles(), fileBrowserView.getCurrentDirectory());
+            fileBrowser.getHolder().runLocalOperation(() -> downloadFiles(folderView.getSelectedFiles()));
         });
 
         mUpload = new JMenuItem(getBundle().getString("app.files.action.upload_here"));
         mUpload.addActionListener(e -> {
-            try {
-                uploadFiles();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (LocalOperationException ex) {
-                ex.printStackTrace();
-            }
+            fileBrowser.getHolder().runLocalOperation(this::uploadFiles);
         });
     }
 
@@ -684,7 +678,7 @@ public class SshMenuHandler {
 //        });
     }
 
-    private void handlePaste() {
+    private void handlePaste() throws LocalOperationException {
         if (Toolkit.getDefaultToolkit().getSystemClipboard().isDataFlavorAvailable(DndTransferHandler.DATA_FLAVOR_DATA_FILE)) {
             try {
                 DndTransferData transferData = (DndTransferData) Toolkit.getDefaultToolkit().getSystemClipboard()
@@ -692,8 +686,10 @@ public class SshMenuHandler {
                 if (transferData != null) {
                     fileBrowserView.handleDrop(transferData);
                 }
-            } catch (UnsupportedFlavorException | IOException e1) {
-                e1.printStackTrace();
+            } catch (UnsupportedFlavorException e1) {
+                throw new LocalOperationException.UnsupportedFlavorException(e1);
+            } catch (IOException e1) {
+                throw new LocalOperationException.RealIOException(e1);
             }
         } else {
             DataFlavor[] flavors = Toolkit.getDefaultToolkit().getSystemClipboard().getAvailableDataFlavors();
@@ -722,43 +718,14 @@ public class SshMenuHandler {
                 fileBrowserView.render(targetFolder);
             }
         });
-        
-//        fileBrowser.getHolder().executor.submit(() -> {
-//            fileBrowser.disableUi();
-//            try {
-//                if (fileOperations.copyTo(fileBrowserView.getSshClient(), files, targetFolder,
-//                        fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
-//                    fileBrowserView.render(targetFolder);
-//                } else {
-//                    fileBrowser.enableUi();
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
     }
 
     public void move(List<FileInfo> files, String targetFolder) {
-        
         fileBrowser.getHolder().submitSSHOperation((guiHandle, instance) -> {
             if (fileOperations.moveTo(guiHandle, instance, files, targetFolder, fileBrowserView.getFileSystem())) {
                 fileBrowserView.render(targetFolder);
             }
         });
-        
-//        fileBrowser.getHolder().executor.submit(() -> {
-//            fileBrowser.disableUi();
-//            try {
-//                if (fileOperations.moveTo(fileBrowserView.getSshClient(), files, targetFolder,
-//                        fileBrowserView.getFileSystem(), fileBrowser.getInfo().getPassword())) {
-//                    fileBrowserView.render(targetFolder);
-//                } else {
-//                    fileBrowser.enableUi();
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
     }
 
     private void addToFavourites() {
@@ -829,18 +796,6 @@ public class SshMenuHandler {
                 throw new RemoteOperationException.ErrorReturnCode(cmd, ret);
             }
         });
-        
-//        fileBrowser.getHolder().executor.submit(() -> {
-//            fileBrowser.disableUi();
-//            try {
-//                if (fileOperations.runScriptInBackground(fileBrowserView.getSshClient(),
-//                        "cd \"" + folder + "\"; nohup \"" + file + "\" &", new AtomicBoolean())) {
-//                }
-//                fileBrowser.enableUi();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
     }
 
     private void extractArchive(String archive, String folder, String currentFolder) {
@@ -853,21 +808,6 @@ public class SshMenuHandler {
             }
             fileBrowserView.render(currentFolder);
         }, stopFlag);
-        
-//        fileBrowser.getHolder().executor.submit(() -> {
-//            AtomicBoolean stopFlag = new AtomicBoolean(false);
-//            fileBrowser.disableUi(stopFlag);
-//            try {
-//                if (!archiveOperation.extractArchive(fileBrowserView.getSshClient(), archive, folder, stopFlag)) {
-//                    if (!fileBrowser.isSessionClosed()) {
-//                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
-//                    }
-//                }
-//                fileBrowserView.render(currentFolder);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
     }
 
     private void createArchive(List<String> files, String folder, String currentFolder) {
@@ -880,29 +820,24 @@ public class SshMenuHandler {
             }
             fileBrowserView.render(currentFolder);
         }, stopFlag);
-        
-        
-//        fileBrowser.getHolder().executor.submit(() -> {
-//            AtomicBoolean stopFlag = new AtomicBoolean(false);
-//            fileBrowser.disableUi(stopFlag);
-//            try {
-//                if (!archiveOperation.createArchive(fileBrowserView.getSshClient(), files, folder, stopFlag)) {
-//                    if (!fileBrowser.isSessionClosed()) {
-//                        JOptionPane.showMessageDialog(null, getBundle().getString("operation_failed"));
-//                    }
-//                }
-//                fileBrowserView.render(currentFolder);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
     }
 
-    private void downloadFiles(FileInfo[] files, String currentDirectory) {
-        throw new RuntimeException("Not implemented");
+    private void downloadFiles(FileInfo[] remoteFiles) throws LocalOperationException {
+        NativeFileChooser jfc = new NativeFileChooser();
+        jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        jfc.setMultiSelectionEnabled(false);
+        jfc.setIfLinuxThenSwing(true); // Yes, it is ugly but, the other one doesn't work well with opening directories
+        if (jfc.showOpenDialog(SwingUtilities.getWindowAncestor(fileBrowser)) == JFileChooser.APPROVE_OPTION) {
+            File targetLocalDirectory = jfc.getSelectedFile();
+            if (targetLocalDirectory != null && targetLocalDirectory.isDirectory()) {
+                fileBrowser.downloadInBackground(remoteFiles, targetLocalDirectory.getAbsolutePath());
+            }else{
+                throw new LocalOperationException.NotAFolder(targetLocalDirectory);
+            }
+        }
     }
 
-    private void uploadFiles() throws IOException, LocalOperationException {
+    private void uploadFiles() throws LocalOperationException {
         NativeFileChooser jfc = new NativeFileChooser();
         jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         jfc.setMultiSelectionEnabled(true);

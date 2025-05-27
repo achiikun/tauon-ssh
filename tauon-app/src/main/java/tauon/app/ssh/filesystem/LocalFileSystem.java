@@ -40,7 +40,7 @@ public class LocalFileSystem implements FileSystem {
     public FileInfo getInfo(String path) throws LocalOperationException {
         File f = new File(path);
         if (!f.exists()) {
-            throw new LocalOperationException(new FileNotFoundException(path));
+            throw new LocalOperationException.FileNotFound(path);
         }
         
         return getFileInfo(f);
@@ -55,7 +55,7 @@ public class LocalFileSystem implements FileSystem {
         try {
             attrs = Files.readAttributes(p, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
         } catch (IOException e) {
-            throw new LocalOperationException(e);
+            throw new LocalOperationException.RealIOException(e);
         }
         
         FileType type = Files.isSymbolicLink(p) ?
@@ -102,7 +102,7 @@ public class LocalFileSystem implements FileSystem {
             fout = new FileInputStream(file);
             fout.skip(offset);
         } catch (IOException e) {
-            throw new LocalOperationException(e);
+            throw new LocalOperationException.RealIOException(e);
         }
         return fout;
     }
@@ -111,7 +111,7 @@ public class LocalFileSystem implements FileSystem {
         try {
             return new FileOutputStream(file);
         } catch (FileNotFoundException e) {
-            throw new LocalOperationException(e);
+            throw new LocalOperationException.RealIOException(e);
         }
     }
 
@@ -203,7 +203,7 @@ public class LocalFileSystem implements FileSystem {
         try {
             Files.createFile(Paths.get(path));
         } catch (IOException e) {
-            throw new LocalOperationException(e);
+            throw new LocalOperationException.RealIOException(e);
         }
     }
 

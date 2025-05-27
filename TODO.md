@@ -23,18 +23,20 @@ List of scheduled features and bugs to be solved:
 * [ ] Let user upload private key files and store them securely
 * [ ] UI: Add countdown in the connecting dialog
 * [ ] Add VNC viewer (from tightvnc-java)
+* [ ] Support X11 on Mac, and Windows with cygwin (https://x.cygwin.com/docs/ug/cygwin-x-ug.pdf)
 * [ ] Toolbox
-    * [ ] Show executed commands
+  * [ ] Show executed commands
 * [ ] Diskspace
-    * [ ] Show files in analyzed volumes
-    * [ ] Copy paths
+  * [ ] Show files in analyzed volumes
+  * [ ] Copy paths
 * [ ] File Browser:
-    * [ ] Unify behavior for all file tasks (ask for sudo, ask for reconnect)
-    * [ ] Download is not implemented
-    * [ ] Refresh window after copying files
-    * [ ] Add a box to query what happens when copying a file that exists
-    * [ ] Move an item to a folder in the same window
-    * [ ] Create a remote folder picker
+  * [X] Download is not implemented
+  * [X] Unify behavior for all file tasks (ask for sudo, ask for reconnect)
+  * [ ] Refresh window after copying files
+  * [ ] Add a box to query what happens when copying a file that exists
+  * [ ] Move an item to a folder in the same window
+  * [ ] Create a remote folder picker
+  * [ ] Cancel file transfers
 * [ ] SSH Keys
   * [ ] Show server fingerprints
   
@@ -50,7 +52,7 @@ List of scheduled features and bugs to be solved:
 * [X] Bug: Open in explorer not supported on linux and mac. (Added opening files in explorer)
 * [X] Bug: Sometimes when shell is present, no cursor is blinking (After reconnecting, cursor disappears)
 * [X] Bug: Unicode characters in terminal (tree is not displaying properly)
-* [ ] Bug: Forwarded ports remain active after closing session
+* [X] Bug: Forwarded ports remain active after closing session
 * [X] Terminal
   * [X] Snippets aren't saved
 * [ ] File Browser:

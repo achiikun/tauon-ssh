@@ -232,8 +232,13 @@ public abstract class FileTransfer implements Runnable{
         System.out.println("Copy done");
     }
     
-    public boolean stop() {
-        return false;
+    /**
+     * Signals to cancel this transfer.
+     *
+     * @param force
+     */
+    public void cancel(boolean force) {
+    
     }
     
     public boolean isPrepared() {

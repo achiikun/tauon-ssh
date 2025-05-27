@@ -3,7 +3,6 @@ package tauon.app.ui.containers.session.pages.files;
 import com.intellij.util.ui.UIUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
 import tauon.app.services.SettingsConfigManager;
@@ -307,7 +306,7 @@ public class FileBrowser extends Page {
         
     }
     
-    public void downloadInBackground(FileInfo[] remoteFiles, String targetLocalDirectory) throws OperationCancelledException, RemoteOperationException, InterruptedException, SessionClosedException {
+    public void downloadInBackground(FileInfo[] remoteFiles, String targetLocalDirectory) {
 //        FileSystem targetFs = LocalFileSystem.getInstance();
 //        TauonRemoteSessionInstance instance = getHolder().createBackgroundSession();
 //        SSHConnectionHandler.TempSshFileSystem sourceFs = sshConnectionHandler.openTempSshFileSystem();

@@ -117,13 +117,12 @@ public class BackgroundTransferPanel extends JPanel {
             JLabel removeLabel = new JLabel();
             removeLabel.setFont(App.skin.getIconFont());
             removeLabel.setText(FontAwesomeContants.FA_TRASH);
+            removeLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             
             removeLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if(!fileTransfer.stop()){
-                        BackgroundTransferPanel.this.removeItem(TransferPanelItem.this);
-                    }
+                    fileTransfer.cancel(false);
                 }
             });
             

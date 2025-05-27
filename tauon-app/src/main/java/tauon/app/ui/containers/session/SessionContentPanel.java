@@ -549,6 +549,19 @@ public class SessionContentPanel extends JPanel implements PageHolder, GuiHandle
         });
     }
     
+    public void runLocalOperation(ILocalOperator consumer) {
+        
+        try {
+            consumer.operate();
+        } catch (OperationCancelledException | AlreadyFailedException | InterruptedException ignored) {
+            // Do nothing
+        } catch (TauonOperationException exception) {
+            LOG.error("Going to show the exception to the user.", exception);
+            AlertDialogUtils.showError(this, exception.getUserMessage());
+        }
+        
+    }
+    
     private class MyPasswordFinder implements PasswordFinder {
         
         @Override

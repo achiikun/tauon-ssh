@@ -14,7 +14,15 @@ public class NativeFileChooser{
     public NativeFileChooser(){
     
     }
-
+    
+    public void setTitle(String title) {
+        this.chooser.setTitle(title);
+    }
+    
+    public void setIfLinuxThenSwing(boolean ifLinuxThenSwing) {
+        this.chooser.setIfLinuxThenSwing(ifLinuxThenSwing);
+    }
+    
     public File getSelectedFile() {
         return chooser.getSelectedFile();
     }

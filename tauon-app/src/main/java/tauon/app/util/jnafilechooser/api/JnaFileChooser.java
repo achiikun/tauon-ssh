@@ -65,6 +65,9 @@ public class JnaFileChooser
 	protected ArrayList<FileNameExtensionFilter> filters;
 	protected boolean multiSelectionEnabled;
 	protected Mode mode;
+	
+	protected String title;
+	protected boolean ifLinuxThenSwing = false;
 
 	/**
 	 * creates a new file chooser with multiselection disabled and mode set
@@ -97,7 +100,15 @@ public class JnaFileChooser
 		this(currentDirectoryPath != null ?
 			new File(currentDirectoryPath) : null);
 	}
-
+	
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	
+	public void setIfLinuxThenSwing(boolean ifLinuxThenSwing) {
+		this.ifLinuxThenSwing = ifLinuxThenSwing;
+	}
+	
 	public void setCurrentDirectory(File currentDirectory) {
 		this.currentDirectory = currentDirectory.isDirectory() ?
 				currentDirectory : currentDirectory.getParentFile();
@@ -151,7 +162,7 @@ public class JnaFileChooser
 					return showWindowsFolderBrowser(parent);
 				}
 			}
-		}else if(Platform.isLinux()){
+		}else if(Platform.isLinux() && !ifLinuxThenSwing){
 			return showAWTFileChooser(parent, action);
 		}
 
@@ -161,6 +172,8 @@ public class JnaFileChooser
 	
 	private boolean showAWTFileChooser(Window parent, Action action) {
 		final java.awt.FileDialog fc = new FileDialog((Frame) parent.getOwner());
+		if(title != null)
+			fc.setTitle(title);
 		if(currentDirectory != null)
 			fc.setDirectory(currentDirectory.getPath());
 		fc.setMultipleMode(multiSelectionEnabled);
@@ -229,6 +242,8 @@ public class JnaFileChooser
 
 	private boolean showSwingFileChooser(Window parent, Action action) {
 		final JFileChooser fc = new JFileChooser(currentDirectory);
+		if(title != null)
+			fc.setDialogTitle(title);
 		fc.setMultiSelectionEnabled(multiSelectionEnabled);
 		fc.setFileSelectionMode(mode.getJFileChooserValue());
 
