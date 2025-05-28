@@ -1,8 +1,5 @@
 package tauon.app.services;
 
-import tauon.app.settings.Settings;
-import tauon.app.util.misc.Language;
-
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -13,14 +10,7 @@ public class LanguageService {
     
     public static ResourceBundle getBundle(){
         if(bundle == null) {
-            Settings settings = SettingsConfigManager.getSettings();
-            
-            Language language = Language.ENGLISH;
-            if (settings.getLanguage() != null) {
-                language = settings.getLanguage();
-            }
-            
-            Locale locale = new Locale.Builder().setLanguage(language.getLangAbbr()).build();
+            Locale locale = new Locale.Builder().setLanguage("en").build();
             bundle = ResourceBundle.getBundle(PATH_MESSAGES_FILE, locale);
         }
         

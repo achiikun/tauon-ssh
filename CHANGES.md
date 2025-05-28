@@ -9,10 +9,10 @@
 - Fix a deadlock while transferring files
 - Forwarded ports don't remain open after closing sessions anymore
 - Change logo color, too confusing when using Teams.
+- Remove Language option from configuration
 
 ### TODO
 
-- Remove Language option from configuration
 - Fix new session dialog tree issue ()
 - Change name dialog: https://github.com/achiikun/tauon-ssh/commit/daf53003696eaf3c35591992f7eb6e7a2d68ba42
 - Export as zip: https://github.com/achiikun/tauon-ssh/commit/868f89f2d2e194449fd06cb5eac7c9d9e53d2e32

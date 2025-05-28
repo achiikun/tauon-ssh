@@ -51,7 +51,7 @@ public class SettingsDialog extends JDialog {
     private final JList<String> navList;
     private JSpinner spTermWidth, spTermHeight, spFontSize;
     private JCheckBox chkAudibleBell, chkPuttyLikeCopyPaste;
-    private JComboBox<String> cmbFonts, cmbTermType, cmbTermPalette, cmbLanguage;
+    private JComboBox<String> cmbFonts, cmbTermType, cmbTermPalette;
     private JComboBox<TerminalTheme> cmbTermTheme;
     private ColorSelectorButton[] paletteButtons;
     private ColorSelectorButton defaultColorFg, defaultColorBg, defaultSelectionFg, defaultSelectionBg, defaultFoundFg,
@@ -245,20 +245,6 @@ public class SettingsDialog extends JDialog {
                 cmbTermType);
 
 
-        cmbLanguage = new JComboBox();
-        cmbLanguage.setModel(new DefaultComboBoxModel(Language.values()));
-        cmbLanguage.setEditable(true);
-        d = new Dimension(Math.max(100, cmbLanguage.getPreferredSize().width * 2),
-                cmbLanguage.getPreferredSize().height);
-        cmbLanguage.setMaximumSize(d);
-        cmbLanguage.setMinimumSize(d);
-        cmbLanguage.setPreferredSize(d);
-        
-        cmbLanguage.setSelectedItem(getSettings().getLanguage());
-
-        Component boxLanguage = createRow(new JLabel(getBundle().getString("app.settings.terminal.label.language")), Box.createRigidArea(new Dimension(10, 10)),
-                cmbLanguage);
-
         Component boxTermCopy = createRow(chkPuttyLikeCopyPaste);
 
         defaultColorFg = new ColorSelectorButton();
@@ -370,14 +356,6 @@ public class SettingsDialog extends JDialog {
         panel.add(boxTermCopy);
         panel.add(Box.createVerticalStrut(5));
         panel.add(boxTermType);
-
-
-        panel.add(Box.createVerticalStrut(30));
-        panel.add(createTitleLabel(getBundle().getString("app.settings.terminal.label.language")));
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(boxLanguage);
-        panel.add(Box.createVerticalStrut(5));
-        panel.add(boxLanguage);
 
         panel.add(Box.createVerticalStrut(30));
         panel.add(createTitleLabel(getBundle().getString("app.settings.terminal.label.terminal_colors")));
@@ -570,7 +548,6 @@ public class SettingsDialog extends JDialog {
             settings.setTerminalFontSize((int) this.spFontSize.getModel().getValue());
             settings.setTerminalFontName(this.cmbFonts.getSelectedItem().toString());
             settings.setTerminalType(this.cmbTermType.getSelectedItem().toString());
-            settings.setLanguage((Language) this.cmbLanguage.getSelectedItem());
             settings.setTerminalTheme(this.cmbTermTheme.getSelectedItem().toString());
             settings.setTerminalPalette(this.cmbTermPalette.getSelectedItem().toString());
     
