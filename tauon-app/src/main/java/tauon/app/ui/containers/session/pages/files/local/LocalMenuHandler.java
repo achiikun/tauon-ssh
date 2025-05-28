@@ -1,11 +1,12 @@
 package tauon.app.ui.containers.session.pages.files.local;
 
+import tauon.app.services.BookmarkConfigManager;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
-import tauon.app.services.BookmarkConfigManager;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
+import tauon.app.util.misc.OptionPaneUtils;
 import tauon.app.util.misc.PathUtils;
 import tauon.app.util.misc.PlatformUtils;
 
@@ -212,8 +213,8 @@ public class LocalMenuHandler {
     }
     
     private void rename(FileInfo info, String baseFolder) {
-        String text = JOptionPane.showInputDialog(getBundle().getString("app.files.message.enter_new_name"), info.getName());
-        if (text != null && text.length() > 0) {
+        String text = OptionPaneUtils.showInputDialog(fileBrowser.getHolder(), getBundle().getString("app.files.message.please_new_name"), info.getName(), info.getName());
+        if (text != null && !text.isEmpty() && !text.equals(info.getName())) {
             renameAsync(info.getPath(), PathUtils.combineUnix(PathUtils.getParent(info.getPath()), text), baseFolder);
         }
     }

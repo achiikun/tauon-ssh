@@ -10,11 +10,11 @@
 - Forwarded ports don't remain open after closing sessions anymore
 - Change logo color, too confusing when using Teams.
 - Remove Language option from configuration
+- Change name dialog (@devlinx9): https://github.com/devlinx9/muon-ssh/commit/daf53003696eaf3c35591992f7eb6e7a2d68ba42
 
 ### TODO
 
 - Fix new session dialog tree issue ()
-- Change name dialog: https://github.com/achiikun/tauon-ssh/commit/daf53003696eaf3c35591992f7eb6e7a2d68ba42
 - Export as zip: https://github.com/achiikun/tauon-ssh/commit/868f89f2d2e194449fd06cb5eac7c9d9e53d2e32
 - Manage multiple sites: https://github.com/achiikun/tauon-ssh/commit/02fc2c4510f76e86ac76f83900a635477426a60a & https://github.com/achiikun/tauon-ssh/commit/13260808cf687a94e9154f6ce63c6d1ffa44e266
 - Mac support x11: https://github.com/achiikun/tauon-ssh/commit/020b542819f21ecd6a4d5ac95bb083200233457c

@@ -21,6 +21,7 @@ import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
+import tauon.app.util.misc.OptionPaneUtils;
 import tauon.app.util.misc.PathUtils;
 import tauon.app.util.misc.PlatformUtils;
 
@@ -544,8 +545,8 @@ public class SshMenuHandler {
     }
 
     private void rename(FileInfo info, String baseFolder) {
-        String text = JOptionPane.showInputDialog(getBundle().getString("app.files.message.please_new_name"), info.getName());
-        if (text != null && text.length() > 0) {
+        String text = OptionPaneUtils.showInputDialog(fileBrowser.getHolder(), getBundle().getString("app.files.message.please_new_name"), info.getName(), info.getName());
+        if (text != null && !text.isEmpty() && !text.equals(info.getName())) {
             renameAsync(info.getPath(), PathUtils.combineUnix(PathUtils.getParent(info.getPath()), text), baseFolder);
         }
     }
