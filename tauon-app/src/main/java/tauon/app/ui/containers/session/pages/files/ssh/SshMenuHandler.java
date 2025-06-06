@@ -21,6 +21,7 @@ import tauon.app.ui.containers.session.pages.files.transfer.DndTransferData;
 import tauon.app.ui.containers.session.pages.files.transfer.DndTransferHandler;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
+import tauon.app.util.misc.FormatUtils;
 import tauon.app.util.misc.OptionPaneUtils;
 import tauon.app.util.misc.PathUtils;
 import tauon.app.util.misc.PlatformUtils;
@@ -578,7 +579,11 @@ public class SshMenuHandler {
     private void delete(FileInfo[] targetList, String baseFolder) {
         boolean delete = true;
         if (SettingsConfigManager.getSettings().isConfirmBeforeDelete()) {
-            delete = JOptionPane.showConfirmDialog(null, "Delete selected files?") == JOptionPane.YES_OPTION;
+            delete = JOptionPane.showConfirmDialog(
+                    null,
+                    FormatUtils.$$(getBundle().getString("app.files.message.delete_selected_files"),
+                            Map.of("FILES", targetList.length))
+            ) == JOptionPane.YES_OPTION;
         }
         if (!delete)
             return;

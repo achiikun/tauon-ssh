@@ -1,11 +1,13 @@
 package tauon.app.ui.containers.session.pages.files.local;
 
 import tauon.app.services.BookmarkConfigManager;
+import tauon.app.services.SettingsConfigManager;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
 import tauon.app.ui.containers.session.pages.files.FileBrowser;
 import tauon.app.ui.containers.session.pages.files.view.folderview.FolderView;
+import tauon.app.util.misc.FormatUtils;
 import tauon.app.util.misc.OptionPaneUtils;
 import tauon.app.util.misc.PathUtils;
 import tauon.app.util.misc.PlatformUtils;
@@ -18,6 +20,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Map;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -236,6 +239,17 @@ public class LocalMenuHandler {
     }
     
     private void delete(FileInfo[] selectedFiles, String baseFolder) {
+        boolean delete = true;
+        if (SettingsConfigManager.getSettings().isConfirmBeforeDelete()) {
+            delete = JOptionPane.showConfirmDialog(
+                    null,
+                    FormatUtils.$$(getBundle().getString("app.files.message.delete_selected_files"),
+                            Map.of("FILES", selectedFiles.length))
+            ) == JOptionPane.YES_OPTION;
+        }
+        if (!delete)
+            return;
+        
         fileBrowser.getHolder().submitLocalOperation(() -> {
             for (FileInfo f : selectedFiles) {
                 LocalFileSystem.getInstance().delete(f);

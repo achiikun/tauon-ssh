@@ -12,6 +12,7 @@ List of scheduled features and bugs to be solved:
 * [X] Dates in ISO format
 * [X] Don't blink the screen every time a folder is updated. Plus made more UX friendly.
 * [X] Native Windows File Picker, AWT for Linux, Swing for Mac :D
+* [X] Support X11 on Mac
 * [ ] Add a connection status page (list of active forwarding ports)
 * [ ] Add a name and an enable check to each port forwarding
 * [ ] Run ports with sudo by default
@@ -23,7 +24,8 @@ List of scheduled features and bugs to be solved:
 * [ ] Let user upload private key files and store them securely
 * [ ] UI: Add countdown in the connecting dialog
 * [ ] Add VNC viewer (from tightvnc-java)
-* [ ] Support X11 on Mac, and Windows with cygwin (https://x.cygwin.com/docs/ug/cygwin-x-ug.pdf)
+* [ ] Windows with cygwin (https://x.cygwin.com/docs/ug/cygwin-x-ug.pdf)
+* [ ] Recover text editor from old snowflake
 * [ ] Toolbox
   * [ ] Show executed commands
 * [ ] Diskspace
@@ -36,7 +38,7 @@ List of scheduled features and bugs to be solved:
   * [ ] Add a box to query what happens when copying a file that exists
   * [ ] Move an item to a folder in the same window
   * [ ] Create a remote folder picker
-  * [ ] Cancel file transfers
+  * [ ] Cancel file transfers (current button is useless)
 * [ ] SSH Keys
   * [ ] Show server fingerprints
   
