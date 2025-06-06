@@ -59,6 +59,10 @@ public class Constants {
         VERSION = new VersionEntry("v" + p.getProperty("tauon-version"));
     }
     
+    public static final float TINY_TEXT_SIZE = 12.0f;
+    public static final float SMALL_TEXT_SIZE = 14.0f;
+    public static final float MEDIUM_TEXT_SIZE = 16.0f;
+    
     public static void updateStrings() {
 //        TransferMode.update();
         ConflictAction.update();

@@ -10,13 +10,13 @@ import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.services.ConfigFilesService;
 import tauon.app.services.SettingsConfigManager;
 import tauon.app.settings.SiteInfo;
+import tauon.app.ssh.filesystem.transfer.FileTransfer;
 import tauon.app.ssh.filesystem.transfer.FileTransferLocalToRemote;
 import tauon.app.ssh.filesystem.transfer.FileTransferRemoteToLocal;
 import tauon.app.ui.components.glasspanes.AppInputBlocker;
 import tauon.app.ui.components.glasspanes.InputBlocker;
 import tauon.app.ui.components.misc.FontAwesomeContants;
-import tauon.app.ui.containers.session.SessionContentPanel;
-import tauon.app.ssh.filesystem.transfer.FileTransfer;
+import tauon.app.ui.containers.session.AbstractSessionContentPanel;
 import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
@@ -39,8 +39,6 @@ import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import javax.swing.Timer;
 
 import static tauon.app.services.LanguageService.getBundle;
 import static tauon.app.util.misc.Constants.*;
@@ -290,10 +288,10 @@ public class AppWindow extends JFrame {
     }
 
     private Component createSessionPanelTop() {
-        JLabel lblSession = new JLabel(getBundle().getString("app.ui.label.sessions"));
-        lblSession.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
+//        JLabel lblSession = new JLabel(getBundle().getString("app.ui.label.sessions"));
+//        lblSession.setFont(App.skin.getDefaultFont().deriveFont(Constants.SMALL_TEXT_SIZE));
         
-        Font font = App.skin.getIconFont().deriveFont(14.0f);
+        Font font = App.skin.getIconFont().deriveFont(Constants.SMALL_TEXT_SIZE);
         Dimension dimension = new Dimension(30,30);
         
         JButton btnList = new JButton();
@@ -304,10 +302,14 @@ public class AppWindow extends JFrame {
         
         JButton btnNew = new JButton();
         btnNew.setFont(font);
-        btnNew.setText(FontAwesomeContants.FA_PLUS);
+        btnNew.setText(FontAwesomeContants.FA_TELEVISION);
         btnNew.setMaximumSize(dimension);
         btnNew.addActionListener(e -> this.createFirstSessionPanel());
         btnNew.setToolTipText(getBundle().getString("app.ui.button.tooltip.open_sites"));
+        
+        JButton btnLocalTerm = new JButton(FontAwesomeContants.FA_TERMINAL);
+        btnLocalTerm.addActionListener(e -> sessionListPanel.createLocalSession());
+        btnLocalTerm.setFont(App.skin.getIconFont().deriveFont(Constants.SMALL_TEXT_SIZE));
         
         Box topBox = Box.createHorizontalBox();
         topBox.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -315,7 +317,7 @@ public class AppWindow extends JFrame {
         topBox.add(Box.createRigidArea(new Dimension(5, 0)));
         topBox.add(btnNew);
         topBox.add(Box.createRigidArea(new Dimension(5, 0)));
-        topBox.add(lblSession);
+        topBox.add(btnLocalTerm);
 
         topBox.add(Box.createHorizontalGlue());
     
@@ -324,11 +326,11 @@ public class AppWindow extends JFrame {
     }
     
     private Component createCollapsedSessionPanelTop() {
+    
+//        JLabel lblSession = new JLabel(getBundle().getString("app.ui.label.sessions"));
+//        lblSession.setFont(App.skin.getDefaultFont().deriveFont(Constants.SMALL_TEXT_SIZE));
         
-        JLabel lblSession = new JLabel(getBundle().getString("app.ui.label.sessions"));
-        lblSession.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
-        
-        Font font = App.skin.getIconFont().deriveFont(14.0f);
+        Font font = App.skin.getIconFont().deriveFont(Constants.SMALL_TEXT_SIZE);
         Dimension dimension = new Dimension(30,30);
         
         JButton btnList = new JButton();
@@ -339,9 +341,20 @@ public class AppWindow extends JFrame {
         
         JButton btnNew = new JButton();
         btnNew.setFont(font);
-        btnNew.setText(FontAwesomeContants.FA_PLUS);
+        btnNew.setText(FontAwesomeContants.FA_TELEVISION);
         btnNew.setMaximumSize(dimension);
         btnNew.addActionListener(e -> this.createFirstSessionPanel());
+        btnNew.setToolTipText(getBundle().getString("app.ui.button.tooltip.open_sites"));
+        
+//        JButton btnNew = new JButton();
+//        btnNew.setFont(font);
+//        btnNew.setText(FontAwesomeContants.FA_TELEVISION);
+//        btnNew.setMaximumSize(dimension);
+//        btnNew.addActionListener(e -> this.createFirstSessionPanel());
+        
+        JButton btnLocalTerm = new JButton(FontAwesomeContants.FA_TERMINAL);
+        btnLocalTerm.addActionListener(e -> sessionListPanel.createLocalSession());
+        btnLocalTerm.setFont(App.skin.getIconFont().deriveFont(Constants.SMALL_TEXT_SIZE));
         
         Box listBox = Box.createHorizontalBox();
         listBox.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -353,9 +366,15 @@ public class AppWindow extends JFrame {
         newBox.add(btnNew);
         newBox.add(Box.createGlue());
         
+        Box termBox = Box.createHorizontalBox();
+        termBox.setBorder(new EmptyBorder(0, 5, 5, 5));
+        termBox.add(btnLocalTerm);
+        termBox.add(Box.createGlue());
+        
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(listBox, BorderLayout.NORTH);
-        panel.add(newBox, BorderLayout.SOUTH);
+        panel.add(newBox, BorderLayout.CENTER);
+        panel.add(termBox, BorderLayout.SOUTH);
         
         return panel;
         
@@ -364,7 +383,7 @@ public class AppWindow extends JFrame {
     /**
      * @param sessionContentPanel
      */
-    public void showSession(SessionContentPanel sessionContentPanel) {
+    public void showSession(AbstractSessionContentPanel sessionContentPanel) {
         cardPanel.add(sessionContentPanel, sessionContentPanel.hashCode() + "");
         sessionCard.show(cardPanel, sessionContentPanel.hashCode() + "");
         revalidate();
@@ -374,7 +393,7 @@ public class AppWindow extends JFrame {
     /**
      * @param sessionContentPanel
      */
-    public void removeSession(SessionContentPanel sessionContentPanel) {
+    public void removeSession(AbstractSessionContentPanel sessionContentPanel) {
         cardPanel.remove(sessionContentPanel);
         // TODO remove responsibility from here
 //        uploadPanel.removePendingTransfers(sessionContentPanel);
@@ -470,7 +489,7 @@ public class AppWindow extends JFrame {
 
         JLabel lblUpload = new JLabel();
         lblUpload.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        lblUpload.setFont(App.skin.getIconFont().deriveFont(16.0f));
+        lblUpload.setFont(App.skin.getIconFont().deriveFont(Constants.MEDIUM_TEXT_SIZE));
         lblUpload.setText(FontAwesomeContants.FA_CLOUD_UPLOAD);
         b1.add(lblUpload);
         b1.add(Box.createRigidArea(new Dimension(5, 10)));
@@ -496,7 +515,7 @@ public class AppWindow extends JFrame {
         JLabel lblDownload = new JLabel();
         lblDownload.setBorder(null);
         lblDownload.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        lblDownload.setFont(App.skin.getIconFont().deriveFont(16.0f));
+        lblDownload.setFont(App.skin.getIconFont().deriveFont(Constants.MEDIUM_TEXT_SIZE));
         lblDownload.setText(FontAwesomeContants.FA_CLOUD_DOWNLOAD);
         b1.add(lblDownload);
         b1.add(Box.createRigidArea(new Dimension(5, 10)));
@@ -520,7 +539,7 @@ public class AppWindow extends JFrame {
         b1.add(Box.createRigidArea(new Dimension(30, 10)));
 
         JLabel lblHelp = new JLabel();
-        lblHelp.setFont(App.skin.getIconFont().deriveFont(16.0f));
+        lblHelp.setFont(App.skin.getIconFont().deriveFont(Constants.MEDIUM_TEXT_SIZE));
         lblHelp.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -535,7 +554,7 @@ public class AppWindow extends JFrame {
         b1.add(Box.createRigidArea(new Dimension(30, 10)));
         
         JLabel btnSettings = new JLabel();
-        btnSettings.setFont(App.skin.getIconFont().deriveFont(16.0f));
+        btnSettings.setFont(App.skin.getIconFont().deriveFont(Constants.MEDIUM_TEXT_SIZE));
         btnSettings.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -572,7 +591,7 @@ public class AppWindow extends JFrame {
 //        return fileTransferManager;
 //    }
     
-    public SessionContentPanel findSessionById(UUID uuid) {
+    public AbstractSessionContentPanel findSessionById(UUID uuid) {
         return sessionListPanel.findSessionById(uuid);
     }
 }

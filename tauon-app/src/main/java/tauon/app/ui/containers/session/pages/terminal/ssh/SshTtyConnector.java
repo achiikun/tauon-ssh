@@ -1,6 +1,7 @@
 package tauon.app.ui.containers.session.pages.terminal.ssh;
 
 import com.jediterm.terminal.Questioner;
+import com.jediterm.terminal.TtyConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
@@ -22,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SshTtyConnector implements DisposableTtyConnector {
+public class SshTtyConnector implements TtyConnector {
     private static final Logger LOG = LoggerFactory.getLogger(SshTtyConnector.class);
     
     private InputStreamReader myInputStreamReader;
@@ -232,7 +233,6 @@ public class SshTtyConnector implements DisposableTtyConnector {
         }
     }
 
-    @Override
     public boolean isInitialized() {
         return isInitiated.get();
     }

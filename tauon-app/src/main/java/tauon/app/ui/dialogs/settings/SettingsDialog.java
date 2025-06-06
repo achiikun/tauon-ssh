@@ -3,16 +3,16 @@
  */
 package tauon.app.ui.dialogs.settings;
 
+import com.jediterm.core.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.exceptions.AlreadyFailedException;
-import tauon.app.services.ConfigFilesService;
+import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.services.SettingsConfigManager;
 import tauon.app.services.SitesConfigManager;
 import tauon.app.settings.BackupUtils;
 import tauon.app.settings.Settings;
-import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
 import tauon.app.ui.components.editortablemodel.EditorTableModel;
 import tauon.app.ui.components.misc.*;
@@ -21,7 +21,10 @@ import tauon.app.ui.laf.theme.CustomTerminalTheme;
 import tauon.app.ui.laf.theme.DarkTerminalTheme;
 import tauon.app.ui.laf.theme.TerminalTheme;
 import tauon.app.ui.utils.AlertDialogUtils;
-import tauon.app.util.misc.*;
+import tauon.app.util.misc.Constants;
+import tauon.app.util.misc.FontUtils;
+import tauon.app.util.misc.LayoutUtilities;
+import tauon.app.util.misc.OptionPaneUtils;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -31,7 +34,6 @@ import java.awt.*;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import com.jediterm.core.Color;
 
 import static tauon.app.services.LanguageService.getBundle;
 import static tauon.app.services.SettingsConfigManager.getSettings;
@@ -225,7 +227,7 @@ public class SettingsDialog extends JDialog {
 
     private JLabel createTitleLabel(String text) {
         JLabel lblText = new JLabel(text);
-        lblText.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
+        lblText.setFont(App.skin.getDefaultFont().deriveFont(Constants.SMALL_TEXT_SIZE));
         lblText.setAlignmentX(Box.LEFT_ALIGNMENT);
         return lblText;
     }
@@ -990,7 +992,7 @@ public class SettingsDialog extends JDialog {
          */
         public CellRenderer() {
             setBorder(new EmptyBorder(15, 15, 15, 15));
-            setFont(App.skin.getDefaultFont().deriveFont(14.0f));
+            setFont(App.skin.getDefaultFont().deriveFont(Constants.SMALL_TEXT_SIZE));
             setOpaque(true);
         }
 

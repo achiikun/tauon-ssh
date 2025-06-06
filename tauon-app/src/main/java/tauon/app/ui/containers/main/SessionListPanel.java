@@ -5,11 +5,14 @@ package tauon.app.ui.containers.main;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.App;
 import tauon.app.settings.SiteInfo;
-import tauon.app.ui.components.misc.SkinnedScrollPane;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.ui.components.misc.SkinnedScrollPane;
+import tauon.app.ui.containers.session.AbstractSessionContentPanel;
+import tauon.app.ui.containers.session.LocalSessionContentPanel;
+import tauon.app.ui.containers.session.SessionContentPanel;
+import tauon.app.util.misc.Constants;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -32,8 +35,8 @@ public class SessionListPanel extends JPanel {
     
     private static final Cursor HAND_CURSOR = new Cursor(Cursor.HAND_CURSOR);
     private static final Cursor DEFAULT_CURSOR = new Cursor(Cursor.DEFAULT_CURSOR);
-    private final DefaultListModel<SessionContentPanel> sessionListModel;
-    private final JList<SessionContentPanel> sessionList;
+    private final DefaultListModel<AbstractSessionContentPanel> sessionListModel;
+    private final JList<AbstractSessionContentPanel> sessionList;
     private final AppWindow window;
     private boolean collapsed;
     
@@ -138,14 +141,24 @@ public class SessionListPanel extends JPanel {
     
     public void createSession(SiteInfo info) {
         SessionContentPanel panel = new SessionContentPanel(info, window);
-        sessionListModel.insertElementAt(panel, 0);
-
-        sessionList.setSelectedIndex(0);
+        sessionListModel.insertElementAt(panel, sessionListModel.size());
+        sessionList.setSelectedIndex(sessionListModel.size()-1);
         
+    }
+    
+    public void createLocalSession() {
+        AbstractSessionContentPanel m = sessionListModel.get(0);
+        if(m instanceof LocalSessionContentPanel){
+            sessionList.setSelectedIndex(0);
+        }else{
+            LocalSessionContentPanel currentLocalSessionPanel = new LocalSessionContentPanel(window);
+            sessionListModel.insertElementAt(currentLocalSessionPanel, 0);
+            sessionList.setSelectedIndex(0);
+        }
     }
 
     public void selectSession(int index) {
-        SessionContentPanel sessionContentPanel = sessionListModel.get(index);
+        AbstractSessionContentPanel sessionContentPanel = sessionListModel.get(index);
         window.showSession(sessionContentPanel);
         window.revalidate();
         window.repaint();
@@ -153,7 +166,7 @@ public class SessionListPanel extends JPanel {
 
     public void removeSession(int index) {
         if (JOptionPane.showConfirmDialog(window, getBundle().getString("app.session.action.disconnect_session")) == JOptionPane.YES_OPTION) {
-            SessionContentPanel sessionContentPanel = sessionListModel.get(index);
+            AbstractSessionContentPanel sessionContentPanel = sessionListModel.get(index);
             sessionContentPanel.closeAsync((success) -> {
                 if(success) {
                     window.removeSession(sessionContentPanel);
@@ -174,7 +187,7 @@ public class SessionListPanel extends JPanel {
         }
     }
     
-    public SessionContentPanel findSessionById(UUID uuid) {
+    public AbstractSessionContentPanel findSessionById(UUID uuid) {
         for(int i = 0; i < sessionListModel.getSize(); i++){
             if(sessionListModel.get(i).getUUID().equals(uuid))
                 return sessionListModel.get(i);
@@ -204,8 +217,8 @@ public class SessionListPanel extends JPanel {
             lblText = new JLabel();
             lblHost = new JLabel();
             
-            lblText.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
-            lblHost.setFont(App.skin.getDefaultFont().deriveFont(12.0f));
+            lblText.setFont(App.skin.getDefaultFont().deriveFont(Constants.SMALL_TEXT_SIZE));
+            lblHost.setFont(App.skin.getDefaultFont().deriveFont(Constants.TINY_TEXT_SIZE));
             
             lblText.setText("Sample server");
             lblHost.setText("server host");
@@ -226,12 +239,17 @@ public class SessionListPanel extends JPanel {
             
         }
         
-        public void showOn(SessionContentPanel sessionContentPanel, Rectangle cellRectangle) {
+        public void showOn(AbstractSessionContentPanel sessionContentPanel, Rectangle cellRectangle) {
             
-            SiteInfo info = sessionContentPanel.getInfo();
-            
-            lblText.setText(info.getName());
-            lblHost.setText(info.getHost());
+            if(sessionContentPanel instanceof SessionContentPanel) {
+                SiteInfo info = ((SessionContentPanel) sessionContentPanel).getInfo();
+                
+                lblText.setText(info.getName());
+                lblHost.setText(info.getHost());
+            }else{
+                lblText.setText("Local Terminal"); // TODO i18n
+                lblHost.setText("localhost"); // TODO i18n
+            }
             
             Dimension d = new Dimension(150, (int) cellRectangle.getHeight());
             panel.setPreferredSize(d);
@@ -241,7 +259,7 @@ public class SessionListPanel extends JPanel {
         }
     }
     
-    public final class SessionListRenderer implements ListCellRenderer<SessionContentPanel> {
+    public final class SessionListRenderer implements ListCellRenderer<AbstractSessionContentPanel> {
 
         private final JPanel panel;
         private final JLabel lblIcon;
@@ -266,10 +284,10 @@ public class SessionListPanel extends JPanel {
 
             lblIcon.setFont(App.skin.getIconFont().deriveFont(24.0f));
             lblIconCollapsed.setFont(App.skin.getIconFont().deriveFont(18.0f));
-            lblText.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
-            lblHost.setFont(App.skin.getDefaultFont().deriveFont(12.0f));
-            lblClose.setFont(App.skin.getIconFont().deriveFont(16.0f));
-            lblCloseCollapsed.setFont(App.skin.getIconFont().deriveFont(12.0f));
+            lblText.setFont(App.skin.getDefaultFont().deriveFont(Constants.SMALL_TEXT_SIZE));
+            lblHost.setFont(App.skin.getDefaultFont().deriveFont(Constants.TINY_TEXT_SIZE));
+            lblClose.setFont(App.skin.getIconFont().deriveFont(Constants.MEDIUM_TEXT_SIZE));
+            lblCloseCollapsed.setFont(App.skin.getIconFont().deriveFont(Constants.TINY_TEXT_SIZE));
 
             lblText.setText("Sample server");
             lblHost.setText("server host");
@@ -313,13 +331,17 @@ public class SessionListPanel extends JPanel {
         }
 
         @Override
-        public Component getListCellRendererComponent(JList<? extends SessionContentPanel> list,
-                                                      SessionContentPanel value, int index, boolean isSelected, boolean cellHasFocus) {
-
-            SiteInfo info = value.getInfo();
-            
-            lblText.setText(info.getName());
-            lblHost.setText(info.getHost());
+        public Component getListCellRendererComponent(JList<? extends AbstractSessionContentPanel> list,
+                                                      AbstractSessionContentPanel value, int index, boolean isSelected, boolean cellHasFocus) {
+            if(value instanceof SessionContentPanel) {
+                SiteInfo info = ((SessionContentPanel) value).getInfo();
+                
+                lblText.setText(info.getName());
+                lblHost.setText(info.getHost());
+            }else{
+                lblText.setText("Local Terminal"); // TODO i18n
+                lblHost.setText("localhost"); // TODO i18n
+            }
             
             JPanel myPanel;
             if (collapsed) {

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.util.misc.Constants;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -46,7 +47,7 @@ public class ClosableTabbedPanel extends JPanel {
 
         JButton btn = new JButton();
         btn.setToolTipText("New tab");
-        btn.setFont(App.skin.getIconFont().deriveFont(16.0f));
+        btn.setFont(App.skin.getIconFont().deriveFont(Constants.MEDIUM_TEXT_SIZE));
         btn.setText(FontAwesomeContants.FA_PLUS_SQUARE);
         btn.putClientProperty("Nimbus.Overrides",
                 App.skin.createTabButtonSkin());

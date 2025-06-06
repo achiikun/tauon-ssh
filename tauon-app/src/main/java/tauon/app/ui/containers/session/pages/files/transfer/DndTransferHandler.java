@@ -11,6 +11,7 @@ import tauon.app.exceptions.SessionClosedException;
 import tauon.app.ssh.filesystem.FileInfo;
 import tauon.app.ssh.filesystem.FileType;
 import tauon.app.ssh.filesystem.LocalFileSystem;
+import tauon.app.ui.containers.session.AbstractSessionContentPanel;
 import tauon.app.ui.containers.session.SessionContentPanel;
 import tauon.app.ui.containers.session.pages.files.AbstractFileBrowserView;
 import tauon.app.util.misc.PlatformUtils;
@@ -199,13 +200,13 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
                 
                 if(sourceSessionId != null){
                     
-                    SessionContentPanel sessionContentPanel = fileBrowserView.getFileBrowser().getHolder().getAppWindow()
+                    AbstractSessionContentPanel sessionContentPanel = fileBrowserView.getFileBrowser().getHolder().getAppWindow()
                             .findSessionById(sourceSessionId);
                     
-                    if(sessionContentPanel == null || sourceId == null)
+                    if(sourceId == null || !(sessionContentPanel instanceof SessionContentPanel))
                         return false;
                     
-                    AbstractFileBrowserView view = sessionContentPanel.getFileBrowser().findViewById(sourceId);
+                    AbstractFileBrowserView view = ((SessionContentPanel) sessionContentPanel).getFileBrowser().findViewById(sourceId);
                     if(view == null)
                         return false;
                     
@@ -219,8 +220,8 @@ public class DndTransferHandler extends TransferHandler implements Transferable 
                 
                 if(destinationSessionId != null){
                     
-                    SessionContentPanel sessionContentPanel = fileBrowserView.getFileBrowser().getHolder().getAppWindow()
-                            .findSessionById(destinationSessionId);
+                    SessionContentPanel sessionContentPanel = (SessionContentPanel) fileBrowserView.getFileBrowser()
+                            .getHolder().getAppWindow().findSessionById(destinationSessionId);
                     
                     if(sessionContentPanel == null || destinationId == null)
                         return false;

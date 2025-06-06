@@ -1,6 +1,7 @@
 package tauon.app.ui.containers.session.pages.terminal.snippets;
 
 import tauon.app.App;
+import tauon.app.util.misc.Constants;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,7 +15,7 @@ public class SnippetListCellRenderer extends JPanel implements ListCellRenderer<
         super(new BorderLayout(5, 5));
         setBorder(new EmptyBorder(5, 10, 5, 10));
         lblName = new JLabel();
-        lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN, 14.0f));
+        lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN, Constants.SMALL_TEXT_SIZE));
         lblCommand = new JLabel();
         add(lblName);
         add(lblCommand, BorderLayout.SOUTH);

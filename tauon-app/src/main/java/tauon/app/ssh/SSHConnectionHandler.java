@@ -78,6 +78,7 @@ public class SSHConnectionHandler {
         ThreadFactory threadFactory = Executors.defaultThreadFactory();
         AtomicLong count = new AtomicLong(0);
         
+        // TODO get this from parameter
         ThreadFactory namedThreadFactory = runnable -> {
             Thread thread = threadFactory.newThread(runnable);
             thread.setName(info.getName() + "[" + count.getAndIncrement() + "]");

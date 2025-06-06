@@ -2,6 +2,7 @@ package tauon.app.ui.containers.session.pages.files.remote2remote;
 
 import tauon.app.App;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.util.misc.Constants;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -23,8 +24,8 @@ public class RemoteHostRenderer implements ListCellRenderer<RemoteServerEntry> {
         lblHost = new JLabel();
 
         lblIcon.setFont(App.skin.getIconFont().deriveFont(24.0f));
-        lblText.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
-        lblHost.setFont(App.skin.getDefaultFont().deriveFont(12.0f));
+        lblText.setFont(App.skin.getDefaultFont().deriveFont(Constants.SMALL_TEXT_SIZE));
+        lblHost.setFont(App.skin.getDefaultFont().deriveFont(Constants.TINY_TEXT_SIZE));
 
         lblText.setText("Sample server");
         lblHost.setText("server host");

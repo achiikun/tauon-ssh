@@ -5,6 +5,7 @@ package tauon.app.ui.components.closabletabs;
 
 import tauon.app.App;
 import tauon.app.ui.components.misc.FontAwesomeContants;
+import tauon.app.util.misc.Constants;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,7 +30,7 @@ public class TabCloseButton extends JComponent {
         setPreferredSize(new Dimension(20, 20));
         setMinimumSize(new Dimension(20, 20));
         setMaximumSize(new Dimension(20, 20));
-        font = App.skin.getIconFont().deriveFont(14.0f);
+        font = App.skin.getIconFont().deriveFont(Constants.SMALL_TEXT_SIZE);
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {

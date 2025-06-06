@@ -17,6 +17,7 @@ import tauon.app.ui.components.tablerenderers.ByteCountValue;
 import tauon.app.ui.components.tablerenderers.PercentageRenderer;
 import tauon.app.ui.components.tablerenderers.PercentageValue;
 import tauon.app.ui.containers.session.SessionContentPanel;
+import tauon.app.util.misc.Constants;
 import tauon.app.util.misc.OptionPaneUtils;
 
 import javax.swing.*;
@@ -107,8 +108,8 @@ public class DiskspaceAnalyzer extends Subpage {
     private Component createFirstPanel() {
         JRadioButton radFolder = new JRadioButton(getBundle().getString("app.tools_diskspace.label.analyze_folder"));
         JRadioButton radVolume = new JRadioButton(getBundle().getString("app.tools_diskspace.label.analyze_volume"));
-        radFolder.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
-        radVolume.setFont(App.skin.getDefaultFont().deriveFont(14.0f));
+        radFolder.setFont(App.skin.getDefaultFont().deriveFont(Constants.SMALL_TEXT_SIZE));
+        radVolume.setFont(App.skin.getDefaultFont().deriveFont(Constants.SMALL_TEXT_SIZE));
         radFolder.setHorizontalAlignment(JRadioButton.LEFT);
         radVolume.setHorizontalAlignment(JRadioButton.LEFT);
         JLabel lblIcon = new JLabel();
