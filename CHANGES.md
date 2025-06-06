@@ -4,12 +4,13 @@
 
 - Download files
 - Fixed export and import zip backups
+- Change logo color, blue is too confusing when using Teams.
+- Updated Jediterm to version 3.53
 
 ## Fixes
 
 - Fix a deadlock while transferring files
 - Forwarded ports don't remain open after closing sessions anymore
-- Change logo color, blue is too confusing when using Teams.
 - Remove Language option from configuration
 - Change name dialog (@devlinx9): https://github.com/devlinx9/muon-ssh/commit/daf53003696eaf3c35591992f7eb6e7a2d68ba42
 - Use root site manager tree (@devlinx9): https://github.com/devlinx9/muon-ssh/commit/02fc2c4510f76e86ac76f83900a635477426a60a & https://github.com/devlinx9/muon-ssh/commit/13260808cf687a94e9154f6ce63c6d1ffa44e266
@@ -22,6 +23,7 @@
 - Doc: https://github.com/achiikun/tauon-ssh/commit/d98d3945fb7bb0540c3ba11c550d7c3fbf11ec46
 - Ask before deleting: https://github.com/achiikun/tauon-ssh/commit/e30940472cb0ab0901027281d5bfb9cd8c45a106#diff-0f86d11b223f406bafaea4cf3ccf2f3a73e44c2db04c4553533a565709625e3d
 - Update jediterm
+- Add local terminal (just as Muon)
 
 # Tauon 3.2.1
 
