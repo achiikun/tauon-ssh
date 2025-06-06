@@ -99,7 +99,7 @@ public class HopEntry extends NamedItem {
     }
     
     protected HopEntry copyTo(HopEntry newInstance) {
-        newInstance.setId(UUID.randomUUID().toString());
+        newInstance.setId(id);
         newInstance.setName(name);
         newInstance.setHost(this.getHost());
         newInstance.setPort(this.getPort());

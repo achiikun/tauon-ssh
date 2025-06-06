@@ -1,11 +1,11 @@
 package tauon.app.util.misc;
 
-import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import tauon.app.ssh.filesystem.FileType;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Set;
 
 import static tauon.app.services.LanguageService.getBundle;
 
@@ -35,6 +35,15 @@ public class Constants {
     public static final String TRANSFER_HOSTS = "transfer-hosts.json";
     public static final String BOOKMARKS_FILE = "bookmarks.json";
     public static final String PASSWORDS_FILE = "passwords.pfx";
+    public static final String KNOWN_HOSTS_FILE = "known_hosts";
+    
+    public static final Set<String> ALL_CONFIG_FILES = Set.of(
+            SESSION_DB_FILE, SETTINGS_DB_FILE, SNIPPETS_FILE, PINNED_LOGS, TRANSFER_HOSTS, BOOKMARKS_FILE, PASSWORDS_FILE, KNOWN_HOSTS_FILE
+    );
+
+    public static final Set<String> SESSIONS_FILES = Set.of(
+            SESSION_DB_FILE, PINNED_LOGS, BOOKMARKS_FILE, PASSWORDS_FILE, KNOWN_HOSTS_FILE
+    );
     
     public static final String PATH_MESSAGES_FILE= "i18n/messages";
     

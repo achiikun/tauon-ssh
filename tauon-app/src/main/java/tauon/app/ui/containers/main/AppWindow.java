@@ -20,10 +20,7 @@ import tauon.app.ssh.filesystem.transfer.FileTransfer;
 import tauon.app.ui.dialogs.sessions.NewSessionDlg;
 import tauon.app.ui.dialogs.settings.SettingsDialog;
 import tauon.app.ui.dialogs.settings.SettingsPageName;
-import tauon.app.util.misc.CertificateValidator;
-import tauon.app.util.misc.FormatUtils;
-import tauon.app.util.misc.PlatformUtils;
-import tauon.app.util.misc.VersionEntry;
+import tauon.app.util.misc.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -95,7 +92,7 @@ public class AppWindow extends JFrame {
         inputBlocker = new AppInputBlocker(this);
         
 //        File knownHostFile = new File(CONFIG_DIR, "known_hosts");
-        File knownHostFile = ConfigFilesService.getInstance().getFile("known_hosts");
+        File knownHostFile = ConfigFilesService.getInstance().getFile(Constants.KNOWN_HOSTS_FILE);
         hostKeyVerifier = new GraphicalHostKeyVerifier(knownHostFile);
         
         Insets inset = Toolkit.getDefaultToolkit().getScreenInsets(
@@ -310,7 +307,8 @@ public class AppWindow extends JFrame {
         btnNew.setText(FontAwesomeContants.FA_PLUS);
         btnNew.setMaximumSize(dimension);
         btnNew.addActionListener(e -> this.createFirstSessionPanel());
-
+        btnNew.setToolTipText(getBundle().getString("app.ui.button.tooltip.open_sites"));
+        
         Box topBox = Box.createHorizontalBox();
         topBox.setBorder(new EmptyBorder(5, 5, 5, 5));
         topBox.add(btnList);

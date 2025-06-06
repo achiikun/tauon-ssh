@@ -8,12 +8,9 @@ import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.util.misc.Constants;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -22,11 +19,12 @@ public class ConfigFilesService {
     
     private static final Logger LOG = LoggerFactory.getLogger(ConfigFilesService.class);
     
+    
     private static ConfigFilesService INSTANCE = null;
     
     private File directory;
     private File tempdirectory;
-    private File backupdirectory;
+    private File backupDirectory;
     
     public static ConfigFilesService getInstance() {
         if(INSTANCE == null){
@@ -36,7 +34,7 @@ public class ConfigFilesService {
     }
     
     private ConfigFilesService(){
-        
+    
     }
     
     public void initialize() throws InitializationException {
@@ -59,9 +57,9 @@ public class ConfigFilesService {
             throw new InitializationException();
         }
         
-        backupdirectory = new File(directory, "backup");
-        if(!backupdirectory.exists() && !backupdirectory.mkdirs()) {
-            LOG.error("The backup config directory for tauon cannot be created: {}", backupdirectory);
+        backupDirectory = new File(directory, "backup");
+        if(!backupDirectory.exists() && !backupDirectory.mkdirs()) {
+            LOG.error("The backup config directory for tauon cannot be created: {}", backupDirectory);
             throw new InitializationException();
         }
         
@@ -116,16 +114,16 @@ public class ConfigFilesService {
         return null;
     }
     
-    public void exportTo(File file) throws IOException {
-        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file))) {
-            for (File f : directory.listFiles()) {
-                ZipEntry ent = new ZipEntry(f.getName());
-                out.putNextEntry(ent);
-                out.write(Files.readAllBytes(f.toPath()));
-                out.closeEntry();
-            }
-        }
-    }
+//    public void exportTo(File file) throws IOException {
+//        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file))) {
+//            for (File f : Objects.requireNonNull(directory.listFiles())) {
+//                ZipEntry ent = new ZipEntry(f.getName());
+//                out.putNextEntry(ent);
+//                out.write(Files.readAllBytes(f.toPath()));
+//                out.closeEntry();
+//            }
+//        }
+//    }
     
     public boolean saveAndKeepOldIfFails(String file, FileConsumer consumer) {
         File tempFile = null;
@@ -212,7 +210,7 @@ public class ConfigFilesService {
             consumer.consumeFile(file1);
         } catch (Exception ignored) {
             // Backup file1 (maybe will be overwritten by caller)
-            File backup = new File(backupdirectory, System.currentTimeMillis() + "_" + file);
+            File backup = new File(backupDirectory, System.currentTimeMillis() + "_" + file);
             
             try{
                 Files.copy(file1.toPath(), backup.toPath(), REPLACE_EXISTING);
@@ -234,19 +232,19 @@ public class ConfigFilesService {
             throw e;
         } catch (Exception ignored) {
             // Backup file1 (maybe will be overwritten by caller)
-            File backup1 = new File(backupdirectory, System.currentTimeMillis() + "_" + file1);
-            File backup2 = new File(backupdirectory, System.currentTimeMillis() + "_" + file2);
+            File backup1 = new File(backupDirectory, System.currentTimeMillis() + "_" + file1);
+            File backup2 = new File(backupDirectory, System.currentTimeMillis() + "_" + file2);
             
             try{
                 Files.copy(file1a.toPath(), backup1.toPath(), REPLACE_EXISTING);
             }catch (Exception e){
-                LOG.error("Error while backuping {} to {}", file1a, backup1, e);
+                LOG.error("Error while backing up {} to {}", file1a, backup1, e);
             }
             
             try{
                 Files.copy(file2a.toPath(), backup2.toPath(), REPLACE_EXISTING);
             }catch (Exception e){
-                LOG.error("Error while backuping {} to {}", file2a, backup2, e);
+                LOG.error("Error while backing up {} to {}", file2a, backup2, e);
             }
             
             return false;
@@ -256,6 +254,14 @@ public class ConfigFilesService {
     
     public File getFile(String file) {
         return new File(directory, file);
+    }
+    
+    public File getDirectory() {
+        return directory;
+    }
+    
+    public File getBackupDirectory() {
+        return backupDirectory;
     }
     
     public interface FileConsumer {

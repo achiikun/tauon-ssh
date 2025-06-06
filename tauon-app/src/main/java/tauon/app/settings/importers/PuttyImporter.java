@@ -2,19 +2,28 @@ package tauon.app.settings.importers;
 
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tauon.app.exceptions.AlreadyFailedException;
 import tauon.app.settings.SiteInfo;
+import tauon.app.ui.utils.AlertDialogUtils;
 import tauon.app.util.misc.RegUtil;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static tauon.app.services.LanguageService.getBundle;
+
 
 public class PuttyImporter {
+    private static final Logger LOG = LoggerFactory.getLogger(PuttyImporter.class);
+    
     private static final String PUTTY_REG_KEY = "Software\\SimonTatham\\PuTTY\\Sessions";
 
-    public static Map<String, String> getKeyNames() {
+    public static Map<String, String> getKeyNames(Component parent) throws AlreadyFailedException {
         Map<String, String> map = new HashMap<>();
         try {
             String[] keys = Advapi32Util
@@ -23,8 +32,10 @@ public class PuttyImporter {
                 String decodedKey = key.replace("%20", " ");
                 map.put(key, decodedKey);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable e) {
+            LOG.error("Error while reading sessions from Putty.", e);
+            AlertDialogUtils.showError(parent, getBundle().getString("app.sessions.message.error_reading_putty"));
+            throw new AlreadyFailedException();
         }
 
         return map;

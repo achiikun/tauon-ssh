@@ -6,8 +6,11 @@ package tauon.app.ui.dialogs.settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.App;
+import tauon.app.exceptions.AlreadyFailedException;
+import tauon.app.services.ConfigFilesService;
 import tauon.app.services.SettingsConfigManager;
 import tauon.app.services.SitesConfigManager;
+import tauon.app.settings.BackupUtils;
 import tauon.app.settings.Settings;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.ui.components.editortablemodel.EditorEntry;
@@ -44,6 +47,8 @@ public class SettingsDialog extends JDialog {
     private final JButton btnSave;
     private final JButton btnCancel;
     private final JButton btnReset;
+    private final JButton btnImport;
+    private final JButton btnExport;
     private final DefaultComboBoxModel<Constants.ConflictAction> conflictOptions = new DefaultComboBoxModel<>(Constants.ConflictAction.values());
 //    private final DefaultComboBoxModel<Constants.TransferMode> transferModes = new DefaultComboBoxModel<>(Constants.TransferMode.values());
     private final CardLayout cardLayout;
@@ -149,6 +154,27 @@ public class SettingsDialog extends JDialog {
         btnCancel = new JButton(getBundle().getString("general.action.cancel"));
         btnReset = new JButton(getBundle().getString("general.action.reset"));
         btnSave = new JButton(getBundle().getString("general.action.save"));
+        
+        btnImport = new JButton(getBundle().getString("general.action.import_everything"));
+        btnImport.setToolTipText(getBundle().getString("general.action.import_everything.tooltip"));
+        btnImport.addActionListener(e -> {
+            try {
+                BackupUtils.importConfigFilesFromZip(window, Constants.ALL_CONFIG_FILES);
+                JOptionPane.showMessageDialog(this, getBundle().getString("app.settings.message.settings_saved"));
+            } catch (OperationCancelledException | AlreadyFailedException ignored) {
+            
+            }
+        });
+        
+        btnExport = new JButton(getBundle().getString("general.action.export_everything"));
+        btnExport.setToolTipText(getBundle().getString("general.action.export_everything.tooltip"));
+        btnExport.addActionListener(e -> {
+            try {
+                BackupUtils.backupConfigFilesToZip(window, Constants.ALL_CONFIG_FILES);
+            } catch (OperationCancelledException ignored) {
+            
+            }
+        });
 
         btnSave.addActionListener(e -> applySettingsAndClose());
 
@@ -160,6 +186,10 @@ public class SettingsDialog extends JDialog {
         });
 
         bottomBox.add(btnReset);
+        bottomBox.add(Box.createHorizontalStrut(15));
+        bottomBox.add(btnImport);
+        bottomBox.add(Box.createHorizontalStrut(5));
+        bottomBox.add(btnExport);
         bottomBox.add(Box.createHorizontalGlue());
         bottomBox.add(btnCancel);
         bottomBox.add(Box.createHorizontalStrut(5));

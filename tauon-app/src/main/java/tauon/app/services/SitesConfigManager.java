@@ -1,8 +1,12 @@
 package tauon.app.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intellij.util.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
@@ -10,6 +14,7 @@ import tauon.app.settings.NamedItem;
 import tauon.app.settings.SessionFolder;
 import tauon.app.settings.SiteInfo;
 import tauon.app.ui.dialogs.sessions.SavedSessionTree;
+import tauon.app.ui.utils.TreeManager;
 import tauon.app.util.misc.Constants;
 
 import javax.crypto.SecretKey;
@@ -17,7 +22,9 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
+import java.awt.*;
 import java.io.*;
+import java.nio.file.Files;
 import java.security.KeyStore;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -45,6 +52,39 @@ public class SitesConfigManager {
         return INSTANCE;
     }
     
+    public static SavedSessionTree readSitesTreeFromContent(String content) throws JsonProcessingException {
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS); // TODO deprecated?
+        
+        // MUON has changed their constants to uppersnake case, we not
+//                            content = content.replace("\"TcpForwarding\"", "\"TCP_FORWARDING\"");
+//                            content = content.replace("\"PortForwarding\"", "\"PORT_FORWARDING\"");
+//                            content = content.replace("\"DragDrop\"", "\"DRAG_DROP\"");
+//                            content = content.replace("\"DirLink\"", "\"DIR_LINK\"");
+//                            content = content.replace("\"FileLink\"", "\"FILE_LINK\"");
+//                            content = content.replace("\"KeyStore\"", "\"KEY_STORE\"");
+        
+        // JumpType
+        content = content.replace("\"TCP_FORWARDING\"", "\"TcpForwarding\"");
+        content = content.replace("\"PORT_FORWARDING\"", "\"PortForwarding\"");
+        
+        // TransferAction: DragDrop, Cut, Copy
+        content = content.replace("\"DRAG_DROP\"", "\"DragDrop\"");
+        
+        // FileType: FILE, DIR, DIR_LINK, FILE_LINK;
+        // We already have these constants in uppercase
+        content = content.replace("\"DirLink\"", "\"DIR_LINK\"");
+        content = content.replace("\"FileLink\"", "\"FILE_LINK\"");
+        
+        // Don't know where is used
+        content = content.replace("\"KeyStore\"", "\"KEY_STORE\"");
+        
+        return objectMapper.readValue(content, new TypeReference<SavedSessionTree>() {
+        });
+    }
+    
     public SavedSessionTree getSessionTree(PasswordPromptConsumer passwordPromptConsumer) throws OperationCancelledException {
         if(savedSessionTree == null){
             
@@ -53,14 +93,13 @@ public class SitesConfigManager {
                     Constants.PASSWORDS_FILE,
                     (sessionsFile, passwordsFile) -> {
                         
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                        
                         SavedSessionTree tempSessionTree;
                         
                         if (sessionsFile.exists()) {
-                            tempSessionTree = objectMapper.readValue(sessionsFile, new TypeReference<SavedSessionTree>() {
-                            });
+                            
+                            String content = new String(Files.readAllBytes(sessionsFile.toPath()));
+                            tempSessionTree = readSitesTreeFromContent(content);
+                            
                         }else{
                             SessionFolder rootFolder = new SessionFolder();
                             rootFolder.setName(getBundle().getString("app.sites.label.default_root_folder_name"));
@@ -82,6 +121,7 @@ public class SitesConfigManager {
                                 char[] chars;
                                 
                                 try (InputStream in = new FileInputStream(passwordsFile)) {
+                                    
                                     keyStore.load(in, protParam.getPassword());
                                     
                                     SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
@@ -146,7 +186,7 @@ public class SitesConfigManager {
 //        }
 //    }
     
-    private static void populatePasswordsInto(SessionFolder folder, Map<String, PasswordEntry> passwordMap) {
+    public static void populatePasswordsInto(SessionFolder folder, Map<String, PasswordEntry> passwordMap) {
         
         for (SiteInfo info : folder.getItems()) {
             try {
@@ -240,7 +280,7 @@ public class SitesConfigManager {
         
     }
     
-    private Map<String, PasswordEntry> deserializePasswordMap(char[] chars) throws Exception {
+    public static Map<String, PasswordEntry> deserializePasswordMap(char[] chars) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         
@@ -274,14 +314,14 @@ public class SitesConfigManager {
         return writer.toCharArray();
     }
     
-    public boolean replaceAndSave(SessionFolder sessionFolder, String selectedId, PasswordPromptConsumer pass) throws OperationCancelledException {
+    public boolean replaceAndSave(SessionFolder sessionFolder, String lastSelectedId, PasswordPromptConsumer pass) throws OperationCancelledException {
         
         // First, unlock
         getSessionTree(pass);
         
         SavedSessionTree tree = new SavedSessionTree();
         tree.setFolder(sessionFolder);
-        tree.setLastSelection(selectedId);
+        tree.setLastSelection(lastSelectedId);
         
         Map<String, PasswordEntry> passwordEntryMap = new HashMap<>();
         setPasswords(sessionFolder, passwordEntryMap);
@@ -318,9 +358,31 @@ public class SitesConfigManager {
         
     }
     
+    public static synchronized SessionFolder convertModelFromTree(DefaultMutableTreeNode node) {
+        SessionFolder folder = new SessionFolder();
+        folder.setName(node.getUserObject() + "");
+        
+        String folderId = node.getUserObject().toString();
+        if (!folderId.equals(TreeManager.EMPTY_ROOT_NODE_USER_OBJET)) {
+            folderId = ((NamedItem) node.getUserObject()).getId();
+        }
+        folder.setId(folderId == null ? TreeManager.createNewUuid(node) : folderId);
+        
+        Enumeration<TreeNode> childrens = node.children();
+        while (childrens.hasMoreElements()) {
+            DefaultMutableTreeNode c = (DefaultMutableTreeNode) childrens.nextElement();
+            if (c.getUserObject() instanceof SiteInfo) {
+                folder.getItems().add((SiteInfo) c.getUserObject());
+            } else {
+                folder.getFolders().add(convertModelFromTree(c));
+            }
+        }
+        return folder;
+    }
+    
     private boolean save(SavedSessionTree tree, Map<String, PasswordEntry> passwordMap, char[] password) {
-            
-            return ConfigFilesService.getInstance().saveAndKeepOldIfFails(
+        
+        return ConfigFilesService.getInstance().saveAndKeepOldIfFails(
                 Constants.SESSION_DB_FILE,
                 Constants.PASSWORDS_FILE,
                 (sessionsFile, passwordsFile) -> {
@@ -348,39 +410,6 @@ public class SitesConfigManager {
                     
                 }
         );
-    }
-
-    public static synchronized SessionFolder convertModelFromTree(DefaultMutableTreeNode node) {
-        SessionFolder folder = new SessionFolder();
-        folder.setName(node.getUserObject() + "");
-        folder.setId(((NamedItem) node.getUserObject()).getId());
-        Enumeration<TreeNode> childrens = node.children();
-        while (childrens.hasMoreElements()) {
-            DefaultMutableTreeNode c = (DefaultMutableTreeNode) childrens.nextElement();
-            if (c.getUserObject() instanceof SiteInfo) {
-                folder.getItems().add((SiteInfo) c.getUserObject());
-            } else {
-                folder.getFolders().add(convertModelFromTree(c));
-            }
-        }
-        return folder;
-    }
-
-    public static synchronized DefaultMutableTreeNode getNode(SessionFolder folder) {
-        NamedItem item = new NamedItem();
-        item.setName(folder.getName());
-        item.setId(folder.getId());
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode(item);
-        for (SiteInfo info : folder.getItems()) {
-            DefaultMutableTreeNode c = new DefaultMutableTreeNode(info.copy());
-            c.setAllowsChildren(false);
-            node.add(c);
-        }
-
-        for (SessionFolder folderItem : folder.getFolders()) {
-            node.add(getNode(folderItem));
-        }
-        return node;
     }
     
     public void setPasswordsFrom(SiteInfo session) {
@@ -432,5 +461,9 @@ public class SitesConfigManager {
     public static class PasswordEntry{
         public char[] infoPassword;
         public char[][] hopPasswords;
+    }
+    
+    public static interface InputStreamOpener {
+        InputStream open() throws Exception;
     }
 }

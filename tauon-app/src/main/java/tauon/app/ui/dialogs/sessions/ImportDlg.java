@@ -9,12 +9,20 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ImportDlg extends JDialog {
+    public enum Source {
+        TAUON_ZIP,
+        SSHCONFIG,
+        PUTTY,
+        WINSCP
+    }
+    
     private final JList<String> sessionList;
     private final DefaultListModel<String> model;
 
-    public ImportDlg(Window w, int index, DefaultMutableTreeNode node) {
+    public ImportDlg(Window w, String[] namesFoundInSystemOrFile, Consumer<int[]> callback) {
         super(w);
         setSize(400, 300);
         setLocationRelativeTo(w);
@@ -22,15 +30,19 @@ public class ImportDlg extends JDialog {
         model = new DefaultListModel<>();
         sessionList = new JList<>(model);
         sessionList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-
-        switch (index) {
-            case 0:
-                importFromPutty();
-                break;
-            case 1:
-                importFromWinScp();
-                break;
-        }
+        
+        model.clear();
+        for(String s: namesFoundInSystemOrFile)
+            model.addElement(s);
+        
+//        switch (index) {
+//            case PUTTY:
+//                importFromPutty();
+//                break;
+//            case WINSCP:
+//                importFromWinScp();
+//                break;
+//        }
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -63,15 +75,17 @@ public class ImportDlg extends JDialog {
 
         JButton btnImport = new JButton("Import");
         btnImport.addActionListener(e -> {
-
-            switch (index) {
-                case 0:
-                    importSessionsFromPutty(node);
-                    break;
-                case 1:
-                    importSessionsFromWinScp(node);
-                    break;
-            }
+            
+            callback.accept(sessionList.getSelectedIndices());
+            
+//            switch (index) {
+//                case 0:
+//                    importSessionsFromPutty(node);
+//                    break;
+//                case 1:
+//                    importSessionsFromWinScp(node);
+//                    break;
+//            }
 
             dispose();
         });
@@ -82,38 +96,38 @@ public class ImportDlg extends JDialog {
 
     }
 
-    private void importFromPutty() {
-        model.clear();
-        model.addAll(PuttyImporter.getKeyNames().keySet());
-    }
-
-    private void importFromWinScp() {
-        model.clear();
-        model.addAll(WinScpImporter.getKeyNames().keySet());
-    }
-
-    private void importSessionsFromPutty(DefaultMutableTreeNode node) {
-        List<String> list = new ArrayList<>();
-        int[] arr = sessionList.getSelectedIndices();
-        if (arr != null) {
-            for (int i = 0; i < arr.length; i++) {
-                list.add(model.get(arr[i]));
-            }
-        }
-
-        PuttyImporter.importSessions(node, list);
-    }
-
-    private void importSessionsFromWinScp(DefaultMutableTreeNode node) {
-        List<String> list = new ArrayList<>();
-
-        int[] arr = sessionList.getSelectedIndices();
-        if (arr != null) {
-            for (int i = 0; i < arr.length; i++) {
-                list.add(model.get(arr[i]));
-            }
-        }
-
-        WinScpImporter.importSessions(node, list);
-    }
+//    private void importFromPutty() {
+//        model.clear();
+//        model.addAll(PuttyImporter.getKeyNames().keySet());
+//    }
+//
+//    private void importFromWinScp() {
+//        model.clear();
+//        model.addAll(WinScpImporter.getKeyNames().keySet());
+//    }
+//
+//    private void importSessionsFromPutty(DefaultMutableTreeNode node) {
+//        List<String> list = new ArrayList<>();
+//        int[] arr = sessionList.getSelectedIndices();
+//        if (arr != null) {
+//            for (int i = 0; i < arr.length; i++) {
+//                list.add(model.get(arr[i]));
+//            }
+//        }
+//
+//        PuttyImporter.importSessions(node, list);
+//    }
+//
+//    private void importSessionsFromWinScp(DefaultMutableTreeNode node) {
+//        List<String> list = new ArrayList<>();
+//
+//        int[] arr = sessionList.getSelectedIndices();
+//        if (arr != null) {
+//            for (int i = 0; i < arr.length; i++) {
+//                list.add(model.get(arr[i]));
+//            }
+//        }
+//
+//        WinScpImporter.importSessions(node, list);
+//    }
 }
