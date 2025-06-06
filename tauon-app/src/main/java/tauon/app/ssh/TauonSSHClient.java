@@ -8,7 +8,6 @@ import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder;
-import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
@@ -20,8 +19,8 @@ import org.slf4j.LoggerFactory;
 import tauon.app.exceptions.OperationCancelledException;
 import tauon.app.exceptions.RemoteOperationException;
 import tauon.app.exceptions.SessionClosedException;
-import tauon.app.services.SitesConfigManager;
 import tauon.app.services.SettingsConfigManager;
+import tauon.app.services.SitesConfigManager;
 import tauon.app.settings.HopEntry;
 import tauon.app.settings.PortForwardingRule;
 import tauon.app.settings.SiteInfo;
@@ -185,6 +184,7 @@ public class TauonSSHClient {
     private void disconnectPortForwardingStates() throws IOException, InterruptedException {
         
         try {
+            // First, close all server sockets. Threads must unlock listen() here.
             for (PortForwardingState pf : portForwardingStates) {
                 Thread pfThread = pf.thread;
                 if(pfThread != null) {
@@ -197,6 +197,7 @@ public class TauonSSHClient {
                 }
             }
             
+            // Second, join for them
             for (PortForwardingState pf : portForwardingStates) {
                 Thread pfThread = pf.thread;
                 if(pfThread != null) {
@@ -419,9 +420,13 @@ public class TauonSSHClient {
                         sshj.registerX11Forwarder(new tauon.app.ssh.SocketForwardingConnectListener(
                                 SshUtil.socketAddress("/tmp/.X11-unix/X0")
                         ));
+                    } else if (PlatformUtils.IS_MAC) {
+                        sshj.registerX11Forwarder(new tauon.app.ssh.SocketForwardingConnectListener(
+                                SshUtil.socketAddress("/private/tmp/com.apple.launchd.ezzemjFmFP/org.xquartz:0")
+                        ));
                     } else {
                         
-                        sshj.registerX11Forwarder(new SocketForwardingConnectListener(
+                        sshj.registerX11Forwarder(new net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener(
 //                        UnixDomainSocketAddress.of("/tmp/.X11-unix/X0")
                                 new InetSocketAddress("localhost", 6000)
                         ));

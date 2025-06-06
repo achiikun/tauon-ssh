@@ -6,6 +6,7 @@
 - Fixed export and import zip backups
 - Change logo color, blue is too confusing when using Teams.
 - Updated Jediterm to version 3.53
+- Mac support x11 (solution copied blindly from @devlinx9): https://github.com/achiikun/tauon-ssh/commit/020b542819f21ecd6a4d5ac95bb083200233457c
 
 ## Fixes
 
@@ -19,7 +20,6 @@
 
 ### TODO
 
-- Mac support x11: https://github.com/achiikun/tauon-ssh/commit/020b542819f21ecd6a4d5ac95bb083200233457c
 - Doc: https://github.com/achiikun/tauon-ssh/commit/d98d3945fb7bb0540c3ba11c550d7c3fbf11ec46
 - Ask before deleting: https://github.com/achiikun/tauon-ssh/commit/e30940472cb0ab0901027281d5bfb9cd8c45a106#diff-0f86d11b223f406bafaea4cf3ccf2f3a73e44c2db04c4553533a565709625e3d
 - Update jediterm
