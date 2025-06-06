@@ -1,5 +1,5 @@
 name: tauon
-version: "3.0.0"
+version: "3.3.0"
 summary: Graphical SFTP client and terminal emulator with helpful utilities
 description: |
   Tauon is a graphical SSH client. It has a file browser,
@@ -15,7 +15,7 @@ confinement: strict
 
 apps:
   tauon:
-    command: java -jar $SNAP/jar/tauonssh_3.0.0.jar
+    command: java -jar $SNAP/jar/tauonssh_3.3.0.jar
     common-id: tauonssh.desktop
     environment:
       # Needed for fontconfig
@@ -25,7 +25,7 @@ apps:
     plugs: [x11, ssh-keys, network, desktop, home, network-bind]
 
 parts:
-  muon:
+  tauon:
     plugin: maven
     source: .
     override-build: |

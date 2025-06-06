@@ -8,7 +8,7 @@
     <parent>
         <groupId>tauon</groupId>
         <artifactId>tauon</artifactId>
-        <version>3.2.1</version>
+        <version>3.3.0</version>
     </parent>
 
     <groupId>tauon-app</groupId>
@@ -26,12 +26,12 @@
         <dependency>
             <groupId>org.jetbrains.jediterm</groupId>
             <artifactId>jediterm-core</artifactId>
-            <version>3.44-SNAPSHOT</version>
+            <version>3.53-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.jediterm</groupId>
             <artifactId>jediterm-ui</artifactId>
-            <version>3.44-SNAPSHOT</version>
+            <version>3.53-SNAPSHOT</version>
         </dependency>
 
         <dependency>
