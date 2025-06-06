@@ -15,13 +15,14 @@ The application is targeted mainly towards web/backend developers who often depl
 their code on remote servers and not overly fond of complex terminal based commands. 
 It could also be useful for sysadmins as well who manages lots of remote servers manually.
 
-__* You must have Java 11 installed minimum__
+> __You must have at least version 11 of Java (JRE11) installed__
+>
+> If not, you can find it here: https://adoptium.net/temurin/releases/
 
 ### History
 
 This project is the next iteration of another one called [Muon](https://github.com/devlinx9/muon-ssh).
-~~Its last update was a few years ago~~ (But is rarely updated...). I've been doing lots of refactorings and cleaning code in order to fix bugs and
-make the development of new features easier. The main change respect Muon is that now x11 forwarding (in linux) is supported.
+I've been doing lots of refactorings and cleaning code in order to fix bugs and make the development of new features easier.
 Some of the description above is copy-pasted from the Devlinx9 repo ;)
 
 I started this fork when I switched my dev operating system to linux from windows and I realized that MobaXTerm was not compatible.
@@ -71,13 +72,15 @@ flatpak-builder --force-clean --sandbox --user --install --install-deps-from=fla
 
 The [TODO](TODO.md) file contains what is currently developed and scheduled to develop.
 
+The [CHANGES](CHANGES.md) file contains the changes in each version and kind of roadmap for the next one.
+
 ### Not features
 
-* Dropped support for multilanguage as it messes with the length of buttons and also thinking as English as the only universal dev language in the world.
+* Dropped support for multilanguage as it messes with the length of buttons and also thinking as English as the only universal programming language in this beautiful world.
 
 ## Licences
 
-Tauon respects the licence from its previous versions: [GPLv3](/LICENSE)
+Tauon respects the licence from its previous versions (Muon & Snowflake): [GPLv3](/LICENSE)
 
 Jediterm (from JetBrains) has double license: [LGPLv3](https://github.com/achiikun/jediterm/blob/master/LICENSE-LGPLv3.txt) and [Apache 2.0](https://github.com/achiikun/jediterm/blob/master/LICENSE-APACHE-2.0.txt).
 For more information visit [https://github.com/JetBrains/jediterm](https://github.com/JetBrains/jediterm).
