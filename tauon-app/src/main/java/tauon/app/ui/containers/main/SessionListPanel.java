@@ -147,7 +147,7 @@ public class SessionListPanel extends JPanel {
     }
     
     public void createLocalSession() {
-        AbstractSessionContentPanel m = sessionListModel.get(0);
+        AbstractSessionContentPanel m = sessionListModel.isEmpty() ? null : sessionListModel.get(0);
         if(m instanceof LocalSessionContentPanel){
             sessionList.setSelectedIndex(0);
         }else{
