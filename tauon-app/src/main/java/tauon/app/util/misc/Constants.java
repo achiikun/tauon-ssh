@@ -3,8 +3,6 @@ package tauon.app.util.misc;
 import tauon.app.ssh.filesystem.FileType;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 import java.util.Set;
 
 import static tauon.app.services.LanguageService.getBundle;
@@ -50,13 +48,13 @@ public class Constants {
     public static final VersionEntry VERSION;
     
     static {
-        Properties p = new Properties();
-        try {
-            p.load(Constants.class.getResourceAsStream("/version.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        VERSION = new VersionEntry("v" + p.getProperty("tauon-version"));
+//        Properties p = new Properties();
+//        try {
+//            p.load(Constants.class.getResourceAsStream("/version.properties"));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+        VERSION = new VersionEntry("v" + tauon.app.Version.getVersion());//getProperty("tauon-version"));
     }
     
     public static final float TINY_TEXT_SIZE = 12.0f;
