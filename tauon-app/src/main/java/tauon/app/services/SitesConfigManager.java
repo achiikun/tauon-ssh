@@ -146,7 +146,6 @@ public class SitesConfigManager {
                             }
                             
                         }else {
-                            passwordsUnlocked = true;
                             // Create an initial file with the master password
                             
                             char[] password = getOrAskForMasterPassword(passwordPromptConsumer, true, false);
@@ -162,6 +161,7 @@ public class SitesConfigManager {
                                 keyStore.store(out, protParam.getPassword());
                             }
                             
+                            passwordsUnlocked = true;
                         }
                     }
             );

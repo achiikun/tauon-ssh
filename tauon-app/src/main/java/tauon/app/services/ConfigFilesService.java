@@ -146,41 +146,77 @@ public class ConfigFilesService {
     public boolean saveAndKeepOldIfFails(String file1, String file2, BiFileConsumer consumer) {
         File tempFile1 = null;
         File tempFile2 = null;
-        File tempFileOld1 = null;
         
         try {
             
-            tempFile1 = File.createTempFile("tauontemp_save1_", file1, tempdirectory);
-            tempFile1.deleteOnExit();
+            File realFile1 = new File(directory, file1);
+            boolean realFile1Existed = realFile1.exists();
             
-            tempFile2 = File.createTempFile("tauontemp_save2_", file2, tempdirectory);
-            tempFile2.deleteOnExit();
-            
-            consumer.consumeFile(tempFile1, tempFile2);
-            
-            tempFileOld1 = File.createTempFile("tauontemp_save3_", file1, tempdirectory);
-            tempFileOld1.deleteOnExit();
-            
-            Files.copy(new File(directory, file1).toPath(), tempFileOld1.toPath(), REPLACE_EXISTING);
-            
-            Files.copy(tempFile1.toPath(), new File(directory, file1).toPath(), REPLACE_EXISTING);
-            
-            try{
-                Files.copy(tempFile2.toPath(), new File(directory, file2).toPath(), REPLACE_EXISTING);
-            }catch (Exception e){
-                // If file2 fails, restore file1
+            if(realFile1Existed) {
+                tempFile1 = File.createTempFile("tauontemp_save1_", file1, tempdirectory);
+                tempFile1.deleteOnExit();
                 
-                try{
-                    Files.copy(tempFileOld1.toPath(), new File(directory, file1).toPath(), REPLACE_EXISTING);
-                }catch (Exception e2){
-                    LOG.error("Error while restoring file1", e2);
+                try {
+                    // Copy real 1 into temp 1
+                    Files.copy(realFile1.toPath(), tempFile1.toPath(), REPLACE_EXISTING);
+                } catch (Exception copyFile1Exception) {
+                    LOG.error("Error while copying file1 ({}) into temp1 ({})", realFile1, tempFile1, copyFile1Exception);
+                    throw copyFile1Exception;
                 }
-                
-                throw e;
             }
             
-            return true;
+            File realFile2 = new File(directory, file2);
+            boolean realFile2Existed = realFile1.exists();
+            
+            if(realFile2Existed) {
+                tempFile2 = File.createTempFile("tauontemp_save2_", file2, tempdirectory);
+                tempFile2.deleteOnExit();
+                
+                try {
+                    // Copy real 1 into temp 1
+                    Files.copy(realFile2.toPath(), tempFile2.toPath(), REPLACE_EXISTING);
+                } catch (Exception copyFile1Exception) {
+                    LOG.error("Error while copying file2 ({}) into temp2 ({})", realFile1, tempFile1, copyFile1Exception);
+                    throw copyFile1Exception;
+                }
+                
+            }
+            try {
+                consumer.consumeFile(realFile1, realFile2);
+            }catch (Exception exceptionWhileWriting){
+                LOG.error("Error while writing files.", exceptionWhileWriting);
+                
+                // If it fails, restore temp 1 into real 1
+                if (realFile1Existed) {
+                    try {
+                        Files.copy(tempFile1.toPath(), realFile1.toPath(), REPLACE_EXISTING);
+                    } catch (Exception e2) {
+                        LOG.error("Error while restoring file1 ({}) from temp1 ({})", tempFile1, realFile1, e2);
+                    }
+                } else {
+                    // Real file 1 not existed, delete it
+                    Files.deleteIfExists(realFile1.toPath());
+                }
+                
+                // If it fails, restore temp 2 into real 2
+                if (realFile2Existed) {
+                    try {
+                        Files.copy(tempFile2.toPath(), realFile2.toPath(), REPLACE_EXISTING);
+                    } catch (Exception e2) {
+                        LOG.error("Error while restoring file2 ({}) from temp2 ({})", tempFile2, realFile2, e2);
+                    }
+                } else {
+                    // Real file 2 not existed, delete it
+                    Files.deleteIfExists(realFile2.toPath());
+                }
+                
+                throw exceptionWhileWriting;
+            }
+            
+            return true; // Return true if not failed
+            
         } catch (Exception e) {
+            LOG.error("Error while saving sessions.", e);
             return false;
         } finally {
             if(tempFile1 != null) {
@@ -190,10 +226,6 @@ public class ConfigFilesService {
             if(tempFile2 != null) {
                 //noinspection ResultOfMethodCallIgnored
                 tempFile2.delete();
-            }
-            if(tempFileOld1 != null) {
-                //noinspection ResultOfMethodCallIgnored
-                tempFileOld1.delete();
             }
         }
         
@@ -209,7 +241,7 @@ public class ConfigFilesService {
         try {
             consumer.consumeFile(file1);
         } catch (Exception ignored) {
-            // Backup file1 (maybe will be overwritten by caller)
+            // Backup file1 (maybe will be overwritten by any future caller)
             File backup = new File(backupDirectory, System.currentTimeMillis() + "_" + file);
             
             try{
@@ -231,7 +263,7 @@ public class ConfigFilesService {
         } catch (OperationCancelledException e){
             throw e;
         } catch (Exception ignored) {
-            // Backup file1 (maybe will be overwritten by caller)
+            // Backup file1 (maybe will be overwritten by any future caller)
             File backup1 = new File(backupDirectory, System.currentTimeMillis() + "_" + file1);
             File backup2 = new File(backupDirectory, System.currentTimeMillis() + "_" + file2);
             
